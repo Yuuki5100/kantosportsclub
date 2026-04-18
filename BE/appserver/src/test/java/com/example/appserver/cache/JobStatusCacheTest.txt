@@ -1,0 +1,69 @@
+package com.example.appserver.cache;
+
+import com.example.appserver.cache.JobStatusCache.JobStatus;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class JobStatusCacheTest {
+
+    private static final String JOB_NAME = "testJob";
+    private static final String STATUS = "RUNNING";
+    private static final String URL = "https://example.com/report.pdf";
+
+    @AfterEach
+    void tearDown() {
+        JobStatusCache.clearStatus(JOB_NAME);
+    }
+
+    @Test
+    void updateStatus_shouldStoreJobStatusCorrectly() {
+        // when
+        JobStatusCache.updateStatus(JOB_NAME, STATUS, URL);
+
+        // then
+        JobStatus result = JobStatusCache.getStatus(JOB_NAME);
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(STATUS);
+        assertThat(result.getUrl()).isEqualTo(URL);
+    }
+
+    @Test
+    void getStatus_shouldReturnNullForNonExistentJob() {
+        // when
+        JobStatus result = JobStatusCache.getStatus("unknownJob");
+
+        // then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void clearStatus_shouldRemoveJobFromCache() {
+        // given
+        JobStatusCache.updateStatus(JOB_NAME, STATUS, URL);
+        assertThat(JobStatusCache.getStatus(JOB_NAME)).isNotNull();
+
+        // when
+        JobStatusCache.clearStatus(JOB_NAME);
+
+        // then
+        JobStatus result = JobStatusCache.getStatus(JOB_NAME);
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void updateStatus_shouldOverwriteExistingStatus() {
+        // given
+        JobStatusCache.updateStatus(JOB_NAME, "RUNNING", URL);
+
+        // when
+        JobStatusCache.updateStatus(JOB_NAME, "COMPLETED", "https://example.com/completed.pdf");
+
+        // then
+        JobStatus result = JobStatusCache.getStatus(JOB_NAME);
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo("COMPLETED");
+        assertThat(result.getUrl()).isEqualTo("https://example.com/completed.pdf");
+    }
+}

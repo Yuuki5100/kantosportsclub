@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.example</groupId>
+  <artifactId>myproject</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>My Project Parent</name>
+  <description>Parent POM for multi-module project</description>
+
+  <!-- ========================================================= -->
+  <!-- Modules                                                   -->
+  <!-- ========================================================= -->
+  <modules>
+    <module>servercommon</module>
+    <module>servercommon/logging</module>
+    <!-- libs-installer は必要なときだけ profile で有効化 -->
+    <!-- <module>servercommon/libs</module> -->
+    <module>gateway</module>
+    <module>appserver</module>
+    <module>batchserver</module>
+    <module>syncconnector</module>
+  </modules>
+
+  <!-- ========================================================= -->
+  <!-- Properties (ONLY what Boot/Cloud doesn't manage)          -->
+  <!-- ========================================================= -->
+  <properties>
+    <!-- Target platform -->
+    <java.version>21</java.version>
+
+    <!-- Boot / Cloud -->
+    <spring.boot.version>3.5.8</spring.boot.version>
+    <spring.cloud.version>2025.0.0</spring.cloud.version>
+
+    <!-- Encoding -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- Maven plugins -->
+    <maven.compiler.plugin.version>3.12.1</maven.compiler.plugin.version>
+    <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
+    <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
+    <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
+
+    <!-- QA -->
+    <jacoco.version>0.8.11</jacoco.version>
+    <spotbugs.version>4.8.3.0</spotbugs.version>
+    <findsecbugs.version>1.12.0</findsecbugs.version>
+
+    <!-- OWASP Dependency-Check -->
+    <owasp.dependencycheck.version>12.1.9</owasp.dependencycheck.version>
+    <owasp.failOnCVSS>9</owasp.failOnCVSS>
+
+    <!-- AWS -->
+    <!-- v2 is BOM managed -->
+    <aws.sdk.v2.bom.version>2.25.4</aws.sdk.v2.bom.version>
+    <!-- v1 only pinned -->
+    <aws.sdk.v1.version>1.12.636</aws.sdk.v1.version>
+
+    <!-- Libraries NOT managed by Boot BOM (pin here) -->
+    <poi.version>5.4.0</poi.version>
+    <commons.csv.version>1.10.0</commons.csv.version>
+    <jjwt.version>0.11.5</jjwt.version>
+    <logstash.encoder.version>7.2</logstash.encoder.version>
+    <janino.version>3.1.9</janino.version>
+    <mapstruct.version>1.5.5.Final</mapstruct.version>
+    <ulid.creator.version>5.1.0</ulid.creator.version>
+    <pdfbox.version>2.0.30</pdfbox.version>
+
+    <!-- MyBatis -->
+    <mybatis.spring.boot.version>3.0.4</mybatis.spring.boot.version>
+    <mybatis.dynamic.sql.version>1.5.0</mybatis.dynamic.sql.version>
+    <pagehelper.spring.boot.version>1.4.7</pagehelper.spring.boot.version>
+
+    <!-- Extra -->
+    <lombok.mapstruct.binding.version>0.2.0</lombok.mapstruct.binding.version>
+    <commons.codec.version>1.16.1</commons.codec.version>
+    <!-- 修正バッチ　脆弱性診断 -->
+    <flyway.version>10.20.1</flyway.version>
+
+    <java-jwt.version>4.4.0</java-jwt.version>
+
+    <itext.version>2.1.7</itext.version>
+    <itext.asian.version>1.0</itext.asian.version>
+    <ion-java.version>1.10.5</ion-java.version>
+    <commons.beanutils.version>1.11.0</commons.beanutils.version>
+    <!-- OpenPDF (iText2 互換の置き換え先) -->
+    <openpdf.version>2.0.3</openpdf.version>
+    <commons.compress.version>1.26.2</commons.compress.version>
+    <commons.lang3.version>3.18.0</commons.lang3.version>
+    <zxing.version>3.5.3</zxing.version>
+    <commons.io.version>2.18.0</commons.io.version>
+
+
+    <dependencycheck.autoUpdate>true</dependencycheck.autoUpdate>
+    <dependencycheck.failBuildOnCVSS>999</dependencycheck.failBuildOnCVSS>
+    <dependencycheck.formats>HTML</dependencycheck.formats>
+    <dependencycheck.ossindexAnalyzerEnabled>false</dependencycheck.ossindexAnalyzerEnabled>
+    <dependencycheck.nodeEnabled>false</dependencycheck.nodeEnabled>
+    <dependencycheck.nodeAuditEnabled>false</dependencycheck.nodeAuditEnabled>
+  </properties>
+
+  <!-- ========================================================= -->
+  <!-- Dependency Management (BOMs + pinned libs)                 -->
+  <!-- ========================================================= -->
+  <dependencyManagement>
+    <dependencies>
+
+      <!-- Internal modules -->
+      <dependency>
+        <groupId>com.example</groupId>
+        <artifactId>servercommon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.example</groupId>
+        <artifactId>logging</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- Spring Boot BOM -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Spring Cloud BOM -->
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring.cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- AWS SDK v2 BOM -->
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>bom</artifactId>
+        <version>${aws.sdk.v2.bom.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+
+
+      <!-- AWS SDK v1 pinned -->
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-s3</artifactId>
+        <version>${aws.sdk.v1.version}</version>
+      </dependency>
+
+      <!-- Pinned libs -->
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi</artifactId>
+        <version>${poi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>${poi.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-csv</artifactId>
+        <version>${commons.csv.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons.codec.version}</version>
+      </dependency>
+
+      <!-- JJWT -->
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>${jjwt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>${jjwt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>${jjwt.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.logstash.logback</groupId>
+        <artifactId>logstash-logback-encoder</artifactId>
+        <version>${logstash.encoder.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.janino</groupId>
+        <artifactId>janino</artifactId>
+        <version>${janino.version}</version>
+      </dependency>
+
+      <!-- MapStruct -->
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct-processor</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+
+      <!-- ULID -->
+      <dependency>
+        <groupId>com.github.f4b6a3</groupId>
+        <artifactId>ulid-creator</artifactId>
+        <version>${ulid.creator.version}</version>
+      </dependency>
+
+      <!-- PDFBox -->
+      <dependency>
+        <groupId>org.apache.pdfbox</groupId>
+        <artifactId>pdfbox</artifactId>
+        <version>${pdfbox.version}</version>
+      </dependency>
+
+      <!-- ===================== -->
+      <!-- MyBatis (parent managed) -->
+      <!-- ===================== -->
+      <dependency>
+        <groupId>org.mybatis.spring.boot</groupId>
+        <artifactId>mybatis-spring-boot-starter</artifactId>
+        <version>${mybatis.spring.boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mybatis.dynamic-sql</groupId>
+        <artifactId>mybatis-dynamic-sql</artifactId>
+        <version>${mybatis.dynamic.sql.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.pagehelper</groupId>
+        <artifactId>pagehelper-spring-boot-starter</artifactId>
+        <version>${pagehelper.spring.boot.version}</version>
+      </dependency>
+<!-- 修正バッチ　脆弱性診断 -->
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.auth0</groupId>
+        <artifactId>java-jwt</artifactId>
+        <version>4.4.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>${commons.beanutils.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk18on</artifactId>
+        <version>1.80</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk18on</artifactId>
+        <version>1.80</version>
+      </dependency>
+
+      <!-- ion-java override (groupId moved to com.amazon.ion) -->
+      <dependency>
+        <groupId>com.amazon.ion</groupId>
+        <artifactId>ion-java</artifactId>
+        <version>${ion-java.version}</version>
+      </dependency>
+
+      <!-- OpenPDF (replace legacy iText) -->
+      <dependency>
+        <groupId>com.github.librepdf</groupId>
+        <artifactId>openpdf</artifactId>
+        <version>${openpdf.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commons.compress.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons.lang3.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.zxing</groupId>
+        <artifactId>core</artifactId>
+        <version>${zxing.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons.io.version}</version>
+      </dependency>
+
+
+
+    <!-- Force Netty native artifacts too -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-bom</artifactId>
+      <version>2.25.3</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.25.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-to-slf4j</artifactId>
+      <version>2.25.3</version>
+    </dependency>
+
+
+
+
+
+    </dependencies>
+  </dependencyManagement>
+
+  <!-- ========================================================= -->
+  <!-- Build / PluginManagement (ALL versions centralized)        -->
+  <!-- ========================================================= -->
+  <build>
+    <pluginManagement>
+      <plugins>
+
+        <!-- Java 21 compiler -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.plugin.version}</version>
+          <configuration>
+            <release>${java.version}</release>
+            <encoding>${project.build.sourceEncoding}</encoding>
+            <compilerArgs>
+              <arg>-parameters</arg>
+            </compilerArgs>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+              </path>
+              <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+              </path>
+              <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-mapstruct-binding</artifactId>
+                <version>${lombok.mapstruct.binding.version}</version>
+              </path>
+            </annotationProcessorPaths>
+          </configuration>
+        </plugin>
+
+        <!-- Unit tests -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+          <configuration>
+            <useSystemClassLoader>true</useSystemClassLoader>
+          </configuration>
+        </plugin>
+
+        <!-- Resources -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven.resources.plugin.version}</version>
+        </plugin>
+
+        <!-- Spring Boot -->
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring.boot.version}</version>
+        </plugin>
+
+        <!-- JaCoCo -->
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco.version}</version>
+          <executions>
+            <execution>
+              <id>jacoco-prepare-agent</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>jacoco-report</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- SpotBugs (+ FindSecBugs) -->
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${spotbugs.version}</version>
+          <configuration>
+            <effort>Max</effort>
+            <threshold>Low</threshold>
+            <xmlOutput>true</xmlOutput>
+            <failOnError>false</failOnError>
+            <failOnViolation>false</failOnViolation>
+            <plugins>
+              <plugin>
+                <groupId>com.h3xstream.findsecbugs</groupId>
+                <artifactId>findsecbugs-plugin</artifactId>
+                <version>${findsecbugs.version}</version>
+              </plugin>
+            </plugins>
+          </configuration>
+        </plugin>
+
+        <!-- OWASP Dependency-Check (Aggregate report) -->
+        <!-- OWASP Dependency-Check (Aggregate report) -->
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <version>${owasp.dependencycheck.version}</version>
+
+            <configuration>
+              <format>${dependencycheck.formats}</format>
+              <failBuildOnCVSS>${dependencycheck.failBuildOnCVSS}</failBuildOnCVSS>
+              <autoUpdate>${dependencycheck.autoUpdate}</autoUpdate>
+              <ossindexAnalyzerEnabled>${dependencycheck.ossindexAnalyzerEnabled}</ossindexAnalyzerEnabled>
+              <analyzers>
+                <nodeEnabled>${dependencycheck.nodeEnabled}</nodeEnabled>
+                <nodeAuditEnabled>${dependencycheck.nodeAuditEnabled}</nodeAuditEnabled>
+              </analyzers>
+            </configuration>
+
+          <executions>
+            <execution>
+              <id>dependency-check</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>aggregate</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+
+        <!-- Enforcer -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${maven.enforcer.plugin.version}</version>
+          <executions>
+            <execution>
+              <id>enforce</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <requireJavaVersion>
+                    <version>21</version>
+                  </requireJavaVersion>
+                  <dependencyConvergence/>
+                </rules>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-maven-plugin</artifactId>
+          <version>${flyway.version}</version>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+
+    <!-- ===================================================== -->
+    <!-- Plugins enabled globally (optional)                    -->
+    <!-- ===================================================== -->
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- ========================================================= -->
+  <!-- Profiles                                                  -->
+  <!-- ========================================================= -->
+  <profiles>
+    <profile>
+      <id>install-local-libs</id>
+      <modules>
+        <module>servercommon/libs</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>depcheck-report</id>
+      <properties>
+        <dependencycheck.autoUpdate>false</dependencycheck.autoUpdate>
+        <dependencycheck.failBuildOnCVSS>999</dependencycheck.failBuildOnCVSS>
+        <dependencycheck.ossindexAnalyzerEnabled>false</dependencycheck.ossindexAnalyzerEnabled>
+        <dependencycheck.formats>HTML</dependencycheck.formats>
+        <dependencycheck.nodeEnabled>false</dependencycheck.nodeEnabled>
+        <dependencycheck.nodeAuditEnabled>false</dependencycheck.nodeAuditEnabled>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>

@@ -1,0 +1,75 @@
+templateId: users_v2
+version: v2
+multiSheet: true
+sheets:
+  - sheetName: 基本情報
+    columns:
+      - field: id
+        name: id
+        required: false
+        type: long
+        repository: userRepository
+        entity: com.example.servercommon.model.User
+
+      - field: username
+        name: username
+        required: true
+        maxLength: 20
+        entity: com.example.servercommon.model.User
+        repository: userRepository
+
+      - field: password
+        name: password
+        required: true
+        type: string
+        entity: com.example.servercommon.model.User
+        repository: userRepository
+
+      - field: email
+        name: email
+        required: true
+        type: string
+        entity: com.example.servercommon.model.User
+        repository: userRepository
+        validationMessage: メールアドレスの形式が正しくありません。
+        pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+
+      - field: role
+        name: role
+        required: true
+        type: enum
+        repository: userRepository
+        entity: com.example.servercommon.model.User
+        validationMessage: role は SYSTEM_ADMIN, EDITOR, VIEWER, CUSTOM のいずれかを指定してください。
+        enumValues: ['SYSTEM_ADMIN', 'EDITOR', 'VIEWER', 'CUSTOM']
+
+
+  - sheetName: 詳細情報
+    columns:
+      - field: userId
+        name: userId
+        required: false
+        type: long
+        repository: userDetailRepository
+        entity: com.example.servercommon.model.UserDetail
+
+      - field: phoneNumber
+        name: phoneNumber
+        required: false
+        type: string
+        repository: userDetailRepository
+        entity: com.example.servercommon.model.UserDetail
+
+      - field: kanaName
+        name: kanaName
+        required: false
+        type: string
+        repository: userDetailRepository
+        entity: com.example.servercommon.model.UserDetail
+
+      - field: address
+        name: address
+        required: false
+        type: string
+        repository: userDetailRepository
+        entity: com.example.servercommon.model.UserDetail

@@ -1,0 +1,77 @@
+package com.example.appserver.config;
+
+import com.example.appserver.permission.PermissionConfigProviderImpl;
+import com.example.servercommon.model.EndpointAuthorityMapping;
+import com.example.servercommon.repository.EndpointAuthorityMappingRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class PermissionConfigProviderImplTest {
+
+    @Mock
+    private EndpointAuthorityMappingRepository repository;
+
+    @InjectMocks
+    private PermissionConfigProviderImpl provider;
+
+    @BeforeEach
+    void setup() {
+        EndpointAuthorityMapping mapping1 = new EndpointAuthorityMapping(1L, "/user/profile", "GET", 101L);
+        mapping1.setRequiredLevel(2); // 明示的に追加設定
+
+        EndpointAuthorityMapping mapping2 = new EndpointAuthorityMapping(2L, "/admin/dashboard", "GET", 102L);
+        mapping2.setRequiredLevel(3);
+
+        EndpointAuthorityMapping mapping3 = new EndpointAuthorityMapping(3L, "/admin/dashboard", "GET", 102L);
+        mapping3.setRequiredLevel(4); // 重複 menuFunctionId で最大値確認
+
+        when(repository.findAll()).thenReturn(List.of(mapping1, mapping2, mapping3));
+
+        provider.init(); // @PostConstruct の代替で明示的に呼び出し
+    }
+
+    @Test
+    void testGetEndpointPermissions_containsExpectedEndpoints() {
+        Map<String, PermissionConfigProviderImpl.EndpointPermissions> permissionsMap = provider.getEndpointPermissions();
+        assertTrue(permissionsMap.containsKey("GET /user/profile"));
+        assertTrue(permissionsMap.containsKey("GET /admin/dashboard"));
+    }
+
+    @Test
+    void testCustomPermissionsMapping_isCorrect() {
+        var userProfile = provider.getEndpointPermissions().get("GET /user/profile");
+        var adminDash = provider.getEndpointPermissions().get("GET /admin/dashboard");
+
+        assertNotNull(userProfile);
+        assertEquals(2, userProfile.getCustom().get("101"));
+        assertEquals(2, userProfile.getDefaultLevel());
+
+        assertNotNull(adminDash);
+        assertEquals(4, adminDash.getCustom().get("102")); // 最大値が使われていること
+        assertEquals(4, adminDash.getDefaultLevel());
+    }
+
+    @Test
+    void testGetRequiredLevel_returnsExpectedValues() {
+        assertEquals(2, provider.getRequiredLevel("GET /user/profile"));
+        assertEquals(4, provider.getRequiredLevel("GET /admin/dashboard"));
+        assertEquals(0, provider.getRequiredLevel("GET /nonexistent")); // 未定義は 0
+    }
+
+    @Test
+    void testCustomPermissionLookup_handlesUnknownKeys() {
+        var ep = provider.getEndpointPermissions().get("GET /user/profile");
+        assertEquals(0, ep.getRequiredLevelForCustomRole("999")); // 存在しない menuFunctionId
+    }
+}

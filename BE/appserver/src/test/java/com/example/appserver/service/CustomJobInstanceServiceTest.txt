@@ -1,0 +1,53 @@
+package com.example.appserver.service;
+
+import com.example.appserver.request.batchresult.SampleJobInstanceRequest;
+import com.example.servercommon.entity.CustomJobInstance;
+import com.example.servercommon.repository.CustomJobInstanceRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+class CustomJobInstanceServiceTest {
+
+    private CustomJobInstanceRepository repository;
+    private CustomJobInstanceService service;
+
+    @BeforeEach
+    void setUp() {
+        repository = mock(CustomJobInstanceRepository.class);
+        service = new CustomJobInstanceService(repository);
+    }
+
+    @Test
+    void apply_ShouldSaveEntityWithCopiedProperties() {
+        // サンプルリクエスト作成
+        SampleJobInstanceRequest request = new SampleJobInstanceRequest();
+        request.setJobKey("JOB123");
+        request.setJobName("Sample Job");
+
+        // repository.save の動作をモック化
+        when(repository.save(any(CustomJobInstance.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.apply(request);
+
+        // save されたオブジェクトをキャプチャ
+        ArgumentCaptor<CustomJobInstance> captor = ArgumentCaptor.forClass(CustomJobInstance.class);
+        verify(repository, times(1)).save(captor.capture());
+
+        CustomJobInstance savedEntity = captor.getValue();
+        assertNotNull(savedEntity);
+        assertEquals(request.getJobKey(), savedEntity.getJobKey());
+        assertEquals(request.getJobName(), savedEntity.getJobName());
+    }
+
+    @Test
+    void apply_ShouldHandleNullRequestGracefully() {
+        // Nullを渡した場合は IllegalArgumentException がスローされる
+        assertThrows(IllegalArgumentException.class, () -> service.apply(null));
+    }
+
+}

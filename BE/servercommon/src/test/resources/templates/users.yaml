@@ -1,0 +1,7 @@
+templateId: users
+version: v1
+entity: com.example.User
+repository: userRepository
+columns:
+  - name: username
+    field: username

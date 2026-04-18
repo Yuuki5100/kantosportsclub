@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SonarQube Report Generator</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f1e8;
+      --panel: #fffdf8;
+      --text: #1f2933;
+      --muted: #52606d;
+      --accent: #0b6e4f;
+      --accent-strong: #084c3a;
+      --border: #d9d2c3;
+      --error-bg: #fbe4e6;
+      --error-text: #8a1c2a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(11, 110, 79, 0.12), transparent 28%),
+        linear-gradient(160deg, var(--bg), #efe7d8);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .panel {
+      width: min(100%, 760px);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 18px 40px rgba(31, 41, 51, 0.12);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 28px 28px 12px;
+      background: linear-gradient(135deg, rgba(11, 110, 79, 0.95), rgba(8, 76, 58, 0.9));
+      color: #f8fafc;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+    }
+
+    .hero p {
+      margin: 0;
+      line-height: 1.5;
+      max-width: 55ch;
+    }
+
+    form {
+      padding: 24px 28px 28px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 400;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .checks {
+      display: grid;
+      gap: 12px;
+      padding: 4px 0;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+    }
+
+    .check input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 20px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-strong);
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .error {
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: var(--error-bg);
+      color: var(--error-text);
+      border: 1px solid rgba(138, 28, 42, 0.15);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <section class="panel">
+    <div class="hero">
+      <h1>SonarQube Report Generator</h1>
+      <p>Fill in the project details below and the server will generate a report for you. Use the API key only if your server is configured to require one.</p>
+    </div>
+
+    <form method="post" action="/generate-form">
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+
+      <div class="grid">
+        <label>
+          Project Key
+          <input type="text" name="project" value="{{ defaults.project }}" placeholder="kyotsukiban-frontend" required>
+          <span class="hint">Required. Must match the SonarQube project key.</span>
+        </label>
+
+        <label>
+          Branch
+          <input type="text" name="branch" value="{{ defaults.branch }}" placeholder="main">
+          <span class="hint">Optional. Leave blank to use the default branch.</span>
+        </label>
+      </div>
+
+      <div class="grid">
+        <label>
+          Max Issues
+          <input type="number" name="max_issues" min="0" value="{{ defaults.max_issues }}">
+          <span class="hint">Use `0` to include all issues.</span>
+        </label>
+
+        <label>
+          API Key
+          <input type="password" name="api_key" value="{{ defaults.api_key }}" placeholder="Optional">
+          <span class="hint">Needed only when `REPORT_API_KEY` is enabled on the server.</span>
+        </label>
+      </div>
+
+      <div class="checks">
+        <label class="check">
+          <input type="checkbox" name="jp" {% if defaults.jp %}checked{% endif %}>
+          <span>Render labels in Japanese</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="insecure" {% if defaults.insecure %}checked{% endif %}>
+          <span>Disable TLS verification for SonarQube access</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="download" {% if defaults.download %}checked{% endif %}>
+          <span>Save the report and show the saved path instead of returning the HTML directly</span>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Generate Report</button>
+        <span class="note">The existing JSON API endpoints remain available.</span>
+      </div>
+    </form>
+  </section>
+</body>
+</html>

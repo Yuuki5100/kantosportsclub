@@ -1,0 +1,10 @@
+title = "common-archetecture gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Exclude generated documents and historical design assets from initial rollout"
+paths = [
+  '''^DOC/''',
+]

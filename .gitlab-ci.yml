@@ -1,0 +1,80 @@
+stages:
+  - validate
+  - test
+  - coverage
+  - build
+  - migrate-db
+  - deploy
+workflow:
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(release_dev|release_uat)$/'
+      variables:
+        BACKEND_DEPLOY: 'true'
+        FRONTEND_DEPLOY: 'true'
+    - if: '$CI_COMMIT_BRANCH =~ /^(release_dev|release_uat)$/'
+      variables:
+        BACKEND_DEPLOY: 'true'
+        FRONTEND_DEPLOY: 'true'
+    - when: always
+
+include:
+  - local: CI/ci-config/common.yml
+  - local: CI/ci-config/backend.yml
+  - local: CI/ci-config/frontend.yml
+  - local: CI/ci-config/deploy/backend.yml
+  - local: CI/ci-config/deploy/frontend.yml
+  - local: CI/ci-config/qa.yml
+
+variables:
+  BACKEND_DEPLOY: 'false' # バックエンドのデプロイ実行
+  FRONTEND_DEPLOY: 'false' # フロントエンドのデプロイ実行
+  BACKEND_COVERAGE: 'false' # バックエンドのカバレッジ取得を有効化
+  BACKEND_DEP_SCAN: 'true' # 依存関係スキャンの手動 job を表示
+  BACKEND_ITEST: 'false' # 結合テストを有効化
+  FRONTEND_LINT: 'false' # フロントのLintを有効化
+  FRONTEND_TEST: 'false' # フロントのテストを有効化
+  FRONTEND_COVERAGE: 'false' # フロントのカバレッジ取得を有効化
+  FRONTEND_STORYBOOK: 'false' # Storybook build を有効化
+  E2E_SMOKE: 'false' # Playwright smoke E2E を有効化
+  E2E_BASE_URL: '' # Playwright smoke の接続先ベースURL
+  NEWMAN_SMOKE: 'false' # Newman smoke API test を有効化
+  NEWMAN_BASE_URL: '' # Newman の接続先ベースURL（例: https://dev.example.com）
+  NEWMAN_COLLECTION: 'CI/qa/postman/smoke.postman_collection.json' # Newman の対象 Collection
+  NEWMAN_ENVIRONMENT: '' # Newman の任意 Environment ファイル
+  NEWMAN_LOGIN_USER_ID: '' # Newman 認証用ユーザーID（GitLab Variables推奨）
+  NEWMAN_LOGIN_PASSWORD: '' # Newman 認証用パスワード（GitLab Variables推奨）
+  NEWMAN_AUTH_LOGIN_PATH: '/api/auth/login' # Newman ログイン API パス
+  NEWMAN_AUTH_STATUS_PATH: '/api/auth/status' # Newman 認証状態 API パス
+  NEWMAN_AUTH_TOKEN_COOKIE_NAME: 'ACCESS_TOKEN' # Newman が参照する認証トークン Cookie 名
+  NEWMAN_AUTH_LOGIN_USER_ID_KEY: 'user_id' # Newman ログイン body のユーザーIDキー
+  NEWMAN_AUTH_LOGIN_PASSWORD_KEY: 'password' # Newman ログイン body のパスワードキー
+  PACT_VERIFY: 'false' # Pact consumer/provider 検証を有効化
+  PACT_ENFORCE: 'false' # true の場合、provider 検証失敗で job を fail
+  PACT_PUBLIC_SAMPLES: 'false' # 認証不要エンドポイントの Pact サンプル生成/検証を有効化
+  PACT_PUBLIC_SAMPLES_ENFORCE: 'false' # true の場合、public sample provider 検証失敗で job を fail
+  TRIVY_SCAN: 'false' # Trivy filesystem scan を有効化
+  TRIVY_TARGET_DIR: '.' # Trivy scan 対象ディレクトリ
+  TRIVY_SEVERITY: 'HIGH,CRITICAL' # Trivy severity フィルタ
+  TRIVY_TIMEOUT: '10m' # Trivy 実行タイムアウト
+  TRIVY_ENFORCE: 'false' # true の場合、検出時に trivy-scan を fail
+  GITLEAKS_SCAN: 'false' # Gitleaks secret scan を有効化
+  GITLEAKS_ENFORCE: 'false' # true の場合、検出時に gitleaks-scan を fail
+  K6_SMOKE: 'false' # k6 smoke を有効化
+  K6_TARGET_URL: '' # k6 smoke の接続先URL
+  K6_VUS: '10' # k6 smoke の仮想ユーザー数
+  K6_DURATION: '30s' # k6 smoke の実行時間
+  K6_EXPECTED_STATUSES: '200,401,403,404' # k6 smoke で許容するHTTPステータス
+  ZAP_BASELINE: 'false' # OWASP ZAP baseline scan を有効化
+  ZAP_TARGET_URL: '' # ZAP baseline scan の接続先URL
+  ZAP_SPIDER_MINUTES: '3' # ZAP spider の探索時間
+  ZAP_BASELINE_CONFIG: 'docker/zap/zap-baseline.conf' # ZAP baseline の alert ルール設定
+  ST_EVIDENCE_ARCHIVE: 'false' # ST 証跡アーカイブ job を有効化
+  MAVEN_OPTS: '-Dmaven.repo.local=.m2/repository'
+  BACKEND_ONLY: 'true' # 既定でバックエンドのみ実行
+  FRONTEND_ONLY: 'false' # 既定でフロントエンドは実行しない
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository
+    - FE/spa-next/my-next-app/node_modules

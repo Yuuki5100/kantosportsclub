@@ -1,0 +1,77 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:app}?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:app}
+    password: ${DB_PASSWORD:app}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: false
+
+  session:
+    store-type: jdbc
+    timeout: 180000
+
+  jackson:
+    time-zone: Asia/Tokyo
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+server:
+  port: ${SERVER_PORT:8081}
+
+auth:
+  cookie:
+    secure: false
+
+# cors:
+#   allowed-origins:
+#     - http://localhost:3000
+#     - http://frontend:3000
+
+storage:
+  type: s3
+  s3:
+    endpoint: ${MINIO_ENDPOINT:http://minio:9000}
+    access-key: ${MINIO_ACCESS_KEY:minio}
+    secret-key: ${MINIO_SECRET_KEY:minio123}
+    bucket: ${MINIO_BUCKET:app-bucket}
+    input-dir: input
+    archive-dir: archive
+    error-dir: error
+
+app:
+  frontend-url: http://frontend:3000
+
+routePath:
+  apiUri: http://backend:8081
+
+management:
+  tracing:
+    enabled: ${OTEL_TRACING_ENABLED:true}
+    sampling:
+      probability: ${OTEL_TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4318/v1/traces}}
+    metrics:
+      export:
+        enabled: ${OTEL_METRICS_EXPORT_ENABLED:true}
+        url: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4318/v1/metrics}}
+        step: ${OTEL_METRICS_EXPORT_STEP:30s}

@@ -1,0 +1,132 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: appserver
+
+  datasource:
+    url: jdbc:mysql://localhost:13306/common?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: NewStrongPass123!
+    hikari:
+      connection-init-sql: SET time_zone = '+00:00'
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: UTC
+
+  jackson:
+    time-zone: Asia/Tokyo
+
+  session:
+    store-type: jdbc
+
+  codec:
+    max-in-memory-size: 10MB
+
+  config:
+    import: "classpath:config/endpoint-permission.yml"
+
+  flyway:
+    enabled: false
+
+security:
+  rsa-public-key:
+    modulus-base64: "ALlQ9XnH/0W0nUuOAz5kz5nkt8dHjGl5V9V2vblqJmQF3pOtKpyX6GZ+W9D3xIZw7dLrZUPPMp4x6BLsJwrImz8="
+    exponent-base64: "AQAB"
+  auth:
+    mode: jwt   # jwt or session
+  authorization:
+    legacy-interceptor-enabled: false
+  permission:
+    legacy-endpoint-config-enabled: false
+    cache-refresh-fixed-delay-ms: 600000
+    method-security-allow-if-unmapped: true
+    method-security-default-method: GET
+
+logging:
+  level:
+    root: INFO
+    org.apache.http.wire: OFF
+    org.apache.http.headers: INFO
+  appender: PLAIN_CONSOLE
+  file:
+    path: logs/${spring.application.name}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: configprops,health,info
+  security:
+    enabled: false
+
+jwt:
+  secret: 9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==
+  expiration: 86400000
+
+storage:
+  # type: local
+  type: s3
+  s3:
+    endpoint: http://57.182.223.75:9080
+    access-key: minio
+    secret-key: minio1234
+    bucket: reports
+    input-dir: input
+    archive-dir: archive
+    error-dir: error
+
+# aws:
+#   region: ap-northeast-1
+
+# mail:
+#   host: email-smtp.ap-northeast-1.amazonaws.com
+#   port: 587
+#   properties:
+#     mail:
+#       smtp:
+#         auth: true
+#         starttls:
+#           enable: true
+
+app:
+  login:
+    url: https://dev-nyusyuko.crj.dev.jems-cloud.jp/login
+    password-change-url: https://dev-nyusyuko.crj.dev.jems-cloud.jp/common/password-change
+
+# cors:
+#   allowed-origins:
+#     - http://localhost:3000
+#     - https://dev-nyusyuko.crj.dev.jems-cloud.jp
+
+teams:
+  webhook:
+    url: https://your.teams.webhook.url
+
+file:
+  validation-error:
+    output-path: tmp/
+
+template:
+  schema:
+    base-path: classpath:config/templates
+
+report:
+  cache:
+    enabled: false
+
+system:
+  setting:
+    cache:
+      enabled: true
+      ttl-seconds: 300
+      max-entries: 512

@@ -1,0 +1,224 @@
+package com.example.appserver.controller;
+
+import com.example.appserver.cache.JobStatusCache;
+import com.example.appserver.permission.PermissionConfigProvider;
+import com.example.appserver.request.report.ReportJobRequest;
+import com.example.appserver.runner.ReportPollingRunner;
+import com.example.appserver.security.PermissionChecker;
+import com.example.appserver.testutil.TestPermissionConfig;
+import com.example.servercommon.model.ReportMaster;
+import com.example.servercommon.notification.TeamsNotificationService;
+import com.example.servercommon.repository.EndpointAuthorityMappingRepository;
+import com.example.servercommon.service.ErrorCodeService;
+import com.example.servercommon.service.ReportService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(controllers = ReportController.class)
+@Import(TestPermissionConfig.class)
+@WithMockUser(username = "testuser", roles = {"ANY"})
+@Disabled("Controller統合テストは一時スキップ")
+public class ReportControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean private ReportService reportService;
+    @MockBean private ReportPollingRunner reportPollingRunner;
+    @MockBean private ErrorCodeService errorCodeService;
+    @MockBean private TeamsNotificationService teamsNotificationService;
+    @MockBean private PermissionConfigProvider permissionConfigProvider;
+    @MockBean private EndpointAuthorityMappingRepository endpointAuthorityMappingRepository;
+    @MockBean private PermissionChecker permissionChecker;
+
+    @Autowired private ObjectMapper objectMapper;
+
+    @AfterEach
+    void tearDown() {
+        JobStatusCache.clearStatus("testJob");
+    }
+
+@BeforeEach
+void setup() {
+    when(endpointAuthorityMappingRepository.findAll()).thenReturn(Collections.emptyList());
+
+    Map<String, PermissionConfigProvider.EndpointPermissions> dummyMap = Map.of(
+            "POST /report/export/excel/file", new DummyEndpointPermissions(),
+            "POST /report/export/csv/file", new DummyEndpointPermissions(),
+            "POST /report/job", new DummyEndpointPermissions(),
+            "GET /report/list", new DummyEndpointPermissions(),
+            "GET /report/polling/testJob", new DummyEndpointPermissions(),
+            "GET /report/polling/unknownJob", new DummyEndpointPermissions()
+    );
+
+    when(permissionConfigProvider.getEndpointPermissions()).thenReturn(dummyMap);
+    when(permissionConfigProvider.getRequiredLevel(anyString())).thenReturn(0);
+
+    // ★ PermissionChecker の挙動を明示的に許可
+    when(permissionChecker.checkPermission(any(), anyString(), anyString())).thenReturn(true);
+    when(permissionChecker.checkPermission(any(), anyString(), anyString(), anyInt())).thenReturn(true);
+}
+
+
+    static class DummyEndpointPermissions implements PermissionConfigProvider.EndpointPermissions {
+        @Override public List<String> getPermissions() { return List.of("ANY"); }
+        @Override public void setPermissions(List<String> permissions) {}
+        @Override public Map<String, Integer> getCustom() { return Map.of(); }
+        @Override public void setCustom(Map<String, Integer> custom) {}
+        @Override public int getRequiredLevelForCustomRole(String role) { return 0; }
+        @Override public int getRequiredLevel() { return 0; }
+        @Override public int getDefaultLevel() { return 0; }
+    }
+
+    @Test
+    void shouldReturnBase64WhenExportExcelFile() throws Exception {
+        Long reportId = 1L;
+        String fakeBase64 = "YmFzZTY0";
+        when(reportService.generateReportBase64(reportId)).thenReturn(fakeBase64);
+
+        mockMvc.perform(post("/report/export/excel/file")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ReportJobRequest() {{
+                            setReportId(reportId);
+                        }})))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").value(fakeBase64));
+    }
+
+    @Test
+    void shouldReturnJobIdWhenStartJob() throws Exception {
+        mockMvc.perform(post("/report/job")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ReportJobRequest() {{
+                            setReportId(123L);
+                            setExportTarget("excelUrl");
+                        }})))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenInvalidType() throws Exception {
+        mockMvc.perform(post("/report/export/csv/file")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ReportJobRequest() {{
+                            setReportId(1L);
+                        }})))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("E4002"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenNullReportId() throws Exception {
+        mockMvc.perform(post("/report/export/excel/file")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ReportJobRequest())))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenNullResultFromService() throws Exception {
+        Long reportId = 1L;
+        when(reportService.generateReportBase64(reportId)).thenReturn(null);
+
+        mockMvc.perform(post("/report/export/excel/file")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ReportJobRequest() {{
+                            setReportId(reportId);
+                        }})))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("E4001"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenMissingParamsInJob() throws Exception {
+        mockMvc.perform(post("/report/job")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ReportJobRequest())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("E4003"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenInvalidExportTarget() throws Exception {
+        mockMvc.perform(post("/report/job")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ReportJobRequest() {{
+                            setReportId(1L);
+                            setExportTarget("invalidTarget");
+                        }})))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("E4002"));
+    }
+
+    @Test
+    void shouldReturnReportListWhenExists() throws Exception {
+        when(reportService.getAllReports()).thenReturn(List.of(new ReportMaster()));
+
+        mockMvc.perform(get("/report/list"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenReportListIsEmpty() throws Exception {
+        when(reportService.getAllReports()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/report/list"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnPollingStatusWhenJobExists() throws Exception {
+        JobStatusCache.updateStatus("testJob", "COMPLETED", "https://dummy.url");
+
+        mockMvc.perform(get("/report/polling/testJob"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("COMPLETED"))
+                .andExpect(jsonPath("$.data.url").value("https://dummy.url"));
+    }
+
+    @Test
+    void shouldReturnNonePollingStatusWhenJobMissing() throws Exception {
+        mockMvc.perform(get("/report/polling/unknownJob"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("NONE"))
+                .andExpect(jsonPath("$.data.url").value(""));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenExportFails() throws Exception {
+        Long reportId = 1L;
+        when(reportService.generateReportBase64(reportId)).thenReturn(null);
+
+        mockMvc.perform(post("/report/export/excel/file")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ReportJobRequest() {{
+                            setReportId(reportId);
+                        }})))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("E4001"));
+    }
+}

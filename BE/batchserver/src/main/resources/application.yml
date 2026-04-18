@@ -1,0 +1,66 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: batchserver
+  profiles:
+    active: local
+
+storage:
+  type: s3
+  s3:
+    endpoint: https://s3.ap-northeast-1.amazonaws.com
+    bucket: crj-dev-web-s3
+    input-dir: input
+    archive-dir: archive
+    error-dir: error
+  # type: local
+  # endpoint: http://57.182.223.75:9000
+  # access-key: minio
+  # secret-key: minio1234
+  # bucket: file-import
+  # input-dir: input
+  # archive-dir: archive
+  # error-dir: error
+
+  datasource:
+    url: jdbc:mysql://prd-db-host:3306/common
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: prd_user
+    password: ${DB_PASSWORD_PROD}
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:/schema-mysql.sql
+      data-locations: classpath:/data-mysql.sql
+
+  batch:
+    initialize-schema: never
+  flyway:
+    enabled: false
+
+logging:
+  level:
+    root: INFO
+  appender: NONE
+  file:
+    path: /var/logs/${spring.application.name}
+
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_PROD}
+mail:
+  from: noreply@example.com
+app:
+  login:
+    url: http://localhost:3000/login
+jwt:
+  secret: 9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==
+  expiration: 86400000
+
+template:
+  schema:
+    base-path: classpath:config/templates

@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: servercommon
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:/fileTable.sql
+
+logging:
+  level:
+    com.example.servercommon: INFO
+    org.apache.http.wire: OFF
+    org.apache.http.headers: INFO

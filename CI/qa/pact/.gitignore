@@ -1,0 +1,5 @@
+node_modules/
+contracts/*.json
+!contracts/.gitkeep
+contracts-samples/*.json
+!contracts-samples/.gitkeep

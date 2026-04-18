@@ -1,0 +1,34 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+  application:
+    name: syncconnector
+
+server:
+  port: ${SERVER_PORT:8084}
+
+sync:
+  signature:
+    enabled: ${SYNC_SIGNATURE_ENABLED:true}
+    secret: ${SYNC_SIGNATURE_SECRET:docker-sync-secret}
+    target-paths:
+      - /api/sample/receive
+    signature-header: ${SYNC_SIGNATURE_HEADER:X-Signature}
+  signed-rest:
+    secret-key: ${SYNC_SIGNED_REST_SECRET_KEY:docker-sync-secret}
+    signature-header: ${SYNC_SIGNATURE_HEADER:X-Signature}
+
+management:
+  tracing:
+    enabled: ${OTEL_TRACING_ENABLED:true}
+    sampling:
+      probability: ${OTEL_TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4318/v1/traces}}
+    metrics:
+      export:
+        enabled: ${OTEL_METRICS_EXPORT_ENABLED:true}
+        url: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4318/v1/metrics}}
+        step: ${OTEL_METRICS_EXPORT_STEP:30s}

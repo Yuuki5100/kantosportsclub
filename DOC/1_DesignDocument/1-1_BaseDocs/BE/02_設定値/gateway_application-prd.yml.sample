@@ -1,0 +1,14 @@
+﻿spring:
+  config:
+    activate:
+      on-profile: prd
+  redis:
+    host: ${REDIS_HOST_PRD}
+    port: ${REDIS_PORT_PRD}
+
+jwt:
+  secret: ${JWT_SECRET_PRD}
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_PRD}

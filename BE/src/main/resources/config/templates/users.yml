@@ -1,0 +1,20 @@
+# src/main/resources/config/templates/users.yml
+templateId: users
+version: v1
+entity: com.example.model.User
+repository: userRepository
+columns:
+  - name: username
+    field: username
+    required: true
+  - name: password
+    field: password
+    required: true
+  - name: email
+    field: email
+    required: true
+    pattern: ".+@.+"
+  - name: role
+    field: role
+    required: true
+    enumValues: [USER, ADMIN]

@@ -1,0 +1,14 @@
+{
+  "name": "pact-pilot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pact consumer pilot for gateway contract verification",
+  "scripts": {
+    "pact:consumer": "node generate-pact.js",
+    "pact:consumer:samples": "node generate-public-endpoint-samples.js",
+    "pact:consumer:samples:check": "node check-public-endpoint-samples.js"
+  },
+  "dependencies": {
+    "@pact-foundation/pact": "^13.2.0"
+  }
+}

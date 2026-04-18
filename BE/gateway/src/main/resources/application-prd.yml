@@ -1,0 +1,30 @@
+spring:
+  config:
+    activate:
+      on-profile: prd
+  redis:
+    host: ${REDIS_HOST:prd-redis-host}
+    port: ${REDIS_PORT:6379}
+
+jwt:
+  secret: ${JWT_SECRET_PROD}
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_PROD}
+
+gateway:
+  ip-whitelist: 192.168.1.1, 10.0.0.0/24
+  public-paths:
+    - /login
+    - /logout
+    - /public
+    - /actuator
+    - /health
+    - /api/app/ratelimit-test
+    - /api/auth/login
+    - /api/auth/refresh
+
+# cors:
+#   allowed-origins:
+#     - https://your-spa.example.com

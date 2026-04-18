@@ -1,0 +1,19 @@
+families:
+  modern:
+    description: Current repository baseline stack (frontend/backend/gateway/batch + test tooling)
+    compose:
+      base: docker/compose.base.yml
+      family: docker/compose.family.modern.yml
+    default_mode: multi-container
+  csharp:
+    description: C# family template (.NET 8 SDK on Linux container)
+    compose:
+      base: docker/compose.base.yml
+      family: docker/compose.family.csharp.yml
+    default_mode: up
+  java-legacy:
+    description: Java legacy family template (Apache + Tomcat split)
+    compose:
+      base: docker/compose.base.yml
+      family: docker/compose.family.java-legacy.yml
+    default_mode: up

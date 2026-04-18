@@ -1,0 +1,32 @@
+﻿# CI/qa/k6/.gitlab-ci-k6.yml
+.k6-base:
+  image:
+    name: grafana/k6:latest
+    entrypoint: [""]      # 👈 これで /bin/sh が使われる。k6 はシェルから実行。
+  tags: [docker-runner]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# CI/qa/k6/.gitlab-ci-k6.yml
+.k6-run:
+  stage: collect
+  image: grafana/k6:latest
+  needs: []
+  tags: [docker-runner]
+  script:
+    - echo "▶ k6 version: $(k6 version)"
+    - test -f "$K6_SCRIPT_PATH" || { echo "k6 script not found: $K6_SCRIPT_PATH"; ls -al $(dirname "$K6_SCRIPT_PATH") || true; exit 1; }
+    - |
+      k6 run \
+        --vus "${K6_VUS:-10}" \
+        --duration "${K6_DURATION:-30s}" \
+        --summary-export "k6-summary-${OUT_PREFIX}.json" \
+        --out json="k6-results-${OUT_PREFIX}.json" \
+        "$K6_SCRIPT_PATH"
+  artifacts:
+    when: always
+    paths:
+      - k6-results-*.json
+      - k6-summary-*.json
+    expire_in: 2 weeks
+  allow_failure: true

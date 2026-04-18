@@ -1,0 +1,17 @@
+reportId: user_report
+mappings:
+  - field: username
+    entity: com.example.servercommon.model.User
+    repository: userRepository
+
+  - field: email
+    entity: com.example.servercommon.model.User
+    repository: userRepository
+
+  - field: role
+    entity: com.example.servercommon.model.User
+    repository: userRepository
+
+  - field: phone_number
+    entity: com.example.servercommon.model.UserDetail
+    repository: userDetailRepository

@@ -1,0 +1,115 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: appserver
+  jackson:
+    time-zone: Asia/Tokyo
+  codec:
+    max-in-memory-size: 10MB
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-init-sql: SET time_zone = '+00:00'
+
+security:
+  rsa-public-key:
+    modulus-base64: ${RSA_PUBLIC_MODULUS_BASE64}
+    exponent-base64: ${RSA_PUBLIC_EXPONENT_BASE64}
+  auth:
+    mode: jwt
+  authorization:
+    legacy-interceptor-enabled: false
+  permission:
+    legacy-endpoint-config-enabled: false
+    cache-refresh-fixed-delay-ms: 600000
+    method-security-allow-if-unmapped: true
+    method-security-default-method: GET
+
+auth:
+  type: internal
+  gbiz:
+    auth-url: ${GBIZ_AUTH_URL}
+    token-url: ${GBIZ_TOKEN_URL}
+  internal:
+    auth-url: ${INTERNAL_AUTH_URL}
+    token-url: ${INTERNAL_TOKEN_URL}
+
+jwt:
+  mode: access-refresh
+  access:
+    expiration-ms: 5400000
+    buffer-ms: 2700000
+  refresh:
+    expiration-ms: 28800000
+  expiration: 86400000
+
+mail:
+  host: email-smtp.ap-northeast-1.amazonaws.com
+  port: 587
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+
+template:
+  schema:
+    base-path: classpath:config/templates
+
+report:
+  cache:
+    enabled: false
+
+system:
+  setting:
+    cache:
+      enabled: true
+      ttl-seconds: 300
+      max-entries: 512
+
+async:
+  job:
+    status-ttl-minutes: 60
+    cleanup-fixed-delay-ms: 600000
+    cleanup-batch-size: 100
+    artifact-prefix: async-jobs
+
+sync:
+  signature:
+    secret: ${SYNC_SECRET_KEY}
+    secretKey: ${SYNC_SECRET_KEY}
+    signature-header: X-Signature
+    target-paths:
+      - /api/inventory/reservations/sync
+  signed-rest:
+    secret-key: ${SYNC_SECRET_KEY}
+    signature-header: X-Signature
+  remote:
+    base-url: ${SYNC_REMOTE_BASE_URL}
+    inventory:
+      reservation-update-path: /api/inventory/reservations/sync
+    notice:
+      notice-changed-path: /api/notice/sync
+  outbox:
+    use: false
+    max-retry: 10
+    fixed-delay-ms: 60000
+    dispatch-limit: 100
+
+notify:
+  queue:
+    scan:
+      limit: 100
+      fixed-delay-ms: 10000000
+      max-retry: 5
+      backoff-initial-delay-ms: 1000
+      backoff-multiplier: 2.0
+      backoff-max-delay-ms: 60000

@@ -1,0 +1,121 @@
+package com.example.appserver.service;
+
+import com.example.appserver.cache.MailTemplateCache;
+import com.example.servercommon.entity.MailTemplateId;
+import com.example.servercommon.model.MailTemplateRequest;
+import com.example.servercommon.model.MailTemplateSettingModel;
+import com.example.servercommon.repository.MailTemplateSettingRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class MailTemplateSettingServiceTest {
+
+    @Mock
+    private MailTemplateSettingRepository mailTemplateSettingRepository;
+
+    @Mock
+    private MailTemplateCache mailTemplateCache;
+
+    @InjectMocks
+    private MailTemplateSettingService service;
+
+    private MailTemplateSettingModel mockModel;
+    private MailTemplateRequest mockRequest;
+
+    @BeforeEach
+    void setUp() {
+        mockModel = new MailTemplateSettingModel();
+        mockModel.setTemplateName("welcome");
+        mockModel.setLocale("ja");
+        mockModel.setSubject("Hello");
+        mockModel.setBody("Welcome!");
+
+        mockRequest = new MailTemplateRequest();
+        mockRequest.setLocale("ja");
+        mockRequest.setSubject("Updated Subject");
+        mockRequest.setBody("Updated Body");
+    }
+
+    @Test
+    void testFindAll_ReturnsCacheData() {
+        List<MailTemplateSettingModel> cachedList = List.of(mockModel);
+        when(mailTemplateCache.getCache()).thenReturn(cachedList);
+
+        List<MailTemplateSettingModel> result = service.findAll();
+
+        assertThat(result).hasSize(1).contains(mockModel);
+        verify(mailTemplateCache).getCache();
+    }
+
+    @Test
+    void testSaveOrUpdate_Success() {
+        when(mailTemplateSettingRepository.save(mockModel)).thenReturn(mockModel);
+
+        MailTemplateSettingModel result = service.saveOrUpdate(mockModel);
+
+        assertThat(result).isEqualTo(mockModel);
+        verify(mailTemplateSettingRepository).save(mockModel);
+        verifyNoInteractions(mailTemplateCache);
+    }
+
+    @Test
+    void testUpdateTemplate_WhenRecordExists() {
+        MailTemplateId id = new MailTemplateId("welcome", "ja");
+        when(mailTemplateSettingRepository.findById(id)).thenReturn(Optional.of(mockModel));
+        when(mailTemplateSettingRepository.save(any())).thenReturn(mockModel);
+
+        Optional<MailTemplateSettingModel> result = service.updateTemplate("welcome", mockRequest);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getSubject()).isEqualTo("Updated Subject");
+        assertThat(result.get().getBody()).isEqualTo("Updated Body");
+
+        verify(mailTemplateSettingRepository).findById(id);
+        verify(mailTemplateSettingRepository).save(mockModel);
+        verify(mailTemplateCache).updateCache();
+    }
+
+    @Test
+    void testUpdateTemplate_WhenRecordNotFound() {
+        MailTemplateId id = new MailTemplateId("missing", "ja");
+        when(mailTemplateSettingRepository.findById(id)).thenReturn(Optional.empty());
+
+        Optional<MailTemplateSettingModel> result = service.updateTemplate("missing", mockRequest);
+
+        assertThat(result).isEmpty();
+        verify(mailTemplateSettingRepository).findById(id);
+        verify(mailTemplateSettingRepository, never()).save(any());
+        verify(mailTemplateCache, never()).updateCache();
+    }
+
+    @Test
+    void testRenderTemplate_ReplacesVariablesCorrectly() {
+        String template = "Hello {{ name }}, your code is {{ code }}.";
+        Map<String, String> variables = new HashMap<>();
+        variables.put("name", "Yuki");
+        variables.put("code", "1234");
+
+        String result = service.renderTemplate(template, variables);
+
+        assertThat(result).isEqualTo("Hello Yuki, your code is 1234.");
+    }
+
+    @Test
+    void testRenderTemplate_NullOrMissingValues() {
+        assertThat(service.renderTemplate(null, Map.of())).isNull();
+        assertThat(service.renderTemplate("Hello", null)).isEqualTo("Hello");
+
+        String template = "Hello {{ missing }}";
+        String result = service.renderTemplate(template, Map.of());
+        assertThat(result).isEqualTo("Hello ");
+    }
+}

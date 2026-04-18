@@ -1,0 +1,26 @@
+skipRule:
+  class: com.example.servercommon.validationtemplate.rule.SkipIfEmptyField
+  param: itemCd
+
+columns:
+  - name: 品目CD
+    field: itemCd
+    entity: "com.example.servercommon.entity.MasterItem"
+    repository: masterItemRepository
+
+  - name: 品目名
+    field: itemName
+    entity: "com.example.servercommon.entity.MasterItem"
+    repository: masterItemRepository
+
+  - name: 運用開始日
+    field: startOfApplicationDate
+    required: true
+    entity: "com.example.servercommon.entity.MasterItem"
+    repository: masterItemRepository
+
+  - name: 取引先CD
+    field: clientCd
+    entity: "com.example.servercommon.entity.MasterItem"
+    repository: masterItemRepository
+

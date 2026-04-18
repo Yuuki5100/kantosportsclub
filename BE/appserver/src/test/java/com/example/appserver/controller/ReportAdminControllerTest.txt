@@ -1,0 +1,141 @@
+package com.example.appserver.controller;
+
+import com.example.appserver.config.MockPermissionCheckerConfig;
+import com.example.appserver.testutil.TestPermissionConfig;
+import com.example.servercommon.config.ReportCacheProperties;
+import com.example.servercommon.config.ReportCommonConfig;
+import com.example.servercommon.helper.ReportDefinitionLoader;
+import com.example.servercommon.model.ReportMaster;
+import com.example.servercommon.repository.ReportMasterRepository;
+import com.example.servercommon.responseModel.ApiResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+@Import({TestPermissionConfig.class, MockPermissionCheckerConfig.class})
+@Disabled("Controller統合テストは一時スキップ")
+class ReportAdminControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ReportDefinitionLoader reportDefinitionLoader;
+
+    @MockBean
+    private ReportMasterRepository reportMasterRepository;
+
+    @MockBean
+    private com.example.appserver.permission.PermissionConfigProvider permissionConfigProvider;
+
+    @BeforeEach
+    void setup() {
+        // `/admin/reports/cache/reload` を許可
+        Map<String, com.example.appserver.permission.PermissionConfigProvider.EndpointPermissions> dummyMap = Map.of(
+                "POST /admin/reports/cache/reload", new DummyEndpointPermissions());
+
+        when(permissionConfigProvider.getEndpointPermissions()).thenReturn(dummyMap);
+        when(permissionConfigProvider.getRequiredLevel(anyString())).thenReturn(0);
+    }
+
+    static class DummyEndpointPermissions
+            implements com.example.appserver.permission.PermissionConfigProvider.EndpointPermissions {
+        @Override
+        public List<String> getPermissions() {
+            return List.of("ADMIN");
+        }
+
+        @Override
+        public void setPermissions(List<String> permissions) {
+        }
+
+        @Override
+        public Map<String, Integer> getCustom() {
+            return Map.of();
+        }
+
+        @Override
+        public void setCustom(Map<String, Integer> custom) {
+        }
+
+        @Override
+        public int getRequiredLevelForCustomRole(String role) {
+            return 0;
+        }
+
+        @Override
+        public int getRequiredLevel() {
+            return 0;
+        }
+
+        @Override
+        public int getDefaultLevel() {
+            return 0;
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = { "ADMIN" })
+    void キャッシュ無効化設定時は即レスポンスされる() throws Exception {
+        when(reportDefinitionLoader.isCacheEnabled()).thenReturn(false);
+
+        mockMvc.perform(post("/admin/reports/cache/reload"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").value("キャッシュは無効化されています。"));
+
+        verify(reportMasterRepository, never()).findAll();
+        verify(reportDefinitionLoader, never()).reload(anyLong());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = { "ADMIN" })
+    void キャッシュ有効時はすべての定義がリロードされる() throws Exception {
+        when(reportDefinitionLoader.isCacheEnabled()).thenReturn(true);
+        when(reportMasterRepository.findAll()).thenReturn(List.of(
+                new ReportMaster() {
+                    {
+                        setReportId(1L);
+                    }
+                },
+                new ReportMaster() {
+                    {
+                        setReportId(2L);
+                    }
+                }));
+
+        mockMvc.perform(post("/admin/reports/cache/reload"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").value("全帳票キャッシュのリロードが完了しました。"));
+
+        verify(reportDefinitionLoader).reload(1L);
+        verify(reportDefinitionLoader).reload(2L);
+    }
+}

@@ -1,0 +1,37 @@
+FROM node:24.14.0-bookworm-slim AS builder
+
+WORKDIR /app
+
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    TZ=Asia/Tokyo \
+    NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_OUTPUT_MODE=export
+
+ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:8081
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+
+COPY FE/spa-next/my-next-app/package*.json /app/
+RUN npm ci
+
+COPY FE/spa-next/my-next-app /app
+RUN npm run build -- --no-lint
+
+FROM alpine:3.20 AS exporter
+WORKDIR /export
+RUN apk add --no-cache unzip
+COPY --from=builder /app/out /out
+CMD ["sh", "-c", "cp -R /out/. /export"]
+
+FROM nginx:1.27-alpine
+ENV TZ=Asia/Tokyo
+RUN apk add --no-cache unzip
+COPY frontend/nginx-static.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/out /usr/share/nginx/html
+
+EXPOSE 80
+
+HEALTHCHECK --interval=10s --timeout=5s --retries=30 --start-period=10s \
+  CMD wget -q -O /dev/null http://127.0.0.1/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

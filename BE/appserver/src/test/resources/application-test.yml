@@ -1,0 +1,103 @@
+# src/test/resources/application-test.yml
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: never
+
+  flyway:
+    enabled: true
+    locations: classpath:/db/migration,classpath:/servercommon/db/migration
+
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+# 他はそのままでOK
+
+
+jwt:
+  secret: 9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==
+  expiration: 86400000
+
+aws:
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID}
+    secret-key: ${AWS_SECRET_ACCESS_KEY}
+
+teams:
+  webhook:
+    url: https://your.teams.webhook.url
+
+logging:
+  level:
+    root: WARN
+    org.springframework: WARN
+    org.springframework.test.web.servlet: DEBUG
+    com.example.appserver.config.PermissionConfigProviderImpl: DEBUG
+    com.example.appserver.security.PermissionChecker: DEBUG
+    com.example: DEBUG  # ← 自分のコードだけ DEBUG にしたい場合
+  appender: PLAIN_CONSOLE
+  file:
+    path: logs/${spring.application.name}
+mail:
+  from: no-reply@example.com
+app:
+  login:
+    url: https://your-app-domain/login
+report:
+  cache:
+    enabled: true
+
+async:
+  job:
+    status-ttl-minutes: 5
+    cleanup-fixed-delay-ms: 1000
+    cleanup-batch-size: 20
+    artifact-prefix: async-jobs-test
+
+file:
+  allowed-extensions:
+    - pdf
+    - xlsx
+
+sync:
+  signature:
+    secret: test-sync-secret
+    secretKey: test-sync-secret
+    signature-header: X-Signature
+    target-paths:
+      - /api/inventory/reservations/sync
+  signed-rest:
+    secret-key: test-sync-secret
+    signature-header: X-Signature
+  remote:
+    base-url: http://localhost:18080
+    notice:
+      notice-changed-path: /api/notice/sync
+  outbox:
+    use: true
+    max-retry: 3
+    fixed-delay-ms: 1000
+    dispatch-limit: 10
+
+notify:
+  queue:
+    scan:
+      limit: 20
+      fixed-delay-ms: 1000
+      max-retry: 3
+      backoff-initial-delay-ms: 100
+      backoff-multiplier: 2.0
+      backoff-max-delay-ms: 5000

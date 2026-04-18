@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+  <!-- ====== マスキング用コンバータ（※要: ch.qos.logback.classic.pattern.ClassicConverter 継承） ====== -->
+  <conversionRule conversionWord="mask" converterClass="com.example.servercommon.logging.MaskingConverter"/>
+
+  <!-- ====== Spring Boot properties 取得 ====== -->
+  <springProperty name="LOG_LEVEL" source="logging.level.root" defaultValue="INFO"/>
+  <springProperty name="APP_NAME" source="spring.application.name" defaultValue="appserver"/>
+  <springProperty name="LOG_APPENDER" source="logging.appender" defaultValue="PLAIN_CONSOLE"/>
+  <property name="LOG_PATH" value="${logging.file.path:logs/${APP_NAME:-default}}"/>
+
+  <!-- ====== Console（人間向け） ====== -->
+  <appender name="PLAIN_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - traceId=%X{traceId} %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- ====== Console（構造化ログ） ====== -->
+  <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <timeZone>Asia/Tokyo</timeZone>
+      <customFields>{"app":"${APP_NAME}"}</customFields>
+    </encoder>
+  </appender>
+
+  <!-- ====== ファイル出力（プレーン） ====== -->
+  <appender name="PLAIN_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/${APP_NAME}.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - traceId=%X{traceId} %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- ====== ファイル出力（JSON構造化） ====== -->
+  <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/${APP_NAME}.json</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.json</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <timeZone>Asia/Tokyo</timeZone>
+      <customFields>{"app":"${APP_NAME}"}</customFields>
+    </encoder>
+  </appender>
+
+  <!-- ====== ログ出力制御（root） ====== -->
+  <root level="${LOG_LEVEL}">
+    <appender-ref ref="${LOG_APPENDER}" />
+    <!-- <appender-ref ref="PLAIN_FILE" /> -->
+    <!-- <appender-ref ref="JSON_FILE" /> -->
+  </root>
+
+</configuration>

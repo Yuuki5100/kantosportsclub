@@ -1,0 +1,53 @@
+package com.example.appserver.cache;
+
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import com.example.servercommon.model.ErrorCodeSettingModel;
+import com.example.servercommon.repository.ErrorCodeSettingRepository;
+
+class ErrorCodeCacheTest {
+
+    private ErrorCodeSettingRepository errorCodeSettingRepository;
+    private ErrorCodeCache errorCodeCache;
+
+    @BeforeEach
+    void setUp() {
+        errorCodeSettingRepository = Mockito.mock(ErrorCodeSettingRepository.class);
+        errorCodeCache = Mockito.spy(new ErrorCodeCache(errorCodeSettingRepository));
+    }
+
+    @Test
+    void testUpdateCache_shouldReloadCacheWithDataFromRepository() {
+        // 準備
+        List<ErrorCodeSettingModel> mockList = List.of(new ErrorCodeSettingModel());
+        when(errorCodeSettingRepository.findAll()).thenReturn(mockList);
+
+        // 実行
+        errorCodeCache.updateCache();
+
+        // 検証
+        verify(errorCodeSettingRepository).findAll();
+        verify(errorCodeCache).reloadCache("errorCodes", mockList);
+    }
+
+    @Test
+    void testGetCache_shouldReturnCachedErrorCodes() {
+        // 準備
+        List<ErrorCodeSettingModel> mockList = List.of(new ErrorCodeSettingModel());
+        doReturn(mockList).when(errorCodeCache).getCache("errorCodes");
+
+        // 実行
+        List<ErrorCodeSettingModel> result = errorCodeCache.getCache();
+
+        // 検証
+        verify(errorCodeCache).getCache("errorCodes");
+        org.junit.jupiter.api.Assertions.assertEquals(mockList, result);
+    }
+}
+

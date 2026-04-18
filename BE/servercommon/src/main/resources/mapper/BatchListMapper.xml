@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.servercommon.mapper.BatchListMapper">
+  <resultMap id="batchResult" type="com.example.servercommon.dto.BaseListDto">
+  <result property="baseCd" column="base_cd" jdbcType="VARCHAR" />
+  <result property="baseName" column="base_name" jdbcType="VARCHAR" />
+  <result property="batchName" column="batch_name" jdbcType="VARCHAR" />
+  <result property="startDateAndTime" column="start_time" jdbcType="TIMESTAMP" />
+  <result property="endDateAndTime" column="end_time" jdbcType="TIMESTAMP" />
+  <result property="statusName" column="status" jdbcType="VARCHAR" />
+  <result property="errorMessege" column="errorMessage" jdbcType="VARCHAR" />
+</resultMap>
+  <select id="getBatchList" resultMap="batchResult">
+    SELECT jeb.JOB_EXECUTION_ID,
+    mb.base_cd,
+    mb.base_name,
+    bji.JOB_NAME as batch_name,
+    bje.START_TIME as start_time,
+    bje.END_TIME as end_time,
+    bje.STATUS as status,
+    COALESCE(bjed.error_message, bje.exit_message, bje.exit_code) AS errorMessage
+FROM
+    job_execution_base jeb
+INNER JOIN
+    BATCH_JOB_EXECUTION bje
+    ON jeb.job_execution_id = bje.JOB_EXECUTION_ID
+INNER JOIN BATCH_JOB_INSTANCE bji
+    ON bje.job_instance_id = bji.job_instance_id
+LEFT OUTER JOIN batch_job_import_error_deital bjed
+    ON bje.job_execution_id = bjed.job_execution_id
+INNER JOIN master_base mb
+    ON jeb.base_cd = mb.base_cd
+INNER JOIN registration_step RS
+    ON mb.id = RS.identification_id
+    AND RS.registration_status IN ('5', '6', '7')
+WHERE
+    1 = 0
+    <trim>
+        <if test="param.base != null and param.base != '' and param.baseExtMatFlag">
+            OR mb.base_cd = #{param.base}
+        </if>
+        <if test="param.base != null and param.base != '' and !param.baseExtMatFlag">
+            OR (
+                mb.base_cd LIKE CONCAT('%', #{param.base}, '%')
+                OR mb.base_name LIKE CONCAT('%', #{param.base}, '%')
+            )
+        </if>
+        <if test="param.batch != null and param.batch != '' and param.batchExtMatFlag">
+            OR bji.JOB_NAME = #{param.batch}
+        </if>
+        <if test="param.batch != null and param.batch != '' and !param.batchExtMatFlag">
+            OR bji.JOB_NAME LIKE CONCAT('%', #{param.batch}, '%')
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            OR DATE(bje.START_TIME) = #{param.startDate}
+        </if>
+    </trim>
+ORDER BY
+<choose>
+      <when test="param.sortKey == null or param.sortKey == ''">
+        mb.base_cd ASC,
+        bje.start_time DESC
+      </when>
+      <when test="param.sortKey == 'startDate'">
+        bje.start_time ${param.sortOrder}
+      </when>
+      <when test="param.sortKey == 'endDate'">
+        bje.end_time ${param.sortOrder}
+      </when>
+      <when test="param.sortKey == 'baseCd'">
+        mb.base_cd ${param.sortOrder}
+      </when>
+      <when test="param.sortKey == 'baseName'">
+        mb.base_name ${param.sortOrder}
+      </when>
+      <when test="param.sortKey == 'batchName'">
+        bji.JOB_NAME ${param.sortOrder}
+      </when>
+      <otherwise>
+        mb.base_cd ASC,
+        bje.start_time DESC
+      </otherwise>
+    </choose>
+</select>
+</mapper>

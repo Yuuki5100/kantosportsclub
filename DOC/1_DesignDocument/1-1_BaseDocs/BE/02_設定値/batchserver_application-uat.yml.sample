@@ -1,0 +1,21 @@
+﻿spring:
+  config:
+    activate:
+      on-profile: uat
+  datasource:
+    url: ${BATCH_DB_URL_UAT}
+    username: ${BATCH_DB_USER_UAT}
+    password: ${BATCH_DB_PASSWORD_UAT}
+  batch:
+    initialize-schema: never
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_UAT}
+
+logging:
+  appender: PLAIN_CONSOLE
+
+report:
+  cache:
+    enabled: true

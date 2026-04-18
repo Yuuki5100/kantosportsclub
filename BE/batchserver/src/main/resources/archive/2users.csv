@@ -1,0 +1,4 @@
+username,email,password,role
+taro,taro@example.com,password123,VIEWER
+hanako,hanako@example.com,securepass456,VIEWER
+john,john@example.com,abc123xyz,VIEWER

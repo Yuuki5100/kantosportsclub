@@ -1,0 +1,40 @@
+# =======================================
+# Text files: use LF line endings (Unix)
+# =======================================
+*.ts      text eol=lf
+*.tsx     text eol=lf
+*.js      text eol=lf
+*.jsx     text eol=lf
+*.java    text eol=lf
+*.json    text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.md      text eol=lf
+*.scss    text eol=lf
+*.css     text eol=lf
+*.html    text eol=lf
+*.env     text eol=lf
+*.properties text eol=lf
+
+# 言語ファイル（多言語対応）
+*.lang.ts text eol=lf
+*.lang.js text eol=lf
+
+# ====================================
+# Lock files: support better merging
+# ====================================
+*.lock    merge=union
+package-lock.json merge=union
+pnpm-lock.yaml merge=union
+yarn.lock merge=union
+
+# =============================
+# Default fallback
+# =============================
+* text=auto eol=lf
+
+
+SQL/*.sql text working-tree-encoding=UTF-8
+SQL/*/*.sql text working-tree-encoding=UTF-8
+SQL/*/*/*.sql text working-tree-encoding=UTF-8
+SQL/*/*/*/*.sql text working-tree-encoding=UTF-8

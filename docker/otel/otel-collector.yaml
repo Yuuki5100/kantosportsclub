@@ -1,0 +1,61 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - http://localhost:3000
+            - http://127.0.0.1:3000
+            - http://frontend:3000
+          allowed_headers:
+            - "*"
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: mysql
+          static_configs:
+            - targets:
+                - mysqld-exporter:9104
+        - job_name: redis
+          static_configs:
+            - targets:
+                - redis-exporter:9121
+        - job_name: minio
+          metrics_path: /minio/v2/metrics/cluster
+          static_configs:
+            - targets:
+                - minio:9000
+
+processors:
+  batch: {}
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:9464"
+  debug: {}
+  influxdb:
+    endpoint: http://influxdb:8086
+    v1_compatibility:
+      enabled: true
+      db: ci_metrics
+      username: admin
+      password: adminpass
+    metrics_schema: telegraf-prometheus-v1
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [batch]
+      exporters: [influxdb, prometheus, debug]

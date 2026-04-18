@@ -1,0 +1,17 @@
+﻿server:
+  port: 8083
+
+spring:
+  application:
+    name: batchserver
+
+template:
+  schema:
+    base-path: classpath:config/templates
+
+report:
+  cache:
+    enabled: false
+
+mail:
+  from: no-reply@example.com

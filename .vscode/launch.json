@@ -1,0 +1,93 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Edge",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/FE/spa-next/my-next-app",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "sourceMaps": true,
+      "runtimeExecutable": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+      "port": 9222,
+      "runtimeArgs": [
+        "--remote-debugging-port=9222"
+      ],
+      "trace": true,
+      "serverReadyAction": {
+        "pattern": "✓ Ready in .*s",
+        "uriFormat": "http://localhost:%s",
+        "action": "debugWithEdge"
+      }
+    },
+    // {
+    //   "name": "Debug Spring Boot App",
+    //   "type": "java",
+    //   "request": "attach",
+    //   "hostName": "localhost",
+    //   "port": 5005,
+    //   "projectName": "appserver"
+    // },
+    {
+      "name": "Launch Spring Boot App",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "com.example.appserver.AppServerApplication",
+      "projectName": "appserver",
+    },
+    {
+      "name": "Launch Spring Boot App（Batch）",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "com.example.batchserver.BatchServerApplication",
+      "projectName": "batchserver",
+      "vmArgs": "-Dspring.output.ansi.enabled=ALWAYS", // ログカラー表示
+    },
+    {
+      "type": "java",
+      "name": "Debug GatewayApplication",
+      "request": "launch",
+      "mainClass": "apigateway.Gateway",
+      "projectName": "gateway",  // ← VSCodeのプロジェクト名に合わせて調整
+      "vmArgs": "-Dspring.output.ansi.enabled=ALWAYS", // ← プロファイル指定があれば
+      // "cwd": "${workspaceFolder}/gateway",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "localhost に対して Chrome を起動する",
+      "url": "http://localhost:3080",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "node-terminal",
+      "request": "launch",
+      "name": "Run npm dev in my-next-app",
+      "command": "cmd.exe /c \"npm run dev\"",
+      "cwd": "${workspaceFolder}/fe/spa-next/my-next-app"
+    },
+    {
+      "type": "node-terminal",
+      "request": "launch",
+      "name": "Run Storybook",
+      "command": "npm run storybook",
+      "cwd": "${workspaceFolder}/FE/spa-next/my-next-app"
+    },
+    {
+      "type": "node-terminal",
+      "request": "launch",
+      "name": "Build Storybook",
+      "command": "npm run build-storybook",
+      "cwd": "${workspaceFolder}/FE/spa-next/my-next-app"
+    },
+
+  ],
+  "compounds": [
+    {
+      "name": "Debug FE and BE",
+      "configurations": ["Debug Edge", "Debug Spring Boot App"]
+    }
+  ]
+}

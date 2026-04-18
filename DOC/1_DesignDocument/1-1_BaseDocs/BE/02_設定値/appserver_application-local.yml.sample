@@ -1,0 +1,61 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${APP_DB_URL_LOCAL}
+    username: ${APP_DB_USER_LOCAL}
+    password: ${APP_DB_PASSWORD_LOCAL}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+security:
+  authorization:
+    legacy-interceptor-enabled: false
+  permission:
+    legacy-endpoint-config-enabled: false
+    cache-refresh-fixed-delay-ms: 600000
+    method-security-allow-if-unmapped: true
+    method-security-default-method: GET
+
+auth:
+  cookie:
+    secure: false
+    sameSite: Lax
+
+logging:
+  level:
+    root: DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    disable-swagger-default-url: true
+
+app:
+  frontend-url: http://localhost:3000
+
+system:
+  setting:
+    cache:
+      enabled: true
+      ttl-seconds: 300
+      max-entries: 512
+
+notify:
+  queue:
+    scan:
+      limit: 100
+      fixed-delay-ms: 10000000
+      max-retry: 5
+      backoff-initial-delay-ms: 1000
+      backoff-multiplier: 2.0
+      backoff-max-delay-ms: 60000

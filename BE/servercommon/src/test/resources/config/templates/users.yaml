@@ -1,0 +1,70 @@
+templateId: users
+version: v1
+
+columns:
+  - field: id
+    name: id
+    required: true
+    type: long
+    repository: userRepository
+    entity: com.example.servercommon.model.User
+
+  - field: username
+    name: username
+    required: true
+    type: string
+    repository: userRepository
+    entity: com.example.servercommon.model.User
+
+  - field: password
+    name: password
+    required: true
+    type: string
+    repository: userRepository
+    entity: com.example.servercommon.model.User
+
+  - field: email
+    name: email
+    required: true
+    type: string
+    repository: userRepository
+    entity: com.example.servercommon.model.User
+    validationMessage: メールアドレスの形式が正しくありません。
+    pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+
+  - field: role
+    name: role
+    required: true
+    type: enum
+    repository: userRepository
+    entity: com.example.servercommon.model.User
+    validationMessage: role は SYSTEM_ADMIN, EDITOR, VIEWER, CUSTOM のいずれかを指定してください。
+    enumValues: ['SYSTEM_ADMIN', 'EDITOR', 'VIEWER', 'CUSTOM']
+
+  - field: userId
+    name: userId
+    required: true
+    type: long
+    repository: userDetailRepository
+    entity: com.example.servercommon.model.UserDetail
+
+  - field: phoneNumber
+    name: phoneNumber
+    required: false
+    type: string
+    repository: userDetailRepository
+    entity: com.example.servercommon.model.UserDetail
+
+  - field: kanaName
+    name: kanaName
+    required: false
+    type: string
+    repository: userDetailRepository
+    entity: com.example.servercommon.model.UserDetail
+
+  - field: address
+    name: address
+    required: false
+    type: string
+    repository: userDetailRepository
+    entity: com.example.servercommon.model.UserDetail

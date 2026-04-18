@@ -1,0 +1,32 @@
+## 【帳票】010_R01_入構証
+reportId: 010_R01_report
+mappings:
+  ## 適用開始日
+  - field: startDateOfApplication
+    entity: com.example.servercommon.model.MasterVisitStatus
+    repository: masterVisitStatusRepository
+
+  ## 入場予定時刻
+  - field: expectedEntryTime
+    entity: com.example.servercommon.model.MasterVisitStatus
+    repository: masterVisitStatusRepository
+
+  ## 来所状況ID
+  - field: visitStatusId
+    entity: com.example.servercommon.model.MasterVisitStatus
+    repository: masterVisitStatusRepository
+
+  ## 所属先
+  - field: affiliation
+    entity: com.example.servercommon.model.MasterVisitStatus
+    repository: masterVisitStatusRepository
+
+  ## 来訪者名
+  - field: visitorName
+    entity: com.example.servercommon.model.MasterVisitStatus
+    repository: masterVisitStatusRepository
+
+  ## 来訪区分
+  - field: visitCategory
+    entity: com.example.servercommon.model.MasterVisitStatus
+    repository: masterVisitStatusRepository

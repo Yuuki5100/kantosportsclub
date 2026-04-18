@@ -1,0 +1,21 @@
+/mySQL-CLI
+/git
+/MySQL
+/Minio
+/cloudeCOde
+/MCP
+/nvm
+ -
+/evcel⇒htmlorMd
+/redMine
+/postman
+/font周り（windowsで動くエクセルのフォントのセット）
+/TimeZoneの設定日本にしておく
+/pythonのライブラリマネージャ、パッケージマネージャ
+/shellたたけるように
+/postFix
+/tmux(ターミナルの分割。今はいらないかも？)
+
+//apach
+//androidStudio
+//javaFx

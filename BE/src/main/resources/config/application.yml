@@ -1,0 +1,25 @@
+# myproject/src/main/resources/config/application.yml
+spring:
+  application:
+    name: myproject  # 名前は任意（必要に応じて上書きされる）
+
+  # プロファイルグループ化（任意だが明示的に分かりやすく）
+  profiles:
+    group:
+      local: local
+      uat: uat
+      prd: prd
+
+  config:
+    import:
+      - optional:config/application-common.yml
+      - optional:config/application-${spring.profiles.active}.yml
+
+---
+
+# ログ出力や共通構成（全サービス共通でよく使う設定）をここに置いておくとベター
+logging:
+  level:
+    root: INFO
+  file:
+    path: logs

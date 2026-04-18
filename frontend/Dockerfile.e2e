@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/playwright:v1.58.2-jammy
+
+WORKDIR /app
+
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    TZ=Asia/Tokyo \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends unzip \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY FE/spa-next/my-next-app/package*.json /app/
+RUN npm ci
+
+COPY FE/spa-next/my-next-app /app
+
+CMD ["npx","playwright","test","src/tests/it/smoke.spec.ts"]

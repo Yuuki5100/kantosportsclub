@@ -1,0 +1,89 @@
+server:
+  port: 8888
+
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: apigateway
+
+storage:
+  type: s3
+  s3:
+    endpoint: https://s3.ap-northeast-1.amazonaws.com
+    access-key: ${access}-key
+    secret-key: ${secret}
+    bucket: crj-dev-web-s3
+    input-dir: input
+    archive-dir: archive
+    error-dir: error
+  # type: local
+
+  codec:
+    max-in-memory-size: 10MB # バリデーション付きファイル対応用
+
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+      routes:
+        - id: ratelimit-test
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/app/ratelimit-test
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 10
+            - AddResponseHeader=X-RateLimit-Test, true
+
+mail:
+  from: no-reply@example.com
+
+jwt:
+  secret: 9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==
+  expiration: 86400000
+
+gateway:
+  appserver-uri: http://localhost:8081
+  # ★ IPホワイトリスト（カンマ区切り）
+  ip-whitelist: 127.0.0.1, ::1
+
+  # ★ ログイン不要でアクセスできるエンドポイント一覧
+  public-paths:
+    - /login
+    - /logout
+    - /public
+    - /actuator
+    - /health
+    - /api/app/ratelimit-test # ← ★これが必要！
+    - /api/auth/login
+    - /api/auth/refresh
+
+# cors:
+#   # ★ CORS許可オリジン
+#   allowed-origins:
+#     - http://localhost:3000
+#     - https://your-spa.example.com
+#     - http://localhost:5173
+#     - http://localhost:4000
+#     - http://localhost:8081
+
+teams:
+  webhook:
+    url: https://example.com/dummy-webhook-url # ★ 実運用では環境変数にするのが推奨
+
+app:
+  login:
+    url: http://localhost:3000/login
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    apigateway: DEBUG

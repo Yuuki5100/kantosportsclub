@@ -1,0 +1,6 @@
+{
+
+  "src/pages/dashboard": "ダッシュボード",
+  "src/pages/user": "ユーザー管理",
+  "src/pages/settings": "設定"
+}

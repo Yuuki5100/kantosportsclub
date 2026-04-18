@@ -1,0 +1,54 @@
+{
+  version: 0,
+  monospaced_fonts: [
+    {bold:{full_width:1.033,half_width:0.536,row_height:1.0},regular:{full_width:1.03,half_width:0.516,row_height:1.0}},
+    {name:"gothic",bold:{full_width:1.033,half_width:0.536,row_height:1.0},regular:{full_width:1.03,half_width:0.516,row_height:1.0}},
+    {name:"mincho",bold:{full_width:1.033,half_width:0.536,row_height:1.0},regular:{full_width:1.03,half_width:0.516,row_height:1.0}}
+  ],
+  paper: {
+    margin: {bottom:7.1,left:7.1,right:7.1,top:7.1},
+    scale_unit: "mm",
+    type: "a4"
+  },
+  group: {
+    detail: true,
+    keys: ["id"],
+    sort_keys: ["id"],
+    layout: {
+      size: 105.8,
+      direction: "vertical",
+      x: 0.0,
+      y: 0.0
+    },
+    contents: [
+      {
+        size: {
+          initial: 236.4
+        },
+        aggregate_src: true,
+        elements: [
+          {type:"field",exp:".id",visibility_cond:"false"},
+          {type:"rect",layout:{x1:0.0,y1:0.0,x2:105.8,y2:236.4},color:"#808080"},
+          {type:"field",layout:{x1:0.0,y1:0.0,x2:105.8,y2:24.7},rect:{fill_color:"black"}},
+          {type:"text",layout:{x1:30.0,y1:1.8,x2:77.6,y2:12.3},color:"whitesmoke",font:{size:28.0,underline:true},halign:"center",text:"入構証",valign:"center"},
+          {type:"text",layout:{x1:30.0,y1:14.1,x2:77.6,y2:22.9},color:"whitesmoke",font:{bold:true,size:16.0},halign:"center",text:"Entry Card",valign:"center"},
+          {type:"field",layout:{x1:19.4,y1:31.8,x2:86.4,y2:44.1},exp:".startDateOfApplication",font:{size:25.0},halign:"center",valign:"center"},
+          {type:"field",layout:{x1:40.6,y1:49.4,x2:65.3,y2:54.7},exp:".expectedEntryTime",font:{bold:true,size:18.0},halign:"center",valign:"center"},
+          {type:"barcode",layout:{x1:35.5,y1:60.5,x2:70.5,y2:95.5},barcode_type:"qrcode",exp:".qrcode",qr_correction_level:"Q"},
+          {type:"text",layout:{x1:10.0,y1:100.0,x2:35.0,y2:107.0},halign:"left",text:"受付番号",valign:"center"},
+          {type:"field",layout:{x1:35.0,y1:100.0,x2:95.8,y2:107.0},exp:".visitStatusId",halign:"left",valign:"center"},
+          {type:"text",layout:{x1:10.0,y1:109.0,x2:35.0,y2:116.1},halign:"left",text:"所属先/会社名",valign:"center"},
+          {type:"field",layout:{x1:35.0,y1:109.0,x2:95.8,y2:116.1},exp:".affiliation",halign:"left",valign:"center",wrap:true},
+          {type:"text",layout:{x1:10.0,y1:118.0,x2:35.0,y2:125.1},halign:"left",text:"来訪者名",valign:"center"},
+          {type:"field",layout:{x1:35.0,y1:118.0,x2:95.8,y2:125.1},exp:".visitorName",halign:"left",valign:"center",wrap:true},
+          {type:"text",layout:{x1:10.0,y1:127.0,x2:35.0,y2:134.0},halign:"left",text:"来所区分",valign:"center"},
+          {type:"field",layout:{x1:35.0,y1:127.0,x2:95.8,y2:134.0},exp:".visitCategory",halign:"left",valign:"center"},
+          {type:"text",layout:{x1:30.0,y1:140.5,x2:78.0,y2:147.5},font:{bold:true,size:20.0},halign:"center",text:"注意事項",valign:"center"},
+          {type:"text",layout:{x1:10.0,y1:151.0,x2:95.8,y2:179.9},font:{size:8.0},halign:"left",text:"#{.cauttionMessageJapanese}",valign:"top",wrap:true},
+          {type:"text",layout:{x1:30.0,y1:185.2,x2:78.0,y2:195.8},font:{bold:true,size:20.0},halign:"center",text:"Instructions",valign:"center"},
+          {type:"text",layout:{x1:10.0,y1:197.6,x2:95.8,y2:225.8},font:{size:8.0},halign:"left",text:"#{.cauttionMessageOtherLanguage}",valign:"top",wrap:true}
+        ]
+      }
+    ]
+  }
+}

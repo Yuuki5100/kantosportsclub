@@ -1,0 +1,217 @@
+{
+  version: 0,
+  monospaced_fonts: [
+    {bold:{full_width:1.033,half_width:0.536,row_height:1.0},regular:{full_width:1.03,half_width:0.516,row_height:1.0}},
+    {name:"gothic",bold:{full_width:1.033,half_width:0.536,row_height:1.0},regular:{full_width:1.03,half_width:0.516,row_height:1.0}},
+    {name:"mincho",bold:{full_width:1.033,half_width:0.536,row_height:1.0},regular:{full_width:1.03,half_width:0.516,row_height:1.0}}
+  ],
+  paper: {
+    margin: {bottom:10.0,left:10.0,right:10.0,top:10.0},
+    scale_unit: "mm",
+    type: "a4"
+  },
+  caption: "試験成績書",
+  page_capacity: 277.0,
+  group: {
+    caption: "試験成績書グループ",
+    crosstab: "none",
+    keys: ["id"],
+    page_break: true,
+    reset_page_count: true,
+    sort_keys: ["id"],
+    contents: [
+      {
+        size: {
+          initial: 83.0
+        },
+        caption: "タイトル（基本情報）",
+        every_page: true,
+        weight: 83.0,
+        elements: [
+          {type:"field",layout:{x1:0.0,y1:0.0,x2:190.0,y2:5.0},exp:".id",visibility_cond:"false"},
+          {type:"text",layout:{x1:0.0,y1:0.0,x2:190.0,y2:10.0},font:{name:"gothic",size:26.0,underline:true},halign:"center",text:"試　験　成　績　書",valign:"center"},
+          {type:"field",layout:{x1:0.0,y1:25.0,x2:190.0,y2:35.0},exp:".sysDate",font:{name:"gothic",size:14.0},formatter:{type:"default"},halign:"right",valign:"center"},
+          {type:"text",layout:{x1:0.0,y1:45.0,x2:170.0,y2:55.0},font:{name:"gothic",size:14.0},halign:"left",text:"#{.destination}　御中",valign:"center",wrap:true},
+          {type:"text",layout:{x1:170.0,y1:45.0,x2:190.0,y2:55.0},font:{name:"gothic",size:14.0},halign:"right",text:"#{page_count}/#{page_count.total}",valign:"center",visibility_cond:"(if (> page_count.total 1) true false)"},
+          {type:"field",layout:{y1:65.0,y2:70.0},exp:".companyName",font:{name:"gothic",size:14.0},halign:"right",valign:"center"},
+          {type:"field",layout:{y1:70.0,y2:75.0},exp:".baseName",font:{name:"gothic",size:14.0},halign:"right",valign:"center"}
+        ]
+      },
+      {
+        size: {
+          initial: 18.0,
+          initial_exp: "(if state.first 18 0)"
+        },
+        caption: "タイトル（品目・ロット情報）",
+        weight: 18.0,
+        elements: [
+          {type:"rect",layout:{x1:0.0,y1:0.0,x2:35.0,y2:6.0},color:"black"},
+          {type:"text",layout:{x1:0.0,y1:1.0,x2:35.0,y2:5.0},font:{name:"gothic",size:12.0},halign:"center",text:"品名",valign:"center"},
+          {type:"rect",layout:{x1:35.0,y1:0.0,x2:125.0,y2:6.0}},
+          {type:"field",layout:{x1:35.0,y1:1.0,x2:125.0,y2:5.0},exp:".itemName",font:{name:"gothic",size:12.0},halign:"center",valign:"center"},
+          {type:"rect",layout:{x1:0.0,y1:6.0,x2:35.0,y2:12.0},color:"black"},
+          {type:"text",layout:{x1:0.0,y1:7.0,x2:35.0,y2:11.0},font:{name:"gothic",size:12.0},halign:"center",text:"ロット番号",valign:"center"},
+          {type:"rect",layout:{x1:35.0,y1:6.0,x2:125.0,y2:12.0},color:"black"},
+          {type:"field",layout:{x1:35.0,y1:7.0,x2:125.0,y2:11.0},exp:".lotNo",font:{name:"gothic",size:12.0},halign:"center",valign:"center"}
+        ]
+      },
+      {
+        aggregate_src: true,
+        caption: "プラ形態タイプ投入割合明細",
+        every_page: true,
+        variables: [{key:"PAGE_RECS",exp:"(\r\n      if (<= count_page 3) 3 \r\n      (\r\n          if (<= count_page 9) count_page 25\r\n      )\r\n)"}],
+        visibility_cond: "state.intrinsic",
+        elements: [
+          {type:"rect",layout:{x1:0.0,y1:0.0,x2:35.0,y2:6.0},color:"black",customize:[{cond:"true",exp:"(* (+ var.PAGE_RECS 1) 6)",property:"layout.y2"}]},
+          {type:"text",layout:{x1:0.0,y1:1.0,x2:35.0,y2:5.0},customize:[{cond:"true",exp:"(* (+ var.PAGE_RECS 1) 6)",property:"layout.y2"}],font:{name:"gothic",size:12.0},halign:"center",text:"プラ形態タイプ\r\n投入割合",valign:"center"},
+          {type:"rect",layout:{x1:35.0,y1:0.0,x2:150.0,y2:6.0},color:"black"},
+          {type:"text",layout:{x1:35.0,y1:1.0,x2:150.0,y2:5.0},font:{name:"gothic",size:12.0},halign:"center",text:"項目",valign:"center"},
+          {type:"rect",layout:{x1:150.0,y1:0.0,x2:170.0,y2:6.0},color:"black"},
+          {type:"text",layout:{x1:150.0,y1:1.0,x2:170.0,y2:5.0},font:{name:"gothic",size:12.0},halign:"center",text:"単位",valign:"center"},
+          {type:"rect",layout:{x1:170.0,y1:0.0,x2:190.0,y2:6.0},color:"black"},
+          {type:"text",layout:{x1:170.0,y1:1.0,x2:190.0,y2:5.0},font:{name:"gothic",size:12.0},halign:"center",text:"実績値",valign:"center"}
+        ],
+        group: {
+          caption: "プラ形態タイプ投入割合明細グループ",
+          crosstab: "none",
+          detail: true,
+          layout: {
+            max_count: 3.0,
+            direction: "vertical",
+            max_count_exp: "(\r\n    if (<= page_group_count 3) 3\r\n    (\r\n        if (<= page_group_count 9) page_group_count 25\r\n    )\r\n)",
+            blank: true
+          },
+          contents: [
+            {
+              size: {
+                initial: 6.0,
+                max: 6.0
+              },
+              aggregate_src: true,
+              caption: "プラ形態タイプ投入割合明細行",
+              every_page: true,
+              weight: 6.0,
+              elements: [
+                {type:"rect",layout:{x1:35.0,y1:6.0,x2:150.0,y2:12.0},color:"black"},
+                {type:"field",layout:{x1:35.0,y1:7.0,x2:150.0,y2:11.0},exp:".plasticFormTypeName",font:{name:"gothic",size:12.0},valign:"center"},
+                {type:"rect",layout:{x1:150.0,y1:6.0,x2:170.0,y2:12.0},color:"black"},
+                {type:"text",layout:{x1:150.0,y1:7.0,x2:170.0,y2:11.0},font:{name:"gothic",size:12.0},halign:"center",text:"%",valign:"center"},
+                {type:"rect",layout:{x1:170.0,y1:6.0,x2:190.0,y2:12.0},color:"black"},
+                {type:"field",layout:{x1:170.0,y1:7.0,x2:190.0,y2:11.0},exp:".ratio",font:{name:"gothic",size:12.0},halign:"right",valign:"center"}
+              ]
+            }
+          ]
+        }
+      },
+      {
+        size: {
+          initial: 12.0
+        },
+        caption: "ブランク（１）",
+        comment: "レイアウト調整用",
+        weight: 12.0
+      },
+      {
+        size: {
+          initial: 30.0
+        },
+        caption: "試験結果参考ヘッダー",
+        weight: 36.0,
+        elements: [
+          {type:"rect",layout:{x1:0.0,y1:0.0,x2:50.0,y2:6.0},color:"black"},
+          {type:"rect",layout:{x1:50.0,y1:0.0,x2:70.0,y2:6.0},color:"black"},
+          {type:"rect",layout:{x1:70.0,y1:0.0,x2:130.0,y2:6.0},color:"black"},
+          {type:"rect",layout:{x1:130.0,y1:0.0,x2:190.0,y2:6.0},color:"black"},
+          {type:"text",layout:{x1:0.0,y1:1.0,x2:50.0,y2:5.0},font:{name:"gothic",size:12.0},halign:"center",text:"項目",valign:"center"},
+          {type:"text",layout:{x1:50.0,y1:1.0,x2:70.0,y2:5.0},font:{name:"gothic",size:12.0},halign:"center",text:"単位",valign:"center"},
+          {type:"text",layout:{x1:70.0,y1:1.0,x2:130.0,y2:5.0},font:{name:"gothic",size:12.0},halign:"center",text:"試験結果/参考値",valign:"center"},
+          {type:"text",layout:{x1:130.0,y1:1.0,x2:190.0,y2:5.0},font:{name:"gothic",size:12.0},halign:"center",text:"代表性状",valign:"center"},
+          {type:"rect",layout:{x1:0.0,y1:6.0,x2:50.0,y2:12.0},color:"black"},
+          {type:"rect",layout:{x1:50.0,y1:6.0,x2:70.0,y2:12.0},color:"black"},
+          {type:"rect",layout:{x1:70.0,y1:6.0,x2:130.0,y2:12.0},color:"black"},
+          {type:"rect",layout:{x1:130.0,y1:6.0,x2:190.0,y2:12.0},color:"black"},
+          {type:"text",layout:{x1:0.0,y1:7.0,x2:50.0,y2:11.0},font:{name:"gothic",size:12.0},halign:"center",text:"塩素",valign:"center"},
+          {type:"text",layout:{x1:50.0,y1:7.0,x2:70.0,y2:11.0},font:{name:"gothic",size:12.0},halign:"center",text:"wt%",valign:"center"},
+          {type:"field",layout:{x1:70.0,y1:7.0,x2:130.0,y2:11.0},exp:".chlorine",font:{name:"gothic",size:12.0},halign:"center",valign:"center"},
+          {type:"field",layout:{x1:130.0,y1:7.0,x2:190.0,y2:11.0},exp:".representativeChlorine",font:{name:"gothic",size:12.0},halign:"center",valign:"center"},
+          {type:"rect",layout:{x1:0.0,y1:12.0,x2:50.0,y2:18.0},color:"black"},
+          {type:"rect",layout:{x1:50.0,y1:12.0,x2:70.0,y2:18.0},color:"black"},
+          {type:"rect",layout:{x1:70.0,y1:12.0,x2:130.0,y2:18.0},color:"black"},
+          {type:"rect",layout:{x1:130.0,y1:12.0,x2:190.0,y2:18.0},color:"black"},
+          {type:"text",layout:{x1:0.0,y1:13.0,x2:50.0,y2:17.0},font:{name:"gothic",size:12.0},halign:"center",text:"酸素",valign:"center"},
+          {type:"text",layout:{x1:50.0,y1:13.0,x2:70.0,y2:17.0},font:{name:"gothic",size:12.0},halign:"center",text:"wt%",valign:"center"},
+          {type:"field",layout:{x1:70.0,y1:13.0,x2:130.0,y2:17.0},exp:".oxygen",font:{name:"gothic",size:12.0},halign:"center",valign:"center"},
+          {type:"field",layout:{x1:130.0,y1:13.0,x2:190.0,y2:17.0},exp:".representativeOxygen",font:{name:"gothic",size:12.0},halign:"center"},
+          {type:"rect",layout:{x1:0.0,y1:18.0,x2:50.0,y2:24.0},color:"black"},
+          {type:"rect",layout:{x1:50.0,y1:18.0,x2:70.0,y2:24.0},color:"black"},
+          {type:"rect",layout:{x1:70.0,y1:18.0,x2:130.0,y2:24.0},color:"black"},
+          {type:"rect",layout:{x1:130.0,y1:18.0,x2:190.0,y2:24.0},color:"black"},
+          {type:"text",layout:{x1:0.0,y1:19.0,x2:50.0,y2:23.0},font:{name:"gothic",size:12.0},halign:"center",text:"窒素",valign:"center"},
+          {type:"text",layout:{x1:50.0,y1:19.0,x2:70.0,y2:23.0},font:{name:"gothic",size:12.0},halign:"center",text:"wt%",valign:"center"},
+          {type:"field",layout:{x1:70.0,y1:19.0,x2:130.0,y2:23.0},exp:".nitrogen",font:{name:"gothic",size:12.0},halign:"center",valign:"center"},
+          {type:"field",layout:{x1:130.0,y1:19.0,x2:190.0,y2:23.0},exp:".representativeNitrogen",font:{name:"gothic",size:12.0},halign:"center",valign:"center"},
+          {type:"rect",layout:{x1:0.0,y1:24.0,x2:50.0,y2:30.0},color:"black"},
+          {type:"rect",layout:{x1:50.0,y1:24.0,x2:70.0,y2:30.0},color:"black"},
+          {type:"rect",layout:{x1:70.0,y1:24.0,x2:130.0,y2:30.0},color:"black"},
+          {type:"rect",layout:{x1:130.0,y1:24.0,x2:190.0,y2:30.0},color:"black"},
+          {type:"text",layout:{x1:0.0,y1:25.0,x2:50.0,y2:29.0},font:{name:"gothic",size:12.0},halign:"center",text:"ケイ素",valign:"center"},
+          {type:"text",layout:{x1:50.0,y1:25.0,x2:70.0,y2:29.0},font:{name:"gothic",size:12.0},halign:"center",text:"wt%",valign:"center"},
+          {type:"field",layout:{x1:70.0,y1:25.0,x2:130.0,y2:29.0},exp:".silicon",font:{name:"gothic",size:12.0},halign:"center",valign:"center"},
+          {type:"field",layout:{x1:130.0,y1:25.0,x2:190.0,y2:29.0},exp:".representativeSilicon",font:{name:"gothic",size:12.0},halign:"center",valign:"center"}
+        ]
+      },
+      {
+        caption: "試験結果参考明細",
+        group: {
+          caption: "試験結果参考明細グループ",
+          layout: {
+            blank: true,
+            max_count: 1.0,
+            max_count_exp: "(\r\n    if state.first_page \r\n    (\r\n        if (<= count 3) 7 \r\n        (\r\n            if (<= count 9) (+ (- 7 count) 3) 1\r\n        )\r\n    ) 1\r\n)"
+          },
+          contents: [
+            {
+              size: {
+                initial: 6.0,
+                max: 6.0
+              },
+              aggregate_src: true,
+              caption: "試験結果参考明細行（空白行）",
+              weight: 6.0,
+              elements: [
+                {type:"rect",layout:{x1:0.0,y1:0.0,x2:50.0,y2:6.0},color:"black"},
+                {type:"rect",layout:{x1:50.0,y1:0.0,x2:70.0,y2:6.0},color:"black"},
+                {type:"rect",layout:{x1:70.0,y1:0.0,x2:130.0,y2:6.0},color:"black"},
+                {type:"rect",layout:{x1:130.0,y1:0.0,x2:190.0,y2:6.0},color:"black"}
+              ]
+            }
+          ]
+        }
+      },
+      {
+        size: {
+          initial: 6.0
+        },
+        caption: "ブランク（２）",
+        comment: "レイアウト調整用",
+        weight: 6.0
+      },
+      {
+        size: {
+          initial: 0.0,
+          rev_initial: true
+        },
+        caption: "試験結果判定",
+        weight: 104.0,
+        elements: [
+          {type:"rect",layout:{x1:0.0,y1:0.0,x2:190.0,y2:73.0},color:"black"},
+          {type:"text",layout:{x1:1.0,y1:1.0,x2:190.0,y2:6.0},font:{name:"gothic",size:12.0},text:"※特記事項",valign:"center"},
+          {type:"field",layout:{x1:1.0,y1:6.0,x2:190.0,y2:72.0},exp:".specialNotes",font:{name:"gothic",size:12.0},wrap:true},
+          {type:"text",layout:{x1:170.0,y1:79.0,x2:190.0,y2:84.0},font:{name:"gothic",size:12.0},halign:"center",text:"合否判定",valign:"center"},
+          {type:"rect",layout:{x1:170.0,y1:84.0,x2:190.0,y2:104.0},color:"black"},
+          {type:"text",layout:{x1:170.0,y1:85.0,x2:190.0,y2:103.0},font:{name:"gothic",size:14.0},halign:"center",text:"合格",valign:"center"}
+        ]
+      }
+    ]
+  }
+}

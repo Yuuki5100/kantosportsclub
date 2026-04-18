@@ -1,0 +1,82 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+
+  main:
+    web-application-type: reactive
+
+  application:
+    name: apigateway
+
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+      routes:
+        - id: appserver-api
+          uri: ${APPSERVER_URL:http://backend:8081}
+          predicates:
+            - Path=/api/**
+        - id: appserver-actuator
+          uri: ${APPSERVER_URL:http://backend:8081}
+          predicates:
+            - Path=/actuator/**
+
+server:
+  port: ${SERVER_PORT:8888}
+
+jwt:
+  secret: ${GATEWAY_JWT_SECRET:9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==}
+  expiration: ${GATEWAY_JWT_EXPIRATION:86400000}
+
+gateway:
+  appserver-uri: ${APPSERVER_URL:http://backend:8081}
+  ip-whitelist: ${GATEWAY_IP_WHITELIST:127.0.0.1,::1,172.17.0.1,172.18.0.1,172.19.0.1}
+  public-paths:
+    - /api/auth/login
+    - /login
+    - /logout
+    - /public
+    - /actuator
+    - /health
+    - /api/auth/login
+    - /api/auth/refresh
+
+# cors:
+#   allowed-origins:
+#     - http://localhost:3000
+#     - http://frontend:3000
+#     - ${FRONTEND_ORIGIN:http://frontend:3000}
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_URL:https://example.com/dummy-webhook-url-docker}
+
+app:
+  login:
+    url: ${APP_LOGIN_URL:http://frontend:3000/login}
+
+management:
+  tracing:
+    enabled: ${OTEL_TRACING_ENABLED:true}
+    sampling:
+      probability: ${OTEL_TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4318/v1/traces}}
+    metrics:
+      export:
+        enabled: ${OTEL_METRICS_EXPORT_ENABLED:true}
+        url: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4318/v1/metrics}}
+        step: ${OTEL_METRICS_EXPORT_STEP:30s}

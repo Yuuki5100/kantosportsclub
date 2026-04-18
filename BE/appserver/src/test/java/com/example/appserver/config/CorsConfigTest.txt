@@ -1,0 +1,62 @@
+package com.example.appserver.config;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.web.cors.*;
+import org.springframework.web.filter.CorsFilter;
+
+import static org.assertj.core.api.Assertions.*;
+
+import java.util.List;
+
+class CorsConfigTest {
+
+    private final CorsConfig corsConfig = new CorsConfig();
+
+    @Test
+    void testCorsConfigurationSource() {
+        // 実際のBean生成
+        CorsConfigurationSource source = corsConfig.corsConfigurationSource();
+        assertThat(source).isNotNull();
+
+        // 登録済みのCORS設定を取得
+        CorsConfiguration configuration = ((UrlBasedCorsConfigurationSource) source)
+                .getCorsConfigurations()
+                .get("/**");
+
+        assertThat(configuration).isNotNull();
+
+        // ✅ AllowedOriginPatterns の確認
+        assertThat(configuration.getAllowedOriginPatterns())
+                .containsExactlyInAnyOrder(
+                        "http://localhost:5173",
+                        "http://localhost:3000",
+                        "http://localhost:4000",
+                        "http://localhost:8081"
+                );
+
+        // ✅ AllowCredentials
+        assertThat(configuration.getAllowCredentials()).isTrue();
+
+        // ✅ AllowedMethods
+        assertThat(configuration.getAllowedMethods())
+                .containsExactlyInAnyOrder("GET", "POST", "PUT", "DELETE", "OPTIONS");
+
+        // ✅ AllowedHeaders
+        assertThat(configuration.getAllowedHeaders())
+                .contains("Authorization", "Content-Type", "Origin", "Accept");
+
+        // ✅ ExposedHeaders
+        assertThat(configuration.getExposedHeaders())
+                .containsExactlyInAnyOrder("Authorization", "Set-Cookie");
+
+        // ✅ MaxAge
+        assertThat(configuration.getMaxAge()).isEqualTo(3600L);
+    }
+
+    @Test
+    void testCorsFilterBeanCreation() {
+        CorsFilter filter = corsConfig.corsFilter();
+        assertThat(filter).isNotNull();
+        assertThat(filter).isInstanceOf(CorsFilter.class);
+    }
+}

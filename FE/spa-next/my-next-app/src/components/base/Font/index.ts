@@ -1,0 +1,9 @@
+export { default as Font10 } from "./Font10";
+export { default as Font12 } from "./Font12";
+export { default as Font14 } from "./Font14";
+export { default as Font16 } from "./Font16";
+export { default as Font18 } from "./Font18";
+export { default as Font20 } from "./Font20";
+export { default as Font24 } from "./Font24";
+export { default as Font30 } from "./Font30";
+export { default as FontBase } from "./FontBase";

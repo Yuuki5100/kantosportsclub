@@ -1,0 +1,139 @@
+package com.example.appserver.controller;
+
+import com.example.appserver.config.MockPermissionCheckerConfig;
+import com.example.appserver.security.PermissionChecker;
+import com.example.appserver.service.JobRunnerService;
+import com.example.appserver.testutil.TestPermissionConfig;
+import com.example.servercommon.notification.TeamsNotificationService;
+import com.example.servercommon.service.ErrorCodeService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import org.junit.jupiter.api.Disabled;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
+@Import({TestPermissionConfig.class, MockPermissionCheckerConfig.class})
+@WithMockUser(username = "testuser", roles = {"BATCH_EXECUTOR"})
+@Disabled("Controller統合テストは一時スキップ")
+class JobRunnerControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private JobRunnerService jobRunnerService;
+
+    @MockBean
+    private ErrorCodeService errorCodeService;
+
+    @MockBean
+    private TeamsNotificationService teamsNotificationService;
+
+    @MockBean
+    private com.example.appserver.permission.PermissionConfigProvider permissionConfigProvider;
+
+    @BeforeEach
+    void setup() {
+        when(errorCodeService.getErrorMessage(eq("E5001"), anyString())).thenReturn("実行時エラー");
+        when(errorCodeService.getErrorMessage(eq("E4002"), anyString())).thenReturn("jobName は必須です");
+
+        Map<String, com.example.appserver.permission.PermissionConfigProvider.EndpointPermissions> dummyMap = Map.of(
+                "POST /batch-runner/start", new DummyEndpointPermissions(),
+                "POST /batch-runner/dummy", new DummyEndpointPermissions()
+        );
+
+        when(permissionConfigProvider.getEndpointPermissions()).thenReturn(dummyMap);
+        when(permissionConfigProvider.getRequiredLevel(anyString())).thenReturn(0);
+    }
+
+    static class DummyEndpointPermissions
+            implements com.example.appserver.permission.PermissionConfigProvider.EndpointPermissions {
+        @Override public List<String> getPermissions() { return List.of("BATCH_EXECUTOR"); }
+        @Override public void setPermissions(List<String> permissions) {}
+        @Override public Map<String, Integer> getCustom() { return Map.of(); }
+        @Override public void setCustom(Map<String, Integer> custom) {}
+        @Override public int getRequiredLevelForCustomRole(String role) { return 0; }
+        @Override public int getRequiredLevel() { return 0; }
+        @Override public int getDefaultLevel() { return 0; }
+    }
+
+    @Test
+    @DisplayName("✅ 正常：/batch-runner/start でジョブが起動される")
+    void shouldStartJobSuccessfully() throws Exception {
+        doNothing().when(jobRunnerService).runJob(eq("import-users"));
+
+        mockMvc.perform(post("/batch-runner/start")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .characterEncoding("UTF-8")
+                        .param("jobName", "import-users")
+                        .locale(Locale.JAPAN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").value(containsString("ジョブ [import-users] の実行を開始しました")));
+
+        verify(jobRunnerService).runJob("import-users");
+    }
+
+    @Test
+    @DisplayName("✅ 正常：/batch-runner/dummy でダミージョブが起動される")
+    void shouldRunDummyJob() throws Exception {
+        doNothing().when(jobRunnerService).runDummyJob();
+
+        mockMvc.perform(post("/batch-runner/dummy"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").value("ダミージョブの実行を開始しました"));
+
+        verify(jobRunnerService).runDummyJob();
+    }
+
+    @Test
+    @DisplayName("❌ 異常：jobName が空文字 → 400 + E4002")
+    void shouldReturnBadRequestIfJobNameEmpty() throws Exception {
+        mockMvc.perform(post("/batch-runner/start")
+                        .param("jobName", "")
+                        .locale(Locale.JAPAN))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("E4002"))
+                .andExpect(jsonPath("$.error.message").value(containsString("jobName は必須")));
+
+        verify(jobRunnerService, never()).runJob(anyString());
+    }
+
+    @Test
+    @DisplayName("❌ Service が IllegalArgumentException を投げた場合 → 400 + E4002")
+    void shouldHandleIllegalArgumentFromService() throws Exception {
+        doThrow(new IllegalArgumentException("jobName は必須です")).when(jobRunnerService).runJob("failingJob");
+
+        mockMvc.perform(post("/batch-runner/start")
+                        .param("jobName", "failingJob")
+                        .locale(Locale.JAPAN))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("E4002"))
+                .andExpect(jsonPath("$.error.message").value(containsString("jobName は必須")));
+    }
+}

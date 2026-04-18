@@ -1,0 +1,34 @@
+.lhci-base:
+  image: node:20
+  tags: [docker-runner]
+  rules:
+    - if: '$RUN_LHCI_ALWAYS == "1"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - when: never
+  before_script:
+    - apt-get update
+    - apt-get install -y chromium
+    - npm i -g @lhci/cli
+    - export CHROME_PATH=/usr/bin/chromium
+
+lhci-run:
+  stage: collect          # 👈 qa → collect（収集系を後段に寄せる）
+  needs: []
+  extends: .lhci-base
+  allow_failure: true     # 👈 赤でもパイプラインを止めない
+  variables:
+    LHCI_URL: "https://example.com"
+  script:
+    - >
+      lhci autorun
+      --upload.target=filesystem --upload.outputDir=./lhci-reports
+      --collect.url="$LHCI_URL"
+      --collect.settings.preset=desktop
+      --collect.numberOfRuns=3
+      --collect.settings.chromeFlags="--headless=new --no-sandbox"
+  artifacts:
+    when: always
+    paths: [lhci-reports/]
+    expire_in: 2 weeks

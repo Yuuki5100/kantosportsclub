@@ -1,0 +1,23 @@
+permissions:
+  endpoints:
+    user.profile:
+      defaultLevel: 2
+      permissions:
+        - "USER"
+        - "ADMIN"
+        - "VIEWER"
+      custom:
+        user: 2
+    admin.dashboard:
+      defaultLevel: 1
+      permissions:
+        - "ADMIN"
+        - "USER"
+      custom:
+        admin: 1
+    product.details:
+      defaultLevel: 1
+      permissions:
+        - "USER"
+      custom:
+        viewer: 1

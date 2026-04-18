@@ -1,0 +1,25 @@
+services:
+  csharp-sdk:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    container_name: jems-csharp-sdk
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      TZ: Asia/Tokyo
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      HOME: /tmp/dotnet-home
+      DOTNET_CLI_HOME: /tmp/dotnet-home
+      NUGET_PACKAGES: /workspace/dist/csharp/nuget
+    working_dir: /workspace
+    command: ["sleep", "infinity"]
+    volumes:
+      - ..:/workspace
+      - ../dist/csharp:/workspace/dist/csharp
+    healthcheck:
+      test: ["CMD-SHELL", "dotnet --list-sdks >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - appnet

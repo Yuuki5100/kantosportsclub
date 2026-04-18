@@ -1,0 +1,38 @@
+name: jems-dev
+
+services:
+  mysql:
+    extends:
+      file: ./compose.yml
+      service: mysql
+
+  minio:
+    extends:
+      file: ./compose.yml
+      service: minio
+
+  minio-init:
+    extends:
+      file: ./compose.yml
+      service: minio-init
+
+  redis:
+    extends:
+      file: ./compose.yml
+      service: redis
+
+  python-tools:
+    extends:
+      file: ./compose.yml
+      service: python-tools
+
+volumes:
+  mysql_data:
+  minio_data:
+  redis_data:
+  maven_repo:
+  frontend_node_modules:
+
+networks:
+  appnet:
+    driver: bridge

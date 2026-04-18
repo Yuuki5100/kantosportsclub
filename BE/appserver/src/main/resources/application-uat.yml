@@ -1,0 +1,87 @@
+spring:
+  config:
+    activate:
+      on-profile: uat
+
+  datasource:
+    url: jdbc:mysql://uat-db-host:3306/common?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: dev_user
+    password: ${DB_PASSWORD_DEV}
+    hikari:
+      connection-init-sql: SET time_zone = '+00:00'
+
+  flyway:
+    enabled: false
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  jackson:
+    time-zone: Asia/Tokyo
+
+  security:
+    debug: false
+
+  batch:
+    initialize-schema: never
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+security:
+  rsa-public-key:
+    modulus-base64: "ALlQ9XnH/0W0nUuOAz5kz5nkt8dHjGl5V9V2vblqJmQF3pOtKpyX6GZ+W9D3xIZw7dLrZUPPMp4x6BLsJwrImz8="
+    exponent-base64: "AQAB"
+  auth:
+    mode: jwt   # jwt or session
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+storage:
+  type: s3
+  s3:
+    endpoint: http://57.182.223.75:9080
+    access-key: minio
+    secret-key: minio1234
+    bucket: reports
+    input-dir: input
+    archive-dir: archive
+    error-dir: error
+
+# aws:
+#   region: ap-northeast-1
+
+# mail:
+#   access-key: ${access-key}
+#   secret-key: ${secret-key}+
+#   from: xx@crj.dev.jems-cloud.jp
+
+jwt:
+  secret: ${JWT_SECRET_DEV}
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_DEV}
+
+logging:
+  level:
+    root: INFO
+  appender: PLAIN_CONSOLE
+
+
+report:
+  cache:
+    enabled: true  # ← falseにすればキャッシュ無効で毎回DB取得

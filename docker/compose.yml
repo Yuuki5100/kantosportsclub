@@ -1,0 +1,685 @@
+name: jems-dev
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: jems-mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+09:00
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+      TZ: Asia/Tokyo
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uapp -papp --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks:
+      - appnet
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-28T09-55-16Z
+    container_name: jems-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+      TZ: Asia/Tokyo
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - appnet
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-02-21T16-00-46Z
+    container_name: jems-minio-init
+    environment:
+      TZ: Asia/Tokyo
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/init.sh"]
+    volumes:
+      - ./minio/init.sh:/init.sh:ro
+    networks:
+      - appnet
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: jems-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    environment:
+      TZ: Asia/Tokyo
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - appnet
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+      target: backend-service
+      args:
+        BACKEND_MODULE: appserver
+        BACKEND_PORT: 8081
+        BACKEND_JAR_PATH: appserver/target/appserver-1.0.0-SNAPSHOT.jar
+    container_name: jems-backend
+    working_dir: /workspace/BE
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Tokyo
+      SERVER_PORT: 8081
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: app
+      DB_USER: app
+      DB_PASSWORD: app
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+      MINIO_BUCKET: app-bucket
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://otel-collector:4318/v1/traces}
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://otel-collector:4318/v1/metrics}
+      OTEL_TRACING_ENABLED: ${OTEL_TRACING_ENABLED:-true}
+      OTEL_METRICS_EXPORT_ENABLED: ${OTEL_METRICS_EXPORT_ENABLED:-true}
+      OTEL_TRACING_SAMPLING_PROBABILITY: ${OTEL_TRACING_SAMPLING_PROBABILITY:-1.0}
+      OTEL_METRICS_EXPORT_STEP: ${OTEL_METRICS_EXPORT_STEP:-30s}
+    ports:
+      - "8081:8081"
+    volumes:
+      - ../BE:/workspace/BE
+      - maven_repo:/root/.m2
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8081/actuator/health | grep -Eq \"^(200|401)$\""]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    networks:
+      - appnet
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+      target: backend-service
+      args:
+        BACKEND_MODULE: gateway
+        BACKEND_PORT: 8888
+        BACKEND_JAR_PATH: gateway/target/gateway-1.0.0-SNAPSHOT.jar
+    container_name: jems-gateway
+    working_dir: /workspace/BE
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Tokyo
+      SERVER_PORT: 8888
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      APPSERVER_URL: ${APPSERVER_URL:-http://backend:8081}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://frontend:3000}
+      TEAMS_WEBHOOK_URL: ${TEAMS_WEBHOOK_URL:-https://example.com/dummy-webhook-url-docker}
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://otel-collector:4318/v1/traces}
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://otel-collector:4318/v1/metrics}
+      OTEL_TRACING_ENABLED: ${OTEL_TRACING_ENABLED:-true}
+      OTEL_METRICS_EXPORT_ENABLED: ${OTEL_METRICS_EXPORT_ENABLED:-true}
+      OTEL_TRACING_SAMPLING_PROBABILITY: ${OTEL_TRACING_SAMPLING_PROBABILITY:-1.0}
+      OTEL_METRICS_EXPORT_STEP: ${OTEL_METRICS_EXPORT_STEP:-30s}
+    ports:
+      - "8888:8888"
+    volumes:
+      - ../BE:/workspace/BE
+      - maven_repo:/root/.m2
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8888/ | grep -Eq \"^(200|401|403|404)$\""]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    networks:
+      - appnet
+
+  syncconnector:
+    profiles: ["syncconnector"]
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+      target: backend-service
+      args:
+        BACKEND_MODULE: syncconnector
+        BACKEND_PORT: 8084
+        BACKEND_JAR_PATH: syncconnector/target/sync-connector-1.0.0-SNAPSHOT.jar
+    container_name: jems-syncconnector
+    working_dir: /workspace/BE
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Tokyo
+      SERVER_PORT: 8084
+      SYNC_SIGNATURE_ENABLED: ${SYNC_SIGNATURE_ENABLED:-true}
+      SYNC_SIGNATURE_SECRET: ${SYNC_SIGNATURE_SECRET:-docker-sync-secret}
+      SYNC_SIGNED_REST_SECRET_KEY: ${SYNC_SIGNED_REST_SECRET_KEY:-docker-sync-secret}
+      SYNC_SIGNATURE_HEADER: ${SYNC_SIGNATURE_HEADER:-X-Signature}
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://otel-collector:4318/v1/traces}
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://otel-collector:4318/v1/metrics}
+      OTEL_TRACING_ENABLED: ${OTEL_TRACING_ENABLED:-true}
+      OTEL_METRICS_EXPORT_ENABLED: ${OTEL_METRICS_EXPORT_ENABLED:-true}
+      OTEL_TRACING_SAMPLING_PROBABILITY: ${OTEL_TRACING_SAMPLING_PROBABILITY:-1.0}
+      OTEL_METRICS_EXPORT_STEP: ${OTEL_METRICS_EXPORT_STEP:-30s}
+    ports:
+      - "8084:8084"
+    volumes:
+      - ../BE:/workspace/BE
+      - maven_repo:/root/.m2
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8084/ | grep -Eq \"^(200|401|403|404)$\""]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    networks:
+      - appnet
+
+  batchserver:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+      target: backend-service
+      args:
+        BACKEND_MODULE: batchserver
+        BACKEND_PORT: 8083
+        BACKEND_JAR_PATH: batchserver/target/batchserver-1.0.0-SNAPSHOT.jar
+    container_name: jems-batchserver
+    working_dir: /workspace/BE
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Tokyo
+      SERVER_PORT: 8083
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-app}
+      DB_USER: ${DB_USER:-app}
+      DB_PASSWORD: ${DB_PASSWORD:-app}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minio}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minio123}
+      MINIO_BUCKET: ${MINIO_BUCKET:-app-bucket}
+      TEAMS_WEBHOOK_URL: ${TEAMS_WEBHOOK_URL:-https://example.com/dummy-webhook-url-docker}
+      APP_LOGIN_URL: ${APP_LOGIN_URL:-http://frontend:3000/login}
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://otel-collector:4318/v1/traces}
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-http://otel-collector:4318/v1/metrics}
+      OTEL_TRACING_ENABLED: ${OTEL_TRACING_ENABLED:-true}
+      OTEL_METRICS_EXPORT_ENABLED: ${OTEL_METRICS_EXPORT_ENABLED:-true}
+      OTEL_TRACING_SAMPLING_PROBABILITY: ${OTEL_TRACING_SAMPLING_PROBABILITY:-1.0}
+      OTEL_METRICS_EXPORT_STEP: ${OTEL_METRICS_EXPORT_STEP:-30s}
+    ports:
+      - "8083:8083"
+    volumes:
+      - ../BE:/workspace/BE
+      - maven_repo:/root/.m2
+    depends_on:
+      mysql:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8083/ | grep -Eq \"^(200|401|403|404)$\""]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: jems-frontend
+    working_dir: /app
+    command: ["sh", "-c", "if [ ! -d node_modules ]; then npm ci; fi; npm run dev -- -H 0.0.0.0 -p 3000"]
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      NODE_ENV: development
+      #NEXT_PUBLIC_API_BASE_URL: http://gateway:8888
+      NEXT_PUBLIC_OTEL_TRACEPARENT_ENABLED: ${NEXT_PUBLIC_OTEL_TRACEPARENT_ENABLED:-true}
+      NEXT_PUBLIC_OTEL_WEB_VITALS_ENABLED: ${NEXT_PUBLIC_OTEL_WEB_VITALS_ENABLED:-true}
+      NEXT_PUBLIC_OTEL_SERVICE_NAME: ${NEXT_PUBLIC_OTEL_SERVICE_NAME:-frontend}
+      NEXT_PUBLIC_OTEL_HTTP_ENDPOINT: ${NEXT_PUBLIC_OTEL_HTTP_ENDPOINT:-http://localhost:4318}
+      CSP_DISABLE_UNSAFE_EVAL: ${CSP_DISABLE_UNSAFE_EVAL:-0}
+      CSP_DISABLE_UNSAFE_INLINE: ${CSP_DISABLE_UNSAFE_INLINE:-0}
+      CROSS_ORIGIN_ISOLATION_HEADERS: ${CROSS_ORIGIN_ISOLATION_HEADERS:-0}
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../FE/spa-next/my-next-app:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - appnet
+
+  frontend-zap:
+    profiles: ["security"]
+    image: jems-dev-frontend-zap
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: jems-frontend-zap
+    working_dir: /app
+    command:
+      - sh
+      - -ec
+      - |
+        package_hash="include-dev:$(sha256sum package-lock.json | awk '{print $1}')"
+        current_hash=""
+        if [ -f node_modules/.package-lock.sha256 ]; then
+          current_hash="$(cat node_modules/.package-lock.sha256)"
+        fi
+        if [ ! -f node_modules/.package-lock.sha256 ] || [ "$${package_hash}" != "$${current_hash}" ]; then
+          npm ci --include=dev
+          printf '%s\n' "$${package_hash}" > node_modules/.package-lock.sha256
+        fi
+        test -f .next/BUILD_ID || {
+          echo '[frontend-zap] Missing .next build cache. Run docker/stack.sh zap-baseline once.' >&2
+          exit 1
+        }
+        npm run start -- -H 0.0.0.0 -p 3000
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      NODE_ENV: production
+      ZAP_BASELINE_BUILD: "1"
+      NEXT_PUBLIC_API_BASE_URL: http://gateway:8888
+      NEXT_PUBLIC_OTEL_TRACEPARENT_ENABLED: "true"
+      NEXT_PUBLIC_OTEL_WEB_VITALS_ENABLED: "true"
+      NEXT_PUBLIC_OTEL_SERVICE_NAME: frontend
+      NEXT_PUBLIC_OTEL_HTTP_ENDPOINT: http://localhost:4318
+      CSP_DISABLE_UNSAFE_EVAL: "1"
+      CSP_DISABLE_UNSAFE_INLINE: "1"
+      CROSS_ORIGIN_ISOLATION_HEADERS: "1"
+    volumes:
+      - ../FE/spa-next/my-next-app:/app
+      - frontend_node_modules:/app/node_modules
+      - ../dist/frontend-zap/.next:/app/.next
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    networks:
+      - appnet
+
+  frontend-zap-build:
+    profiles: ["security"]
+    image: jems-dev-frontend-zap
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    working_dir: /app
+    command:
+      - sh
+      - -ec
+      - |
+        package_hash="include-dev:$(sha256sum package-lock.json | awk '{print $1}')"
+        current_hash=""
+        if [ -f node_modules/.package-lock.sha256 ]; then
+          current_hash="$(cat node_modules/.package-lock.sha256)"
+        fi
+        if [ ! -f node_modules/.package-lock.sha256 ] || [ "$${package_hash}" != "$${current_hash}" ]; then
+          npm ci --include=dev
+          printf '%s\n' "$${package_hash}" > node_modules/.package-lock.sha256
+        fi
+        find /zap-next -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+        npm run build
+        cp -a .next/. /zap-next/
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      NODE_ENV: production
+      ZAP_BASELINE_BUILD: "1"
+      NEXT_PUBLIC_API_BASE_URL: http://gateway:8888
+      NEXT_PUBLIC_OTEL_TRACEPARENT_ENABLED: "true"
+      NEXT_PUBLIC_OTEL_WEB_VITALS_ENABLED: "true"
+      NEXT_PUBLIC_OTEL_SERVICE_NAME: frontend
+      NEXT_PUBLIC_OTEL_HTTP_ENDPOINT: http://localhost:4318
+      CSP_DISABLE_UNSAFE_EVAL: "1"
+      CSP_DISABLE_UNSAFE_INLINE: "1"
+      CROSS_ORIGIN_ISOLATION_HEADERS: "1"
+    volumes:
+      - ../FE/spa-next/my-next-app:/app
+      - frontend_node_modules:/app/node_modules
+      - ../dist/frontend-zap/.next:/zap-next
+    networks:
+      - appnet
+
+  frontend-static:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile.nginx
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://gateway:8888}
+    container_name: jems-frontend-static
+    environment:
+      TZ: Asia/Tokyo
+    ports:
+      - "${FRONTEND_STATIC_PORT:-8080}:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - appnet
+
+  frontend-export:
+    profiles: ["cloudfront"]
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile.nginx
+      target: exporter
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://api.example.com}
+    container_name: jems-frontend-export
+    environment:
+      TZ: Asia/Tokyo
+    volumes:
+      - ../dist/frontend-static:/export
+    working_dir: /export
+    command: ["sh", "-c", "rm -rf /export/* && cp -R /out/. /export/"]
+
+  frontend-test:
+    profiles: ["test"]
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: jems-frontend-test
+    working_dir: /app
+    command: ["sh", "-c", "if [ ! -d node_modules ]; then npm ci; fi; npm run lint && npm run test:coverage"]
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      CI: "true"
+      NODE_ENV: test
+    volumes:
+      - ../FE/spa-next/my-next-app:/app
+      - frontend_node_modules:/app/node_modules
+    networks:
+      - appnet
+
+  backend-test:
+    profiles: ["test"]
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+      target: backend-test-base
+    container_name: jems-backend-test
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    entrypoint: []
+    working_dir: /workspace/BE
+    command: ["bash", "-c", "chmod +x ./scripts/build-backend.sh && ./scripts/build-backend.sh -pl appserver,gateway,batchserver,syncconnector -am test"]
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      HOME: /workspace/.backend-test-home
+      MAVEN_USER_HOME: /workspace/.backend-test-home/.m2
+      MAVEN_REPO_LOCAL: /workspace/.backend-test-home/.m2/repository
+      MAVEN_OPTS: -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Tokyo -Duser.home=/workspace/.backend-test-home
+    volumes:
+      - ../BE:/workspace/BE
+      - ../dist/backend-test-home:/workspace/.backend-test-home
+    networks:
+      - appnet
+
+  e2e:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile.e2e
+    container_name: jems-e2e
+    environment:
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      TZ: Asia/Tokyo
+      CI: "true"
+      BASE_URL: http://frontend:3000
+      API_URL: http://backend:8081
+      PLAYWRIGHT_SKIP_WEBSERVER: "true"
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    command: ["npx", "playwright", "test", "src/tests/it/smoke.spec.ts"]
+    ipc: host
+    working_dir: /app
+    networks:
+      - appnet
+
+  newman:
+    profiles: ["qa"]
+    image: postman/newman:alpine
+    container_name: jems-newman
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    working_dir: /etc/newman
+    entrypoint: ["/bin/sh", "-ec"]
+    environment:
+      TZ: Asia/Tokyo
+      NEWMAN_BASE_URL: ${NEWMAN_BASE_URL:-http://gateway:8888}
+      NEWMAN_COLLECTION: ${NEWMAN_COLLECTION:-/etc/newman/smoke.postman_collection.json}
+      NEWMAN_ENVIRONMENT: ${NEWMAN_ENVIRONMENT:-}
+      NEWMAN_LOGIN_USER_ID: ${NEWMAN_LOGIN_USER_ID:-}
+      NEWMAN_LOGIN_PASSWORD: ${NEWMAN_LOGIN_PASSWORD:-}
+      NEWMAN_AUTH_LOGIN_PATH: ${NEWMAN_AUTH_LOGIN_PATH:-/api/auth/login}
+      NEWMAN_AUTH_STATUS_PATH: ${NEWMAN_AUTH_STATUS_PATH:-/api/auth/status}
+      NEWMAN_AUTH_TOKEN_COOKIE_NAME: ${NEWMAN_AUTH_TOKEN_COOKIE_NAME:-ACCESS_TOKEN}
+      NEWMAN_AUTH_LOGIN_USER_ID_KEY: ${NEWMAN_AUTH_LOGIN_USER_ID_KEY:-user_id}
+      NEWMAN_AUTH_LOGIN_PASSWORD_KEY: ${NEWMAN_AUTH_LOGIN_PASSWORD_KEY:-password}
+      NEWMAN_REPORT_JSON: ${NEWMAN_REPORT_JSON:-/reports/newman-report.json}
+      NEWMAN_REPORT_JUNIT: ${NEWMAN_REPORT_JUNIT:-/reports/newman-report.xml}
+    volumes:
+      - ../CI/qa/postman:/etc/newman:ro
+      - ../dist/newman:/reports
+    command:
+      - |
+        if [ ! -f "$${NEWMAN_COLLECTION}" ]; then
+          echo "[newman] Collection not found: $${NEWMAN_COLLECTION}" >&2
+          echo "[newman] Set NEWMAN_COLLECTION to a valid file path." >&2
+          exit 2
+        fi
+
+        if [ -z "$${NEWMAN_LOGIN_USER_ID}" ] || [ -z "$${NEWMAN_LOGIN_PASSWORD}" ]; then
+          echo "[newman] NEWMAN_LOGIN_USER_ID and NEWMAN_LOGIN_PASSWORD are required." >&2
+          exit 2
+        fi
+
+        if [ -n "$${NEWMAN_ENVIRONMENT}" ] && [ ! -f "$${NEWMAN_ENVIRONMENT}" ]; then
+          echo "[newman] Environment file not found: $${NEWMAN_ENVIRONMENT}" >&2
+          exit 2
+        fi
+
+        mkdir -p /reports
+        set -- \
+          --env-var "baseUrl=$${NEWMAN_BASE_URL}" \
+          --env-var "loginUserId=$${NEWMAN_LOGIN_USER_ID}" \
+          --env-var "loginPassword=$${NEWMAN_LOGIN_PASSWORD}" \
+          --env-var "authLoginPath=$${NEWMAN_AUTH_LOGIN_PATH}" \
+          --env-var "authStatusPath=$${NEWMAN_AUTH_STATUS_PATH}" \
+          --env-var "authTokenCookieName=$${NEWMAN_AUTH_TOKEN_COOKIE_NAME}" \
+          --env-var "loginUserIdKey=$${NEWMAN_AUTH_LOGIN_USER_ID_KEY}" \
+          --env-var "loginPasswordKey=$${NEWMAN_AUTH_LOGIN_PASSWORD_KEY}" \
+          --reporters cli,json,junit \
+          --reporter-json-export "$${NEWMAN_REPORT_JSON}" \
+          --reporter-junit-export "$${NEWMAN_REPORT_JUNIT}"
+        if [ -n "$${NEWMAN_ENVIRONMENT}" ]; then
+          set -- --environment "$${NEWMAN_ENVIRONMENT}" "$$@"
+        fi
+
+        newman run "$${NEWMAN_COLLECTION}" "$$@"
+    networks:
+      - appnet
+
+  python-tools:
+    profiles: ["tools"]
+    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+    container_name: jems-python-tools
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    working_dir: /workspace/TOOL/python
+    environment:
+      TZ: Asia/Tokyo
+      UV_CACHE_DIR: /workspace/dist/python/uv-cache
+      UV_LINK_MODE: copy
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    volumes:
+      - ..:/workspace
+      - ../dist/python:/workspace/dist/python
+    command:
+      - uv
+      - run
+      - python
+      - --version
+    networks:
+      - appnet
+
+  k6:
+    profiles: ["performance"]
+    image: grafana/k6:0.49.0
+    container_name: jems-k6
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      TZ: Asia/Tokyo
+      TARGET_URL: ${K6_TARGET_URL:-http://gateway:8888/}
+      K6_VUS: ${K6_VUS:-10}
+      K6_DURATION: ${K6_DURATION:-30s}
+      EXPECTED_STATUSES: ${K6_EXPECTED_STATUSES:-200,401,403,404}
+    volumes:
+      - ./k6:/scripts:ro
+      - ../dist/k6:/reports
+    depends_on:
+      gateway:
+        condition: service_healthy
+    command: ["run", "--summary-export=/reports/summary.json", "/scripts/smoke.js"]
+    working_dir: /scripts
+    networks:
+      - appnet
+
+  zap-baseline:
+    profiles: ["security"]
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: jems-zap-baseline
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    environment:
+      TZ: Asia/Tokyo
+    depends_on:
+      frontend-zap:
+        condition: service_healthy
+    volumes:
+      - ./zap/zap-baseline.conf:/zap/rules/zap-baseline.conf:ro
+      - ../dist/zap:/zap/wrk
+    working_dir: /zap/wrk
+    command:
+      - zap-baseline.py
+      - -t
+      - ${ZAP_TARGET_URL:-http://frontend-zap:3000}
+      - -m
+      - ${ZAP_SPIDER_MINUTES:-3}
+      - -c
+      - /zap/rules/zap-baseline.conf
+      - -J
+      - report.json
+      - -r
+      - report.html
+      - -w
+      - report.md
+    networks:
+      - appnet
+
+volumes:
+  mysql_data:
+  minio_data:
+  redis_data:
+  maven_repo:
+  frontend_node_modules:
+networks:
+  appnet:
+    driver: bridge

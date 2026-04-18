@@ -1,0 +1,270 @@
+# =====================
+# Backend Setup
+# =====================
+backend-setup:
+  stage: validate
+  image: maven:3.9.9-eclipse-temurin-21
+
+  cache:
+    key: "maven-repo-jdk21-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
+    policy: pull-push
+
+  script:
+    - java -version
+    - mvn -v
+    - echo "メッセージ直書きルール検査を実行"
+    - bash BE/scripts/check_message_literals.sh
+    - echo "JAVA_HOME=$JAVA_HOME"
+    - echo "PATH=$PATH"
+    - echo "ローカル JAR をインストール (servercommon用)"
+    - mkdir -p BE/servercommon/libs
+    - ls -l BE/servercommon/libs || echo "libs フォルダが存在しません"
+    - |
+      for jar in \
+        iTextAsian-1.0.jar \
+        systembase.core-1.8.jar \
+        systembase.report-5.18.jar \
+        systembase.barcode-1.3.jar \
+        systembase.report.pdf-5.18.jar; do
+        name=$(basename "$jar" .jar)
+        echo "JAR をインストール中: $jar"
+        case "$name" in
+          iTextAsian-1.0) mvn install:install-file -Dfile=BE/servercommon/libs/$jar -DgroupId=com.lowagie -DartifactId=itext-asian -Dversion=1.0 -Dpackaging=jar ;;
+          systembase.core-1.8) mvn install:install-file -Dfile=BE/servercommon/libs/$jar -DgroupId=jp.co.systembase -DartifactId=core -Dversion=1.8 -Dpackaging=jar ;;
+          systembase.report-5.18) mvn install:install-file -Dfile=BE/servercommon/libs/$jar -DgroupId=jp.co.systembase -DartifactId=report -Dversion=5.18 -Dpackaging=jar ;;
+          systembase.barcode-1.3) mvn install:install-file -Dfile=BE/servercommon/libs/$jar -DgroupId=jp.co.systembase -DartifactId=barcode -Dversion=1.3 -Dpackaging=jar ;;
+          systembase.report.pdf-5.18) mvn install:install-file -Dfile=BE/servercommon/libs/$jar -DgroupId=jp.co.systembase -DartifactId=report-pdf -Dversion=5.18 -Dpackaging=jar ;;
+        esac
+      done
+    - mvn -f BE/pom.xml clean install -N
+    - mvn -f BE/servercommon/logging/pom.xml clean install -DskipTests
+    - mvn -f BE/servercommon/pom.xml clean install -DskipTests
+
+  artifacts:
+    paths:
+      - .m2/repository
+    expire_in: 1 hour
+
+  tags:
+    - docker-runner
+  rules:
+    - if: '$FRONTEND_ONLY == "true"'
+      when: never
+    - if: '$CI_MERGE_REQUEST_ID'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+# =====================
+# Backend Dependency Scan
+# =====================
+backend-dependency-scan:
+  stage: validate
+  image: maven:3.9.9-eclipse-temurin-21
+  allow_failure: true
+
+  needs:
+    - job: backend-setup
+
+  cache:
+    key: "maven-repo-jdk21-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
+    policy: pull
+
+  script:
+    - java -version
+    - mvn -v
+    - mvn -f BE/pom.xml org.owasp:dependency-check-maven:check -DskipTests
+
+  artifacts:
+    when: always
+    paths:
+      - BE/target/dependency-check-report.html
+      - BE/target/dependency-check-report.xml
+      - BE/target/dependency-check-report.json
+    expire_in: 10 days
+
+  tags:
+    - docker-runner
+  rules:
+    - if: '$FRONTEND_ONLY == "true"'
+      when: never
+    - if: '$BACKEND_DEP_SCAN == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH == "develop")'
+      when: manual
+    - when: never
+
+# =====================
+# Backend Test
+# =====================
+backend-test:
+  stage: test
+  image: maven:3.9.9-eclipse-temurin-21
+
+  needs:
+    - job: backend-setup
+
+  cache:
+    key: "maven-repo-jdk21-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
+    policy: pull
+
+  script:
+    - java -version
+    - mvn -v
+    - mvn -f BE/appserver/pom.xml test -Dspring.profiles.active=test
+    - |
+      if [ "${BACKEND_ITEST:-false}" = "true" ]; then
+        echo "Integration test を実行します"
+        mvn -f BE/appserver/pom.xml verify -Dspring.profiles.active=test -DskipTests -DskipITs=false
+        mvn -f BE/batchserver/pom.xml verify -Dspring.profiles.active=test -DskipTests -DskipITs=false
+      else
+        echo "Integration test はスキップします"
+      fi
+
+  artifacts:
+    when: always
+    paths:
+      - BE/appserver/target/surefire-reports
+      - BE/batchserver/target/surefire-reports
+      - BE/servercommon/target/surefire-reports
+    reports:
+      junit:
+        - BE/appserver/target/surefire-reports/TEST-*.xml
+        - BE/batchserver/target/surefire-reports/TEST-*.xml
+        - BE/servercommon/target/surefire-reports/TEST-*.xml
+    expire_in: 10 days
+
+  tags:
+    - docker-runner
+  rules:
+    - if: '$FRONTEND_ONLY == "true"'
+      when: never
+    - if: '$BACKEND_COVERAGE != "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH == "develop")'
+      when: on_success
+    - when: never
+
+
+# =====================
+# Backend Coverage
+# =====================
+backend-coverage:
+  stage: coverage
+  image: maven:3.9.9-eclipse-temurin-21
+
+  needs:
+    - job: backend-setup
+
+  cache:
+    key: "maven-repo-jdk21-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
+    policy: pull
+
+  script:
+    - java -version
+    - mvn -f BE/appserver/pom.xml -Dspring.profiles.active=test test
+    - mvn -f BE/appserver/pom.xml jacoco:report
+
+    - mvn -f BE/batchserver/pom.xml -Dspring.profiles.active=test test
+    - mvn -f BE/batchserver/pom.xml jacoco:report
+
+    - mvn -f BE/servercommon/pom.xml -Dspring.profiles.active=test test
+    - mvn -f BE/servercommon/pom.xml jacoco:report
+    - |
+      if [ "${BACKEND_ITEST:-false}" = "true" ]; then
+        echo "Integration test を実行します"
+        mvn -f BE/appserver/pom.xml verify -Dspring.profiles.active=test -DskipTests -DskipITs=false
+        mvn -f BE/batchserver/pom.xml verify -Dspring.profiles.active=test -DskipTests -DskipITs=false
+      else
+        echo "Integration test はスキップします"
+      fi
+
+  artifacts:
+    when: always
+    paths:
+      - BE/appserver/target/site/jacoco
+      - BE/batchserver/target/site/jacoco
+      - BE/servercommon/target/site/jacoco
+      - BE/appserver/target/surefire-reports
+      - BE/batchserver/target/surefire-reports
+      - BE/servercommon/target/surefire-reports
+    reports:
+      junit:
+        - BE/appserver/target/surefire-reports/TEST-*.xml
+        - BE/batchserver/target/surefire-reports/TEST-*.xml
+        - BE/servercommon/target/surefire-reports/TEST-*.xml
+    expire_in: 10 days
+
+  tags:
+    - docker-runner
+  rules:
+    - if: '$FRONTEND_ONLY == "true"'
+      when: never
+    - if: '$BACKEND_COVERAGE == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH == "develop")'
+      when: on_success
+    - when: never
+
+
+# =====================
+# Backend Build
+# =====================
+backend-build:
+  stage: build
+  image: maven:3.9.9-eclipse-temurin-21
+  needs:
+    - job: backend-setup
+      artifacts: true
+  script:
+    - echo "アプリケーションをビルド"
+    - mvn -f BE/appserver/pom.xml clean package -DskipTests
+    - mvn -f BE/batchserver/pom.xml clean package -DskipTests
+    - mvn -f BE/pom.xml clean install -N
+  artifacts:
+    paths:
+      - BE/appserver/target/appserver-1.0.0-SNAPSHOT.jar
+      - BE/batchserver/target/batchserver-1.0.0-SNAPSHOT.jar
+      - BE/appserver/src/main/resources/*.yml
+      - BE/batchserver/src/main/resources/*.yml
+    expire_in: 10 days
+
+  tags:
+    - docker-runner
+  rules:
+    - if: '$FRONTEND_ONLY == "true"'
+      when: never
+    - if: '$BACKEND_DEPLOY == "true"'
+      when: on_success
+    - if: '$CI_MERGE_REQUEST_ID'
+      when: on_success
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      when: on_success
+    - when: never
+
+# Backend deploy jobs are maintained in CI/ci-config/deploy/backend.yml.
+
+# # =====================
+# # Flyway Migration (UAT)
+# # =====================
+# migrate-db:
+#   stage: migrate-db
+#   image: maven:3.9.4-eclipse-temurin-17
+#   cache:
+#     key: maven-repo
+#     paths:
+#       - .m2/repository
+#     policy: pull-push
+#   needs:
+#     - job: backend-setup
+#   script:
+#     - cd BE/servercommon
+#     - echo "ローカル JAR をインストール"
+#     - mvn flyway:migrate -Dflyway.configFiles=../../CI/ci-config/flyway-uat.conf
+#   tags:
+#     - docker-runner
+#   # only:
+#   #   - release-uat
+#   rules:
+#     - if: '$CI_MERGE_REQUEST_ID'
+#     - if: '$CI_COMMIT_BRANCH == "develop"'

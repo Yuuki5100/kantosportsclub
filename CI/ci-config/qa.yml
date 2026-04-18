@@ -1,0 +1,491 @@
+# =====================
+# QA Jobs (Security / Contract / E2E / Newman / k6 / ZAP)
+# =====================
+.default-qa:
+  tags:
+    - docker-runner
+
+# =====================
+# Security Scan (Trivy / Gitleaks)
+# =====================
+trivy-scan:
+  stage: validate
+  extends: .default-qa
+  image:
+    name: aquasec/trivy:0.65.0
+    entrypoint: [""]
+  script:
+    - mkdir -p dist/security
+    - |
+      EXIT_CODE="${TRIVY_EXIT_CODE:-}"
+      if [ -z "${EXIT_CODE}" ]; then
+        if [ "${TRIVY_ENFORCE:-false}" = "true" ]; then
+          EXIT_CODE=1
+        else
+          EXIT_CODE=0
+        fi
+      fi
+      trivy fs \
+        --scanners "vuln,misconfig" \
+        --severity "${TRIVY_SEVERITY:-HIGH,CRITICAL}" \
+        --ignore-unfixed \
+        --format json \
+        --output dist/security/trivy-fs.json \
+        --exit-code "${EXIT_CODE}" \
+        --timeout "${TRIVY_TIMEOUT:-10m}" \
+        "${TRIVY_TARGET_DIR:-.}"
+  artifacts:
+    when: always
+    paths:
+      - dist/security/trivy-fs.json
+    expire_in: 10 days
+  rules:
+    - if: '$TRIVY_SCAN == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$TRIVY_SCAN == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat|prd)|release-(dev|uat|prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never
+
+gitleaks-scan:
+  stage: validate
+  extends: .default-qa
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  script:
+    - mkdir -p dist/security
+    - |
+      EXIT_CODE="${GITLEAKS_EXIT_CODE:-}"
+      if [ -z "${EXIT_CODE}" ]; then
+        if [ "${GITLEAKS_ENFORCE:-false}" = "true" ]; then
+          EXIT_CODE=1
+        else
+          EXIT_CODE=0
+        fi
+      fi
+      if [ -f ".gitleaks.toml" ]; then
+        gitleaks dir \
+          --config .gitleaks.toml \
+          --report-format sarif \
+          --report-path dist/security/gitleaks.sarif \
+          --exit-code "${EXIT_CODE}" \
+          --redact \
+          .
+      else
+        gitleaks dir \
+          --report-format sarif \
+          --report-path dist/security/gitleaks.sarif \
+          --exit-code "${EXIT_CODE}" \
+          --redact \
+          .
+      fi
+  artifacts:
+    when: always
+    paths:
+      - dist/security/gitleaks.sarif
+    expire_in: 10 days
+  rules:
+    - if: '$GITLEAKS_SCAN == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$GITLEAKS_SCAN == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat|prd)|release-(dev|uat|prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never
+
+# =====================
+# Pact Contract Test
+# =====================
+pact-consumer-generate:
+  stage: validate
+  extends: .default-qa
+  image: node:24.14.0-bookworm-slim
+  script:
+    - npm ci --prefix CI/qa/pact
+    - npm run pact:consumer --prefix CI/qa/pact
+  artifacts:
+    when: always
+    paths:
+      - CI/qa/pact/contracts/*.json
+    expire_in: 10 days
+  rules:
+    - if: '$PACT_VERIFY == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$PACT_VERIFY == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat|prd)|release-(dev|uat|prd))$/)'
+      when: manual
+    - when: never
+
+pact-provider-verify:
+  stage: test
+  extends: .default-qa
+  image: maven:3.9.9-eclipse-temurin-21
+  needs:
+    - job: backend-setup
+      optional: true
+    - job: pact-consumer-generate
+      artifacts: true
+  cache:
+    key: "maven-repo-jdk21-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
+    policy: pull
+  script:
+    - java -version
+    - mvn -v
+    - |
+      if ! ls CI/qa/pact/contracts/*.json >/dev/null 2>&1; then
+        echo "Pact contract file not found. Run pact-consumer-generate first." >&2
+        exit 1
+      fi
+    - |
+      if [ "${PACT_ENFORCE:-false}" = "true" ]; then
+        mvn -f BE/gateway/pom.xml -Dtest=apigateway.pact.GatewayPactProviderVerificationTest test
+      else
+        mvn -f BE/gateway/pom.xml -Dtest=apigateway.pact.GatewayPactProviderVerificationTest test || true
+      fi
+  artifacts:
+    when: always
+    paths:
+      - BE/gateway/target/surefire-reports
+    reports:
+      junit:
+        - BE/gateway/target/surefire-reports/TEST-*.xml
+    expire_in: 10 days
+  rules:
+    - if: '$PACT_VERIFY == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$PACT_VERIFY == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat|prd)|release-(dev|uat|prd))$/)'
+      when: manual
+    - when: never
+
+pact-public-samples-generate:
+  stage: validate
+  extends: .default-qa
+  image: node:24.14.0-bookworm-slim
+  script:
+    - npm ci --prefix CI/qa/pact
+    - npm run pact:consumer:samples --prefix CI/qa/pact
+    - npm run pact:consumer:samples:check --prefix CI/qa/pact
+  artifacts:
+    when: always
+    paths:
+      - CI/qa/pact/contracts-samples/*.json
+    expire_in: 10 days
+  rules:
+    - if: '$PACT_PUBLIC_SAMPLES == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$PACT_PUBLIC_SAMPLES == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat|prd)|release-(dev|uat|prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never
+
+pact-public-samples-provider-verify:
+  stage: test
+  extends: .default-qa
+  image: maven:3.9.9-eclipse-temurin-21
+  needs:
+    - job: backend-setup
+      optional: true
+    - job: pact-public-samples-generate
+      artifacts: true
+  cache:
+    key: "maven-repo-jdk21-${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository
+    policy: pull
+  script:
+    - java -version
+    - mvn -v
+    - |
+      if ! ls CI/qa/pact/contracts-samples/*.json >/dev/null 2>&1; then
+        echo "Pact sample contract file not found. Run pact-public-samples-generate first." >&2
+        exit 1
+      fi
+    - |
+      if [ "${PACT_PUBLIC_SAMPLES_ENFORCE:-false}" = "true" ]; then
+        mvn -f BE/appserver/pom.xml -Dtest=com.example.appserver.pact.AppserverPublicEndpointSamplesPactProviderVerificationTest test
+      else
+        mvn -f BE/appserver/pom.xml -Dtest=com.example.appserver.pact.AppserverPublicEndpointSamplesPactProviderVerificationTest test || true
+      fi
+  artifacts:
+    when: always
+    paths:
+      - BE/appserver/target/surefire-reports
+    reports:
+      junit:
+        - BE/appserver/target/surefire-reports/TEST-com.example.appserver.pact.AppserverPublicEndpointSamplesPactProviderVerificationTest.xml
+    expire_in: 10 days
+  rules:
+    - if: '$PACT_PUBLIC_SAMPLES == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$PACT_PUBLIC_SAMPLES == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat|prd)|release-(dev|uat|prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never
+
+# =====================
+# Playwright Smoke E2E
+# =====================
+e2e-smoke:
+  stage: test
+  extends: .default-qa
+  image: mcr.microsoft.com/playwright:v1.58.2-noble
+  before_script:
+    - cd FE/spa-next/my-next-app
+    - npm ci
+  script:
+    - |
+      if [ -z "${E2E_BASE_URL:-}" ]; then
+        echo "E2E_BASE_URL is required when E2E_SMOKE=true" >&2
+        exit 1
+      fi
+    - export PLAYWRIGHT_SKIP_WEBSERVER=true
+    - export BASE_URL="${E2E_BASE_URL}"
+    - npx playwright test src/tests/it/smoke.spec.ts --reporter=html,line
+  artifacts:
+    when: always
+    paths:
+      - FE/spa-next/my-next-app/playwright-report
+      - FE/spa-next/my-next-app/src/tests/test-results
+    expire_in: 10 days
+  rules:
+    - if: '$E2E_SMOKE == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$E2E_SMOKE == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat)|release-(dev|uat|prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never
+
+# =====================
+# Newman Smoke API Test
+# =====================
+newman-smoke:
+  stage: test
+  extends: .default-qa
+  image:
+    name: postman/newman:alpine
+    entrypoint: [""]
+  script:
+    - |
+      if [ -z "${NEWMAN_COLLECTION:-}" ]; then
+        echo "NEWMAN_COLLECTION is required when NEWMAN_SMOKE=true" >&2
+        exit 1
+      fi
+    - |
+      if [ -z "${NEWMAN_BASE_URL:-}" ]; then
+        echo "NEWMAN_BASE_URL is required when NEWMAN_SMOKE=true" >&2
+        exit 1
+      fi
+    - |
+      if [ -z "${NEWMAN_LOGIN_USER_ID:-}" ] || [ -z "${NEWMAN_LOGIN_PASSWORD:-}" ]; then
+        echo "NEWMAN_LOGIN_USER_ID and NEWMAN_LOGIN_PASSWORD are required when NEWMAN_SMOKE=true" >&2
+        exit 1
+      fi
+    - |
+      if [ ! -f "${NEWMAN_COLLECTION}" ]; then
+        echo "Collection file not found: ${NEWMAN_COLLECTION}" >&2
+        exit 1
+      fi
+    - |
+      if [ -n "${NEWMAN_ENVIRONMENT:-}" ] && [ ! -f "${NEWMAN_ENVIRONMENT}" ]; then
+        echo "Environment file not found: ${NEWMAN_ENVIRONMENT}" >&2
+        exit 1
+      fi
+    - mkdir -p dist/newman
+    - |
+      if [ -n "${NEWMAN_ENVIRONMENT:-}" ]; then
+        set -- --environment "${NEWMAN_ENVIRONMENT}"
+      else
+        set --
+      fi
+      newman run "${NEWMAN_COLLECTION}" "$@" \
+        --env-var "baseUrl=${NEWMAN_BASE_URL}" \
+        --env-var "loginUserId=${NEWMAN_LOGIN_USER_ID}" \
+        --env-var "loginPassword=${NEWMAN_LOGIN_PASSWORD}" \
+        --env-var "authLoginPath=${NEWMAN_AUTH_LOGIN_PATH:-/api/auth/login}" \
+        --env-var "authStatusPath=${NEWMAN_AUTH_STATUS_PATH:-/api/auth/status}" \
+        --env-var "authTokenCookieName=${NEWMAN_AUTH_TOKEN_COOKIE_NAME:-ACCESS_TOKEN}" \
+        --env-var "loginUserIdKey=${NEWMAN_AUTH_LOGIN_USER_ID_KEY:-user_id}" \
+        --env-var "loginPasswordKey=${NEWMAN_AUTH_LOGIN_PASSWORD_KEY:-password}" \
+        --reporters cli,json,junit \
+        --reporter-json-export dist/newman/newman-report.json \
+        --reporter-junit-export dist/newman/newman-report.xml
+  artifacts:
+    when: always
+    paths:
+      - dist/newman/newman-report.json
+      - dist/newman/newman-report.xml
+    expire_in: 10 days
+  rules:
+    - if: '$NEWMAN_SMOKE == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$NEWMAN_SMOKE == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat|prd)|release-(dev|uat|prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never
+
+# =====================
+# k6 Smoke
+# =====================
+k6-smoke:
+  stage: test
+  extends: .default-qa
+  image:
+    name: grafana/k6:0.49.0
+    entrypoint: [""]
+  script:
+    - |
+      if [ -z "${K6_TARGET_URL:-}" ]; then
+        echo "K6_TARGET_URL is required when K6_SMOKE=true" >&2
+        exit 1
+      fi
+    - mkdir -p dist/k6
+    - |
+      TARGET_URL="${K6_TARGET_URL}" \
+      K6_VUS="${K6_VUS:-10}" \
+      K6_DURATION="${K6_DURATION:-30s}" \
+      EXPECTED_STATUSES="${K6_EXPECTED_STATUSES:-200,401,403,404}" \
+      k6 run --summary-export dist/k6/summary.json docker/k6/smoke.js
+  artifacts:
+    when: always
+    paths:
+      - dist/k6/summary.json
+    expire_in: 10 days
+  rules:
+    - if: '$K6_SMOKE == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$K6_SMOKE == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat)|release-(dev|uat|prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never
+
+# =====================
+# OWASP ZAP Baseline
+# =====================
+zap-baseline-scan:
+  stage: test
+  extends: .default-qa
+  image:
+    name: ghcr.io/zaproxy/zaproxy:stable
+    entrypoint: [""]
+  script:
+    - |
+      if [ -z "${ZAP_TARGET_URL:-}" ]; then
+        echo "ZAP_TARGET_URL is required when ZAP_BASELINE=true" >&2
+        exit 1
+      fi
+    - mkdir -p dist/zap
+    - |
+      zap-baseline.py \
+        -t "${ZAP_TARGET_URL}" \
+        -m "${ZAP_SPIDER_MINUTES:-3}" \
+        -c "${ZAP_BASELINE_CONFIG:-docker/zap/zap-baseline.conf}" \
+        -J dist/zap/report.json \
+        -r dist/zap/report.html \
+        -w dist/zap/report.md
+  artifacts:
+    when: always
+    paths:
+      - dist/zap/report.json
+      - dist/zap/report.html
+      - dist/zap/report.md
+    expire_in: 10 days
+  rules:
+    - if: '$ZAP_BASELINE == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$ZAP_BASELINE == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat)|release-(dev|uat)|release-(prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never
+
+# =====================
+# ST Evidence Archive
+# =====================
+qa-evidence-archive:
+  stage: build
+  extends: .default-qa
+  image: alpine:3.20
+  needs:
+    - job: trivy-scan
+      artifacts: true
+      optional: true
+    - job: gitleaks-scan
+      artifacts: true
+      optional: true
+    - job: pact-consumer-generate
+      artifacts: true
+      optional: true
+    - job: pact-provider-verify
+      artifacts: true
+      optional: true
+    - job: pact-public-samples-generate
+      artifacts: true
+      optional: true
+    - job: pact-public-samples-provider-verify
+      artifacts: true
+      optional: true
+    - job: e2e-smoke
+      artifacts: true
+      optional: true
+    - job: newman-smoke
+      artifacts: true
+      optional: true
+    - job: k6-smoke
+      artifacts: true
+      optional: true
+    - job: zap-baseline-scan
+      artifacts: true
+      optional: true
+    - job: backend-coverage
+      artifacts: true
+      optional: true
+    - job: frontend-coverage
+      artifacts: true
+      optional: true
+  script:
+    - mkdir -p dist/evidence/input
+    - |
+      set -eu
+      for path in \
+        dist/k6/summary.json \
+        dist/security/trivy-fs.json \
+        dist/security/gitleaks.sarif \
+        CI/qa/pact/contracts \
+        CI/qa/pact/contracts-samples \
+        BE/gateway/target/surefire-reports \
+        BE/appserver/target/surefire-reports \
+        dist/zap/report.json \
+        dist/zap/report.html \
+        dist/zap/report.md \
+        FE/spa-next/my-next-app/playwright-report \
+        FE/spa-next/my-next-app/src/tests/test-results \
+        dist/newman/newman-report.json \
+        dist/newman/newman-report.xml \
+        BE/appserver/target/site/jacoco \
+        BE/batchserver/target/site/jacoco \
+        BE/servercommon/target/site/jacoco \
+        FE/spa-next/my-next-app/coverage; do
+        if [ -e "${path}" ]; then
+          mkdir -p "dist/evidence/input/$(dirname "${path}")"
+          cp -R "${path}" "dist/evidence/input/${path}"
+        fi
+      done
+    - |
+      evidence_count="$(find dist/evidence/input -type f | wc -l)"
+      if [ "${evidence_count}" -eq 0 ]; then
+        echo "No evidence artifacts found. Enable coverage/QA jobs before running qa-evidence-archive." >&2
+        exit 1
+      fi
+    - tar -czf "dist/evidence/st-evidence-${CI_PIPELINE_ID}.tar.gz" -C dist/evidence/input .
+  artifacts:
+    when: always
+    paths:
+      - dist/evidence/st-evidence-*.tar.gz
+    expire_in: 90 days
+  rules:
+    - if: '$ST_EVIDENCE_ARCHIVE == "true" && $CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$ST_EVIDENCE_ARCHIVE == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release_(dev|uat|prd)|release-(dev|uat|prd))$/)'
+      when: manual
+      allow_failure: true
+    - when: never

@@ -1,0 +1,53 @@
+server:
+  port: 8888
+
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: apigateway
+  codec:
+    max-in-memory-size: 10MB
+  redis:
+    host: localhost
+    port: 6379
+
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+      routes:
+        - id: ratelimit-test
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/app/ratelimit-test
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 10
+            - AddResponseHeader=X-RateLimit-Test, true
+
+jwt:
+  secret: 9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==
+  expiration: 86400000
+
+gateway:
+  ip-whitelist: 127.0.0.1, ::1
+  public-paths:
+    - /login
+    - /logout
+    - /public
+    - /actuator
+    - /health
+    - /api/app/ratelimit-test
+    - /api/auth/login
+    - /api/auth/refresh
+
+# cors:
+#   allowed-origins:
+#     - http://localhost:3000
+
+teams:
+  webhook:
+    url: https://example.com/dummy-webhook-url-local

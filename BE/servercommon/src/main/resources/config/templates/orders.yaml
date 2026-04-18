@@ -1,0 +1,44 @@
+templateId: orders
+version: v1
+
+columns:
+  - field: orderId
+    name: orderId
+    required: true
+    type: string
+    repository: ordersRepository
+    entity: com.example.servercommon.model.Orders
+
+  - field: productName
+    name: productName
+    required: true
+    type: string
+    repository: ordersRepository
+    entity: com.example.servercommon.model.Orders
+
+  - field: quantity
+    name: quantity
+    required: true
+    type: number
+    repository: ordersRepository
+    entity: com.example.servercommon.model.Orders
+    pattern: ^\d+$
+    validationMessage: 数量は 1 以上の整数で入力してください。
+
+  - field: price
+    name: price
+    required: false
+    type: number
+    repository: ordersRepository
+    entity: com.example.servercommon.model.Orders
+    pattern: ^\d+(\.\d{1,2})?$
+    validationMessage: 価格は小数点2桁までの数値で入力してください。
+
+  - field: orderDate
+    name: orderDate
+    required: false
+    type: string
+    repository: ordersRepository
+    entity: com.example.servercommon.model.Orders
+    pattern: ^\d{4}-\d{2}-\d{2}$
+    validationMessage: 注文日は YYYY-MM-DD の形式で入力してください。

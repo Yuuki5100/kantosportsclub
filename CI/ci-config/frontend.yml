@@ -1,0 +1,220 @@
+# =====================
+# Frontend Jobs
+# =====================
+frontend-install:
+  stage: validate
+  extends: .default-frontend
+  script:
+    - echo "?? 初回インストールのみ実行"
+    - npm ci
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-fe-${CI_RUNNER_ARCH}
+    paths:
+      - FE/spa-next/my-next-app/node_modules
+    policy: pull-push
+  rules:
+    - if: '$BACKEND_ONLY == "true"'
+      when: never
+    - when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH =~ /^(develop|release-(dev|uat|prd))$/'
+
+ # =====================
+ # Frontend Lint
+ # =====================
+frontend-lint:
+  extends: .default-frontend
+  needs:
+    - job: frontend-install
+  tags:
+    - docker-runner
+  stage: test
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-fe-${CI_RUNNER_ARCH}-eslint
+    paths:
+      - FE/spa-next/my-next-app/.eslintcache
+    policy: pull-push
+  before_script:
+    - cd FE/spa-next/my-next-app
+    - npm ci
+  script:
+    - echo "?? Lint チェック"
+    - npm run lint
+    - echo "?? TypeScript チェック (noEmit)"
+    - npx tsc -p tsconfig.jest.json --noEmit
+  rules:
+    - if: '$BACKEND_ONLY == "true"'
+      when: never
+    - if: '$FRONTEND_LINT == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release-(dev|uat|prd))$/)'
+      when: on_success
+    - when: never
+
+ # =====================
+ # Frontend jest-test
+ # =====================
+frontend-jest-test:
+  extends: .default-frontend
+  tags:
+    - docker-runner
+  stage: test
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-fe-${CI_RUNNER_ARCH}
+  needs:
+    - job: frontend-lint
+      optional: true
+    - job: frontend-install
+  before_script:
+    - cd FE/spa-next/my-next-app
+    - npm ci
+  script:
+    - echo "?? Jest テスト実行"
+    - npm run test
+  artifacts:
+    when: always
+    paths:
+      - FE/spa-next/my-next-app/scripts/jest-report.html
+    expire_in: 10 days
+  rules:
+    - if: '$BACKEND_ONLY == "true"'
+      when: never
+    - if: '$FRONTEND_TEST == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release-(dev|uat|prd))$/)'
+      when: on_success
+    - when: never
+
+ # =====================
+ # Frontend coverage
+ # =====================
+frontend-coverage:
+  extends: .default-frontend
+  tags:
+    - docker-runner
+  stage: coverage
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-fe-${CI_RUNNER_ARCH}
+  needs:
+    - job: frontend-jest-test
+      optional: true
+    - job: frontend-install
+  before_script:
+    - cd FE/spa-next/my-next-app
+    - npm ci
+  script:
+    - echo "?? Jest カバレッジ生成"
+    - npm run test:coverage
+  artifacts:
+    when: always
+    paths:
+      - FE/spa-next/my-next-app/scripts/jest-report.html
+      - FE/spa-next/my-next-app/coverage
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: FE/spa-next/my-next-app/coverage/cobertura-coverage.xml
+    expire_in: 10 days
+  rules:
+    - if: '$BACKEND_ONLY == "true"'
+      when: never
+    - if: '$FRONTEND_COVERAGE == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "release-uat")'
+      when: on_success
+    - when: never
+
+# =====================
+# Frontend Storybook Build
+# =====================
+frontend-storybook-build:
+  extends: .default-frontend
+  tags:
+    - docker-runner
+  stage: build
+  needs:
+    - job: frontend-install
+    - job: frontend-lint
+      optional: true
+    - job: frontend-jest-test
+      optional: true
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-fe-${CI_RUNNER_ARCH}
+    paths:
+      - FE/spa-next/my-next-app/node_modules
+    policy: pull
+  before_script:
+    - cd FE/spa-next/my-next-app
+    - npm ci
+  script:
+    - echo "?? Storybook をビルド"
+    - npm run build-storybook
+  artifacts:
+    when: always
+    paths:
+      - FE/spa-next/my-next-app/storybook-static
+    expire_in: 10 days
+  rules:
+    - if: '$BACKEND_ONLY == "true"'
+      when: never
+    - if: '$FRONTEND_STORYBOOK == "true" && ($CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH =~ /^(develop|release-(dev|uat|prd))$/)'
+      when: on_success
+    - when: never
+
+# =====================
+# Frontend build
+# =====================
+frontend-build:
+  extends: .default-frontend
+  tags:
+    - docker-runner
+  stage: build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-fe-${CI_RUNNER_ARCH}
+    paths:
+      - FE/spa-next/my-next-app/node_modules
+    policy: pull-push
+  needs:
+    - job: frontend-lint
+      optional: true
+    - job: frontend-jest-test
+      optional: true
+    - job: frontend-coverage
+      optional: true
+    - job: frontend-install
+  before_script:
+    - cd $CI_PROJECT_DIR/FE/spa-next/my-next-app
+    - rm -f ../../../package-lock.json
+    - |
+      echo "?? 依存ツールのインストール"
+      apt-get update && apt-get install -y build-essential python3
+
+      if [ ! -d node_modules ]; then
+        echo "?? node_modules が無いので npm ci を実行"
+        npm ci
+      else
+        echo "?? node_modules が存在するため npm ci はスキップ"
+      fi
+
+      echo "? lightningcss をビルド"
+      npm rebuild lightningcss
+      test -f postcss.config.js || echo "?? postcss.config.js が見つかりません"
+
+      echo "??? tailwind対応用 postcss プラグインを追加"
+      npm install -D @tailwindcss/postcss
+  script:
+    - echo "?? フロントエンドをビルド開始"
+    - npm run build
+
+  artifacts:
+    paths:
+      - FE/spa-next/my-next-app/out
+    exclude:
+      - FE/spa-next/my-next-app/node_modules
+      - FE/spa-next/my-next-app/.next/cache
+    expire_in: 10 days
+  rules:
+    - if: '$BACKEND_ONLY == "true"'
+      when: never
+    - if: '$FRONTEND_DEPLOY == "true"'
+      when: on_success
+    - if: '$CI_MERGE_REQUEST_ID'
+      when: on_success
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      when: on_success
+    - when: never
+
+# Frontend deploy jobs are maintained in CI/ci-config/deploy/frontend.yml.

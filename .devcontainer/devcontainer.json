@@ -1,0 +1,65 @@
+{
+  "name": "common-archetecture-dev",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "service": "workspace",
+  "workspaceFolder": "/workspace/common-archetecture",
+  "shutdownAction": "stopCompose",
+  "remoteUser": "vscode",
+  "postCreateCommand": ".devcontainer/post-create.sh",
+  "forwardPorts": [
+    3000,
+    3306,
+    6379,
+    8080,
+    8081,
+    8082,
+    8083,
+    8084,
+    8888,
+    9000,
+    9001
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "al-rimi.tomcat",
+        "avetis.tokyo-night",
+        "bierner.markdown-mermaid",
+        "dbaeumer.vscode-eslint",
+        "dbcode.dbcode",
+        "donjayamanne.githistory",
+        "drewxs.tokyo-night-dark",
+        "eamodio.gitlens",
+        "editorconfig.editorconfig",
+        "emmanuelbeziat.vscode-great-icons",
+        "esbenp.prettier-vscode",
+        "francescoanzalone.vsc-todo",
+        "github.github-vscode-theme",
+        "gruntfuggly.todo-tree",
+        "jebbs.plantuml",
+        "kevinrose.vsc-python-indent",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-wsl",
+        "ms-playwright.playwright",
+        "openai.chatgpt",
+        "pkief.material-icon-theme",
+        "sonarsource.sonarlint-vscode",
+        "redhat.vscode-yaml",
+        "redhat.java",
+        "sanaajani.taskrunnercode",
+        "tal7aouy.icons",
+        "vmware.vscode-boot-dev-pack",
+        "vscode-icons-team.vscode-icons",
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-maven"
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "interactive",
+        "files.eol": "\n"
+      }
+    }
+  }
+}

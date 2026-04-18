@@ -1,0 +1,23 @@
+﻿spring:
+  config:
+    activate:
+      on-profile: prd
+  datasource:
+    url: ${BATCH_DB_URL_PRD}
+    username: ${BATCH_DB_USER_PRD}
+    password: ${BATCH_DB_PASSWORD_PRD}
+  batch:
+    initialize-schema: never
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_PRD}
+
+logging:
+  appender: NONE
+  file:
+    path: /var/logs/${spring.application.name}
+
+report:
+  cache:
+    enabled: true

@@ -1,0 +1,32 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: sync-connector
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      - org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration
+  flyway:
+    enabled: false
+  batch:
+    job:
+      enabled: false
+  sql:
+    init:
+      mode: never
+
+sync:
+  signature:
+    enabled: true
+    secret: local-sync-secret
+    target-paths:
+      - /api/sample/receive
+    signature-header: X-Signature
+  signed-rest:
+    secret-key: local-sync-secret
+    signature-header: X-Signature

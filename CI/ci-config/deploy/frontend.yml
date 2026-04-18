@@ -1,0 +1,83 @@
+# =====================
+# Frontend Deploy
+# =====================
+frontend-deploy:
+  extends: .default-frontend
+  tags:
+    - docker-runner
+  stage: deploy
+  needs:
+    - job: frontend-build
+      artifacts: true
+  script:
+    - |
+      set -euo pipefail
+      TARGET_BRANCH="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-${CI_COMMIT_BRANCH:-}}"
+      echo "DEBUG: TARGET_BRANCH=$TARGET_BRANCH"
+
+      if [ "${FRONTEND_DEPLOY:-false}" = "true" ]; then
+        echo "?? デプロイ有効(FRONTEND_DEPLOY=true)のため処理を実行します (TARGET_BRANCH=$TARGET_BRANCH)"
+      else
+        echo "?? デプロイ無効(FRONTEND_DEPLOY!=true)のためスキップします (TARGET_BRANCH=$TARGET_BRANCH)"
+        exit 0
+      fi
+
+      echo "?? openssh-client をインストール中..."
+      apt-get update -y
+      apt-get install -y openssh-client rsync
+
+      echo "? SSH クライアントのインストール完了"
+      ssh -V
+
+      KEY_PATH="$CI_PROJECT_DIR/tmp_ssh_key.pem"
+      echo "$SSH_PRIVATE_KEY" > "$KEY_PATH"
+      chmod 600 "$KEY_PATH"
+
+      echo "?? 鍵ファイル確認"
+      ls -l "$KEY_PATH"
+
+      echo "?? 鍵の先頭3行（確認用）"
+      head -3 "$KEY_PATH"
+
+      echo "?? EC2 への接続テスト"
+      ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no ec2-user@172.17.0.1 "echo 'ssh ok'"
+
+      echo "?? .env 関連ファイルをコピーします"
+      mkdir -p /home/app/gitlab-runner/frontend/
+
+      ENV_FILES=$(find "$CI_PROJECT_DIR/FE/spa-next/my-next-app" -maxdepth 1 -type f -name "*.env*" || true)
+
+      if [ -n "$ENV_FILES" ]; then
+        echo "?? コピー対象:"
+        echo "$ENV_FILES"
+
+        cp $ENV_FILES /home/app/gitlab-runner/frontend/
+        echo "? ローカルへの .env 関連ファイルコピー成功"
+
+        echo "?? EC2 へ .env 関連ファイルを転送します"
+
+        ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no ec2-user@172.17.0.1 "mkdir -p /home/app/gitlab-runner/frontend/"
+
+        scp -i "$KEY_PATH" -o StrictHostKeyChecking=no $ENV_FILES ec2-user@172.17.0.1:/home/app/gitlab-runner/frontend/
+
+        echo "? EC2 への .env 関連ファイル転送完了"
+      else
+        echo "?? .env 関連ファイルが見つかりません。スキップします。"
+      fi
+
+      echo "?? EC2 へフロント成果物を同期します"
+      ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no ec2-user@172.17.0.1 \
+        "sudo mkdir -p /home/app/gitlab-runner/frontend && sudo chown -R ec2-user:ec2-user /home/app/gitlab-runner/frontend && sudo chmod -R 775 /home/app/gitlab-runner/frontend"
+
+      rsync -avz -e "ssh -i $KEY_PATH -o StrictHostKeyChecking=no" \
+        "$CI_PROJECT_DIR/FE/spa-next/my-next-app/out/" \
+        ec2-user@172.17.0.1:/home/app/gitlab-runner/frontend/
+
+      rm -f "$KEY_PATH"
+      echo "?? 一時鍵ファイルを削除しました"
+  rules:
+    - if: '$BACKEND_ONLY == "true"'
+      when: never
+    - if: '$FRONTEND_DEPLOY == "true"'
+      when: manual
+    - when: never

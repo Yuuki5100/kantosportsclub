@@ -1,0 +1,55 @@
+package com.example.appserver.cache;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import com.example.servercommon.model.MailTemplateSettingModel;
+import com.example.servercommon.repository.MailTemplateSettingRepository;
+
+class MailTemplateCacheTest {
+
+    private MailTemplateSettingRepository mailTemplateSettingRepository;
+    private MailTemplateCache mailTemplateCache;
+
+    @BeforeEach
+    void setUp() {
+        // モック化
+        mailTemplateSettingRepository = Mockito.mock(MailTemplateSettingRepository.class);
+        // MailTemplateCache を spy 化して GenericCache のメソッド呼び出し確認
+        mailTemplateCache = Mockito.spy(new MailTemplateCache(mailTemplateSettingRepository));
+    }
+
+    @Test
+    void testUpdateCache_shouldReloadCacheWithDataFromRepository() {
+        // 準備
+        List<MailTemplateSettingModel> mockList = List.of(new MailTemplateSettingModel());
+        when(mailTemplateSettingRepository.findAll()).thenReturn(mockList);
+
+        // 実行
+        mailTemplateCache.updateCache();
+
+        // 検証
+        verify(mailTemplateSettingRepository).findAll();
+        verify(mailTemplateCache).reloadCache("mailTemplates", mockList);
+    }
+
+    @Test
+    void testGetCache_shouldReturnCachedMailTemplates() {
+        // 準備
+        List<MailTemplateSettingModel> mockList = List.of(new MailTemplateSettingModel());
+        doReturn(mockList).when(mailTemplateCache).getCache("mailTemplates");
+
+        // 実行
+        List<MailTemplateSettingModel> result = mailTemplateCache.getCache();
+
+        // 検証
+        verify(mailTemplateCache).getCache("mailTemplates");
+        assertEquals(mockList, result);
+    }
+}

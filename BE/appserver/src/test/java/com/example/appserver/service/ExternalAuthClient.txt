@@ -1,0 +1,144 @@
+package com.example.appserver.service;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+
+import com.example.appserver.config.AuthProperties;
+import com.example.servercommon.responseModel.ApiResponse;
+import com.example.servercommon.responseModel.TokenResponse;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
+import java.security.interfaces.RSAPublicKey;
+import java.time.Instant;
+import java.util.Locale;
+import java.util.Map;
+
+
+/**
+ * 外部認証（GビズIDモック対応）クライアント
+ */
+@Component
+public class ExternalAuthClient {
+
+    private static final Logger log = LoggerFactory.getLogger(ExternalAuthClient.class);
+
+    private final AuthProperties authProperties;
+    private final RestTemplate restTemplate;
+    private static final int SESSION_TIMEOUT = 1800000; // 30分
+
+    public ExternalAuthClient(AuthProperties authProperties) {
+        this.authProperties = authProperties;
+        this.restTemplate = new RestTemplate();
+    }
+
+    // ...（中身はそのまま）
+
+    public ApiResponse<?> handleCallback(String code, String state, HttpServletRequest request, Locale locale) {
+        String expectedState = (String) request.getSession().getAttribute("OAUTH2_STATE");
+        if (expectedState == null || !state.equals(expectedState)) {
+            return ApiResponse.error("E401", "Invalid state");
+        }
+
+        try {
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("grant_type", "authorization_code");
+            params.add("code", code);
+            params.add("redirect_uri", "http://localhost:8081/auth/callback");
+
+            String clientId = "mock-client";
+            String clientSecret = "mock-secret";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setBasicAuth(clientId, clientSecret);
+
+            ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
+                    getTokenUrl(),
+                    new HttpEntity<>(params, headers),
+                    TokenResponse.class);
+
+            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+                return ApiResponse.error("E500", "Token endpoint returned invalid response");
+            }
+
+            TokenResponse tokenResponse = response.getBody();
+            if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
+                return ApiResponse.error("E500", "Token response is empty or invalid");
+            }
+
+            HttpSession session = request.getSession(true);
+            session.setAttribute("ACCESS_TOKEN", tokenResponse.getAccessToken());
+            session.setAttribute("REFRESH_TOKEN", tokenResponse.getRefreshToken());
+            session.setAttribute("ID_TOKEN", tokenResponse.getIdToken());
+            session.setMaxInactiveInterval(SESSION_TIMEOUT);
+
+            return ApiResponse.success(tokenResponse);
+
+        } catch (Exception e) {
+            log.error("Token exchange failed", e);
+            return ApiResponse.error("E500", "Token exchange failed: " + e.getMessage());
+        }
+    }
+    /**
+     * IDトークンを検証（署名・有効期限）
+     */
+    public ApiResponse<?> verifyIdToken(HttpSession session) {
+        String idToken = (String) session.getAttribute("ID_TOKEN");
+        if (idToken == null) {
+            return ApiResponse.error("E401", "IDトークンが存在しません");
+        }
+
+        try {
+            // ★ 本来はGビズID公開鍵を取得してRSA256を生成する
+            RSAPublicKey publicKey = null; // ← mock運用時は省略可能
+            Algorithm algorithm = Algorithm.HMAC256("mock-secret"); // mock用
+
+            JWTVerifier verifier = JWT.require(algorithm)
+                    .withIssuer("https://gbiz-id.go.jp/oauth")
+                    .build();
+
+            DecodedJWT jwt = verifier.verify(idToken);
+
+            if (jwt.getExpiresAt().toInstant().isBefore(Instant.now())) {
+                return ApiResponse.error("E401", "IDトークンの有効期限が切れています。");
+            }
+
+            return ApiResponse.success(Map.of(
+                    "authenticated", true,
+                    "claims", jwt.getClaims()));
+
+        } catch (JWTVerificationException e) {
+            return ApiResponse.error("E401", "トークン署名が無効です: " + e.getMessage());
+        } catch (Exception e) {
+            return ApiResponse.error("E500", "トークン検証に失敗しました: " + e.getMessage());
+        }
+    }
+
+    private String getAuthUrl() {
+        return "internal".equalsIgnoreCase(authProperties.getType())
+                ? authProperties.getInternal().getAuthUrl()
+                : authProperties.getGbiz().getAuthUrl();
+    }
+
+    private String getTokenUrl() {
+        return "internal".equalsIgnoreCase(authProperties.getType())
+                ? authProperties.getInternal().getTokenUrl()
+                : authProperties.getGbiz().getTokenUrl();
+    }
+}

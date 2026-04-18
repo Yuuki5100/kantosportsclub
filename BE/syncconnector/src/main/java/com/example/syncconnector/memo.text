@@ -1,0 +1,59 @@
+各application には
+secretKeyを付与し、HAML認証に使用。
+
+key:
+sync:
+  signature:
+    enabled: true
+    secret: ${SYNC_SECRET_KEY}
+    targetPaths:
+      - /sync/receive-data
+      - /sync/warehouse-update
+    signatureHeader: X-Signature
+
+  signed-rest:
+    secretKey: ${SYNC_SECRET_KEY}
+    signatureHeader: X-Signature
+
+
+
+
+
+-------------------------------------------------------------------------------------
+受信側
+sync:
+  secret-key: ${SYNC_SECRET_KEY}
+
+sync-security:外部通信を受けるエンドポイント一覧。認証が必要なものということになる。
+  enabled: true
+  target-paths:
+    - /api/sync/receive
+    - /api/sync/confirm
+-------------------------------
+SyncSignatureProperties を有効化する設定
+@SpringBootApplication
+@EnableConfigurationProperties(SyncSignatureProperties.class)
+public class SyncConnectorApplication {
+}
+-------------------------------------------------------------------------------------
+
+
+---------------------------------------
+エクセプション用の定義
+
+code	locale	message
+E4011	ja	署名ヘッダーが存在しません
+E4011	en	Signature header is missing
+E4012	ja	署名が一致しません
+E4012	en	Signature does not match
+
+==========----------------------------
+
+
+
+
+進捗課題
+🔲 @ConfigurationProperties のバリデーション追加（secret必須など）	中	起動時に明確なエラー出すため
+🔲 署名検証Interceptorの自動組み込みテスト	中	モック環境での統合試験
+🔲 受信時 ApiResponse の統一例外（例: "署名不一致"）を GlobalExceptionHandler 経由に統合	中	サービス間で一貫性持たせるため
+🔲 本運用アプリ（操業管理 or 入出庫）での組み込み PoC

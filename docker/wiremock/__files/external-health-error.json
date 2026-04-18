@@ -1,0 +1,5 @@
+{
+  "status": "error",
+  "source": "wiremock",
+  "message": "upstream timeout (simulated)"
+}

@@ -1,0 +1,58 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "module": "ESNext",
+    "target": "ES6",
+    "outDir": "dist",
+    "rootDir": ".",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "jsx": "preserve",
+    "incremental": true,
+    "allowSyntheticDefaultImports": true,
+
+    "plugins": [{ "name": "next" }],
+
+    "baseUrl": ".", // 明示的にプロジェクトルートに設定
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@composite/*": ["src/components/composite/*"],
+      "@base/*": ["src/components/base/*"],
+      "@functional/*": ["src/components/functional/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@api/*": ["src/api/*"],
+      "@assets/*": ["src/assets/*"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"],
+      "@types/*": ["src/types/*"],
+      "@slices/*": ["src/slices/*"],
+      "@lang/*": ["src/lang/*"]
+    },
+
+    "types": ["jest", "@testing-library/jest-dom", "node","msw"]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "scripts/**/*.ts",
+    "src/components/**/*.ts",
+    "src/components/**/*.tsx",
+    "src/config/pageConfig.tsx",
+    "src/lang/**/*.ts",
+    "src/**/*.stories.tsx",
+    "src/**/*.stories.ts",
+    "./jest.setup.ts",
+    "src/utils/__tests__/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist", "src/app"]
+}

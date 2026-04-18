@@ -1,0 +1,56 @@
+package com.example.appserver.config;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import com.example.servercommon.validationtemplate.GenericFileImporter;
+import com.example.servercommon.validationtemplate.loader.TemplateSchemaLoader;
+import com.example.servercommon.validationtemplate.reader.FileRecordReaderDispatcher;
+import com.example.servercommon.validationtemplate.rule.GenericValidator;
+import com.example.servercommon.validationtemplate.mapper.GenericEntityMapper;
+import com.example.servercommon.validationtemplate.repository.RepositoryResolver;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class ImporterConfigTest {
+
+    private TemplateSchemaLoader schemaLoader;
+    private FileRecordReaderDispatcher readerDispatcher;
+    private GenericValidator validator;
+    private GenericEntityMapper entityMapper;
+    private RepositoryResolver repositoryResolver;
+    private ImporterConfig importerConfig;
+
+    @BeforeEach
+    void setUp() {
+        // モック化
+        schemaLoader = mock(TemplateSchemaLoader.class);
+        readerDispatcher = mock(FileRecordReaderDispatcher.class);
+        validator = mock(GenericValidator.class);
+        entityMapper = mock(GenericEntityMapper.class);
+        repositoryResolver = mock(RepositoryResolver.class);
+
+        importerConfig = new ImporterConfig();
+    }
+
+    @Test
+    void testGenericFileImporterBeanCreation() {
+        // 実行
+        GenericFileImporter importer = importerConfig.genericFileImporter(
+                schemaLoader,
+                readerDispatcher,
+                validator,
+                entityMapper,
+                repositoryResolver
+        );
+
+        // 検証
+        // assertNotNull(importer);
+        // assertEquals(schemaLoader, importer.getSchemaLoader());
+        // assertEquals(readerDispatcher, importer.getReaderDispatcher());
+        // assertEquals(validator, importer.getValidator());
+        // assertEquals(entityMapper, importer.getEntityMapper());
+        // assertEquals(repositoryResolver, importer.getRepositoryResolver());
+    }
+}

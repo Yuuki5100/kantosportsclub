@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  batch:
+    job:
+      enabled: false
+  messages:
+    basename: messages
+    encoding: UTF-8
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+logging:
+  level:
+    root: WARN
+
+TEAMS_WEBHOOK_PROD: http://dummy-webhook-urlssssssssssssssssssssssssssssssssssssssssssss

@@ -1,0 +1,49 @@
+package com.example.appserver.config;
+
+import com.example.servercommon.config.AwsCredentialsProperties;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(SpringExtension.class)
+class AwsPropertyRegistrarTest {
+
+    @Autowired
+    private AwsPropertyRegistrar awsPropertyRegistrar;
+
+    @Autowired
+    private AwsCredentialsProperties awsCredentialsProperties;
+
+    @Configuration
+    static class TestConfig {
+        @Bean
+        AwsPropertyRegistrar awsPropertyRegistrar() {
+            return new AwsPropertyRegistrar();
+        }
+
+        @Bean
+        AwsCredentialsProperties awsCredentialsProperties() {
+            AwsCredentialsProperties props = new AwsCredentialsProperties();
+            props.setAccessKey("test-key");
+            props.setSecretKey("test-secret");
+            return props;
+        }
+    }
+
+    @Test
+    void contextLoads() {
+        assertThat(awsPropertyRegistrar).isNotNull();
+    }
+
+    @Test
+    void awsPropertiesAreLoaded() {
+        assertThat(awsCredentialsProperties).isNotNull();
+        assertThat(awsCredentialsProperties.getAccessKey()).isEqualTo("test-key");
+        assertThat(awsCredentialsProperties.getSecretKey()).isEqualTo("test-secret");
+    }
+}

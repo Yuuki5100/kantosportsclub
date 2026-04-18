@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode-remote.remote-wsl",
+    "ms-azuretools.vscode-docker",
+    "editorconfig.editorconfig",
+    "openai.chatgpt",
+    "eamodio.gitlens",
+    "donjayamanne.githistory",
+    "sonarsource.sonarlint-vscode",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-playwright.playwright",
+    "redhat.java",
+    "vscjava.vscode-maven",
+    "bierner.markdown-mermaid",
+    "jebbs.plantuml",
+    "vscjava.vscode-java-pack",
+    "redhat.vscode-yaml",
+    "pkief.material-icon-theme"
+  ]
+}

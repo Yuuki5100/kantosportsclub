@@ -1,0 +1,4 @@
+﻿-- Fix notice timestamps defaults to avoid NOT NULL insert errors
+ALTER TABLE notice
+  MODIFY created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  MODIFY updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);

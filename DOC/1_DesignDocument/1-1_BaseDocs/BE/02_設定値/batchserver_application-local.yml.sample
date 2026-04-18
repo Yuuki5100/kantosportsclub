@@ -1,0 +1,21 @@
+﻿spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${BATCH_DB_URL_LOCAL}
+    username: ${BATCH_DB_USER_LOCAL}
+    password: ${BATCH_DB_PASSWORD_LOCAL}
+  batch:
+    initialize-schema: always
+
+jwt:
+  secret: ${JWT_SECRET_LOCAL}
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_LOCAL}
+
+logging:
+  level:
+    root: DEBUG

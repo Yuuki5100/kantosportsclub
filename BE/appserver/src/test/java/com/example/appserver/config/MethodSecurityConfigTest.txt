@@ -1,0 +1,52 @@
+package com.example.appserver.config;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.lang.reflect.Field;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+
+import com.example.appserver.security.CustomPermissionEvaluator;
+
+class MethodSecurityConfigTest {
+
+    private CustomPermissionEvaluator customPermissionEvaluator;
+    private MethodSecurityConfig methodSecurityConfig;
+
+    @BeforeEach
+    void setUp() {
+        customPermissionEvaluator = mock(CustomPermissionEvaluator.class);
+        methodSecurityConfig = new MethodSecurityConfig(customPermissionEvaluator);
+    }
+
+    @Test
+    void testMethodSecurityExpressionHandlerBeanCreation() throws Exception {
+        MethodSecurityExpressionHandler handler = methodSecurityConfig.methodSecurityExpressionHandler();
+        assertNotNull(handler);
+        assertTrue(handler instanceof DefaultMethodSecurityExpressionHandler);
+
+        DefaultMethodSecurityExpressionHandler defaultHandler = (DefaultMethodSecurityExpressionHandler) handler;
+
+        // 親クラスのフィールド permissionEvaluator をリフレクションで取得
+        Field field = null;
+        Class<?> clazz = defaultHandler.getClass();
+        while (clazz != null) {
+            try {
+                field = clazz.getDeclaredField("permissionEvaluator");
+                break;
+            } catch (NoSuchFieldException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+
+        assertNotNull(field, "permissionEvaluator field should exist in the class hierarchy");
+        field.setAccessible(true);
+        Object evaluator = field.get(defaultHandler);
+
+        assertEquals(customPermissionEvaluator, evaluator);
+    }
+}

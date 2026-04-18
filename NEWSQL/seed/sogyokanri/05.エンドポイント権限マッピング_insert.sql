@@ -1,0 +1,35 @@
+﻿INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('1', '/common/fileUpload', 'POST', '0', '0');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('2', '/common/fileDownload', 'GET', '0', '0');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('3', '/common/login-info', 'GET', '0', '0');
+
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('13', '/system/system-setting-info', 'GET', '0', '0');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('15', '/production/lotNo-info', 'GET', '0', '0');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('16', '/common/login', 'GET', '0', '0');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('17', '/common/password-update', 'PUT', '0', '0');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('18', '/common/password-reissue', 'POST', '0', '0');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('19', '/common/top-list', 'GET', '0', '0');
+
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('60', '/system/system-setting/info-insert', 'POST', '8', '3');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('62', '/system/role-list', 'GET', '10', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('63', '/system/role-Info', 'GET', '10', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('64', '/system/role-info/apply', 'POST', '10', '3');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('65', '/system/role-info/delete', 'DELETE', '10', '3');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('66', '/system/role-info/return', 'PUT', '10', '3');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('67', '/system/role-info/approve', 'PUT', '10', '4');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('68', '/system/role-info/reject', 'PUT', '10', '4');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('69', '/system/user-list', 'GET', '11', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('70', '/system/user-Info', 'GET', '11', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('71', '/system/user-info/apply', 'POST', '11', '3');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('72', '/system/user-info/delete', 'DELETE', '11', '3');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('73', '/system/user-info/return', 'PUT', '11', '3');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('74', '/system/user-info/approve', 'PUT', '11', '4');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('75', '/system/user-info/reject', 'PUT', '11', '4');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('76', '/api/manual/list', 'GET', '41', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('77', '/api/manual/{id}', 'GET', '41', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('78', '/api/manual/download/{doc_id}', 'GET', '41', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('79', '/api/manual/create', 'POST', '41', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('80', '/api/manual/{id}', 'PUT', '41', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('81', '/api/manual/upload', 'POST', '41', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('82', '/api/files/upload', 'POST', '41', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('83', '/api/system', 'GET', '8', '2');
+INSERT INTO endpoint_authority_mapping (id, url, method, menu_function_id, authority_category) VALUES ('84', '/api/system', 'PUT', '8', '3');

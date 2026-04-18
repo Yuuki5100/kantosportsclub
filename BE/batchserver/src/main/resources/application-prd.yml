@@ -1,0 +1,31 @@
+spring:
+  config:
+    activate:
+      on-profile: prd
+
+  datasource:
+    url: jdbc:mysql://prd-db-host:3306/common
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: prd_user
+    password: ${DB_PASSWORD_PROD}
+
+  batch:
+    initialize-schema: never  # 本番は初期化禁止！
+
+storage:
+  type: local  # ← 本番でも local（または s3 に切り替え）
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_PROD}
+
+logging:
+  level:
+    root: INFO
+  appender: NONE  # コンソール出力なし
+  file:
+    path: /var/logs/${spring.application.name}
+
+report:
+  cache:
+    enabled: true  # ← falseにすればキャッシュ無効で毎回DB取得

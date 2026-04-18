@@ -1,0 +1,55 @@
+package com.example.appserver.cache;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import com.example.servercommon.model.SettingModel;
+import com.example.servercommon.repository.SettingRepository;
+
+class SettingVariableCacheTest {
+
+    private SettingRepository settingRepository;
+    private SettingVariableCache settingVariableCache;
+
+    @BeforeEach
+    void setUp() {
+        // モック化
+        settingRepository = Mockito.mock(SettingRepository.class);
+        // spy化して親クラス GenericCache のメソッド呼び出しを確認
+        settingVariableCache = Mockito.spy(new SettingVariableCache(settingRepository));
+    }
+
+    @Test
+    void testUpdateCache_shouldReloadCacheWithDataFromRepository() {
+        // 準備
+        List<SettingModel> mockList = List.of(new SettingModel());
+        when(settingRepository.findAll()).thenReturn(mockList);
+
+        // 実行
+        settingVariableCache.updateCache();
+
+        // 検証
+        verify(settingRepository).findAll();
+        verify(settingVariableCache).reloadCache("settingVariable", mockList);
+    }
+
+    @Test
+    void testGetCache_shouldReturnCachedSettingVariables() {
+        // 準備
+        List<SettingModel> mockList = List.of(new SettingModel());
+        doReturn(mockList).when(settingVariableCache).getCache("settingVariable");
+
+        // 実行
+        List<SettingModel> result = settingVariableCache.getCache();
+
+        // 検証
+        verify(settingVariableCache).getCache("settingVariable");
+        assertEquals(mockList, result);
+    }
+}

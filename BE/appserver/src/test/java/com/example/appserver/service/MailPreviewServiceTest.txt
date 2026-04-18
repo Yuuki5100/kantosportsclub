@@ -1,0 +1,48 @@
+package com.example.appserver.service;
+
+import com.example.appserver.service.MailPreviewService;
+import com.example.servercommon.template.MailTemplateEngine;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class MailPreviewServiceTest {
+
+    @Mock
+    private MailTemplateEngine engine;
+
+    private MailPreviewService service;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        service = new MailPreviewService(engine);
+    }
+
+    @Test
+    void renderBody_shouldDelegateToEngine() {
+        when(engine.render(eq("login"), eq("ja"), anyMap()))
+                .thenReturn("<p>Hello, 花子</p>");
+
+        String result = service.renderBody("login", "ja", Map.of("username", "花子"));
+
+        assertEquals("<p>Hello, 花子</p>", result);
+        verify(engine).render(eq("login"), eq("ja"), anyMap());
+    }
+
+    @Test
+    void getSubject_shouldReturnExpectedValue() {
+        when(engine.getSubject("login", "ja"))
+                .thenReturn("ようこそ 花子 さん");
+
+        String subject = service.getSubject("login", "ja");
+
+        assertEquals("ようこそ 花子 さん", subject);
+        verify(engine).getSubject("login", "ja");
+    }
+}

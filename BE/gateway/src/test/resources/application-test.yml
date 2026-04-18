@@ -1,0 +1,46 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+  sql:
+    init:
+      mode: always
+  application:
+    name: apigateway
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+
+gateway:
+  # テスト時に認証スキップさせたいパスを追加
+  public-paths:
+    - /login
+    - /logout
+    - /public
+    - /actuator
+    - /health
+    - /report
+    - /api/app/ratelimit-test  # ← レートリミット用のパスを認証スキップ対象に！
+
+jwt:
+  secret: test-jwt-secret-key-for-tests-only-1234567890
+
+# Redis を使わない場合の placeholder（必要に応じて削除可）
+spring.redis:
+  host: localhost
+  port: 6379
+mail:
+  from: no-reply@local.test
+
+app:
+  login:
+    url: http://localhost:8080/login  # テスト用のダミーURLでOK

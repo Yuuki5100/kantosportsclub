@@ -1,0 +1,23 @@
+﻿server:
+  port: 8888
+
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: apigateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+
+jwt:
+  expiration: 86400000
+
+gateway:
+  public-paths:
+    - /login
+    - /logout
+    - /public
+    - /actuator
+    - /health

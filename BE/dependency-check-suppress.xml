@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://dependency-check.github.io/DependencyCheck/dependency-suppression.1.4.xsd">
+
+  <suppress>
+    <gav regex="true">^org\.mybatis\.dynamic-sql:mybatis-dynamic-sql:1\.5\.0$</gav>
+    <cve>CVE-2023-25330</cve>
+  </suppress>
+
+  <suppress>
+    <gav regex="true">^org\.mybatis\.dynamic-sql:mybatis-dynamic-sql:1\.5\.0$</gav>
+    <cve>CVE-2020-26945</cve>
+  </suppress>
+
+</suppressions>

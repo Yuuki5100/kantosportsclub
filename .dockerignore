@@ -1,0 +1,12 @@
+.git
+.vscode
+**/node_modules
+**/.next
+**/.swc
+**/dist
+**/out
+**/coverage
+**/target
+**/logs
+**/tmp
+**/.cache

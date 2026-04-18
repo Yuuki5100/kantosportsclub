@@ -1,0 +1,65 @@
+package com.example.appserver.script;
+
+import com.example.servercommon.model.UserModel;
+import com.example.servercommon.model.UserRole;
+import com.example.servercommon.model.UserRolePermission;
+import com.example.servercommon.repository.UserRepository;
+import com.example.servercommon.repository.UserRolePermissionRepository;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+@Component
+@Profile("!test")
+public class InitialDataLoader implements CommandLineRunner {
+
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final UserRolePermissionRepository permissionRepository;
+
+    public InitialDataLoader(
+            UserRepository userRepository,
+            BCryptPasswordEncoder passwordEncoder,
+            UserRolePermissionRepository permissionRepository
+    ) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.permissionRepository = permissionRepository;
+    }
+
+    @Override
+    @Transactional
+    public void run(String... args) {
+
+        // 管理者ユーザー(admin)
+        if (!userRepository.existsById("admin")) {
+            UserModel admin = new UserModel();
+            admin.setUserId("admin");
+            admin.setPassword(passwordEncoder.encode("admin"));
+            admin.setEmail("admin@example.com");
+            admin.setRoleId(UserRole.SYSTEM_ADMIN.getRoleId());
+
+            userRepository.save(admin);
+        }
+
+        // testtaro（カスタム権限用）
+        if (!userRepository.existsById("testtaro")) {
+            UserModel testtaro = new UserModel();
+            testtaro.setUserId("testtaro");
+            testtaro.setPassword(passwordEncoder.encode("testtaro"));
+            testtaro.setEmail("testtaro@example.com");
+            testtaro.setRoleId(UserRole.CUSTOM.getRoleId());
+
+            userRepository.save(testtaro);
+
+            // 権限は userId(String) で紐づけ
+            permissionRepository.save(new UserRolePermission("testtaro", "/user", 3));
+            permissionRepository.save(new UserRolePermission("testtaro", "/admin", 3));
+            permissionRepository.save(new UserRolePermission("testtaro", "/user/profile", 3));
+            permissionRepository.save(new UserRolePermission("testtaro", "/user/update", 3));
+            permissionRepository.save(new UserRolePermission("testtaro", "/user/create", 3));
+        }
+    }
+}

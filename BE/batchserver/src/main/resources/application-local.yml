@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: batchserver
+  profiles:
+    group:
+      local: local  # s3用の実装を有効にする
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/common
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: admin
+
+  batch:
+    initialize-schema: always
+
+storage:
+  # type: local
+  type: s3
+  s3:
+    endpoint: http://57.182.223.75:9080
+    access-key: minio
+    secret-key: minio1234
+    bucket: reports
+    input-dir: input
+    archive-dir: archive
+    error-dir: error
+
+aws:
+  region: ap-northeast-1
+  credentials:
+    access-key: ${spring.application.credentials.access-key}
+    secret-key: ${spring.application.credentials.access-key}
+
+teams:
+  webhook:
+    url: https://your.teams.webhook.url
+
+logging:
+  level:
+    root: DEBUG
+    org.apache.http.wire: OFF
+    org.apache.http.headers: INFO
+  appender: PLAIN_CONSOLE
+  file:
+    path: logs/${spring.application.name}
+
+report:
+  cache:
+    enabled: false  # ← falseにすればキャッシュ無効で毎回DB取得
+
+jwt:
+  secret: 9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==
+  expiration: 86400000
+
+

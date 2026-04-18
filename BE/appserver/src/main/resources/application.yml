@@ -1,0 +1,230 @@
+server:
+  port: 8081
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        http-only: true
+        secure: false # ← HTTP環境ではfalse
+        same-site: lax # ← Edge対応のためLax推奨
+        path: /
+
+security:
+  rsa-public-key:
+    modulus-base64: 'ALlQ9XnH/0W0nUuOAz5kz5nkt8dHjGl5V9V2vblqJmQF3pOtKpyX6GZ+W9D3xIZw7dLrZUPPMp4x6BLsJwrImz8='
+    exponent-base64: 'AQAB'
+  auth:
+    mode: jwt # jwt or session
+  authorization:
+    legacy-interceptor-enabled: false
+  permission:
+    legacy-endpoint-config-enabled: false
+    cache-refresh-fixed-delay-ms: 600000
+    method-security-allow-if-unmapped: true
+    method-security-default-method: GET
+
+spring:
+  application:
+    name: appserver
+  datasource:
+    hikari:
+      connection-init-sql: SET time_zone = '+00:00'
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: UTC
+
+  jackson:
+    time-zone: Asia/Tokyo
+
+  session:
+    store-type: jdbc
+    timeout: 180000
+
+  codec:
+    max-in-memory-size: 10MB
+
+  config:
+    import:
+      - classpath:config/endpoint-permission.yml
+      - classpath:config/allowlist.yml
+
+  flyway:
+    enabled: false
+
+logging:
+  level:
+    root: DEBUG
+    org.apache.http.wire: OFF
+    org.apache.http.headers: INFO
+  appender: PLAIN_CONSOLE
+  file:
+    path: logs/${spring.application.name}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: configprops,health,info
+  security:
+    enabled: false
+
+jwt:
+  secret: 9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==
+  mode: access-refresh # ← legacy にすると jwt.expiration の値を使用
+  expiration: 86400000 # 旧トークン用（24時間）
+  access:
+    expiration-ms: 5400000 # For Access Token Expiry 90 Min
+    buffer-ms: 2700000 # For Access Token Buffer 45 Min
+  refresh:
+    expiration-ms: 28800000 # For Refresh Token 8 Hr
+  security:
+    cookie:
+      domain: example.com
+      secure: true
+      same-site: Strict
+
+storage:
+  # type: local
+  type: s3
+  s3:
+    endpoint: http://57.182.223.75:9080
+    access-key: minio
+    secret-key: minio1234
+    bucket: reports
+    input-dir: input
+    archive-dir: archive
+    error-dir: error
+
+# mail:
+#   host: email-smtp.ap-northeast-1.amazonaws.com
+#   port: 587
+#   properties:
+#     mail:
+#       smtp:
+#         auth: true
+#         starttls:
+#           enable: true
+#   #以下のアクセスキーを使うクラスは、実装古いのでそこからアップデートしないようにお願いします
+#   access-key: aaa
+#   secret-key: bbb
+#   from: no-reply@example.com
+
+app:
+  login:
+    url: https://dev-nyusyuko.crj.dev.jems-cloud.jp/login
+    password-change-url: https://dev-nyusyuko.crj.dev.jems-cloud.jp/common/password-change
+
+# cors:
+#   allowed-origins:
+#     - http://localhost:3000
+#     - https://dev-nyusyuko.crj.dev.jems-cloud.jp
+
+teams:
+  webhook:
+    url: https://your.teams.webhook.url
+
+file:
+  validation-error:
+    output-path: tmp/
+
+template:
+  schema:
+    base-path: classpath:config/templates
+
+report:
+  cache:
+    enabled: false
+
+system:
+  setting:
+    cache:
+      enabled: true
+      ttl-seconds: 300
+      max-entries: 512
+
+async:
+  job:
+    status-ttl-minutes: 60
+    cleanup-fixed-delay-ms: 600000
+    cleanup-batch-size: 100
+    artifact-prefix: async-jobs
+
+auth:
+  type: internal
+  cookie:
+    secure: true
+    sameSite: Lax
+    accessPath: /api
+  gbiz:
+    auth-url: http://localhost:4000/oauth/authorize
+    token-url: http://localhost:4000/oauth/token
+  internal:
+    auth-url: http://internal.auth.local/oauth/authorize
+    token-url: http://internal.auth.local/oauth/token
+external:
+  batchserver:
+    url: http://localhost:8083
+
+# aws:
+#   auth:
+#     mode: instance # static / instance（ローカルで上書き）
+
+sync:
+  signature:
+    secret: ${SYNC_SECRET_KEY:local-sync-secret}
+    secretKey: ${SYNC_SECRET_KEY:local-sync-secret}
+    signature-header: X-Signature
+    target-paths:
+      - /api/inventory/reservations/sync
+  signed-rest:
+    secret-key: ${SYNC_SECRET_KEY:local-sync-secret}
+    signature-header: X-Signature
+  remote:
+    base-url: ${SYNC_REMOTE_BASE_URL:https://remote.example.local}
+    inventory:
+      reservation-update-path: /api/inventory/reservations/sync
+    notice:
+      notice-changed-path: /api/notice/sync
+  outbox:
+    use: false
+    max-retry: 10
+    fixed-delay-ms: 60000
+    dispatch-limit: 100
+
+routePath:
+  apiPattern: /api/app/**
+  apiPattern-ws: /api/ws/**
+  batchPattern: /api/batch/**
+  apiPattern-sc-send: /api/sc/send/**
+  apiPattern-sc-receive: /api/sc/receive/**
+  apiUri: http://localhost:8081
+  batchUri: http://localhost:8083
+  syncUri: http://localhost2:8888
+
+usegateway: false
+gateway:
+  header: X-Gateway-Token
+  token: ${GATEWAY_TOKEN:super-secret-token}
+
+reports:
+  zip:
+    max-files: 10
+    time-budget: 45s
+    attach-errors-txt: true
+
+notify:
+  queue:
+    scan:
+      limit: 100
+      fixed-delay-ms: 10000000
+      max-retry: 5
+      backoff-initial-delay-ms: 1000
+      backoff-multiplier: 2.0
+      backoff-max-delay-ms: 60000

@@ -1,0 +1,171 @@
+{
+  "info": {
+    "_postman_id": "6f6f8893-1b7e-4f6a-a99f-a8e4ab6f8601",
+    "name": "JEMS Docker Smoke (Auth)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"{{loginUserIdKey}}\": \"{{loginUserId}}\",\n  \"{{loginPasswordKey}}\": \"{{loginPassword}}\"\n}"
+        },
+        "url": "{{baseUrl}}{{authLoginPath}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"login status is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "let responseJson = {};",
+              "try {",
+              "  responseJson = pm.response.json();",
+              "} catch (e) {",
+              "  responseJson = {};",
+              "}",
+              "",
+              "pm.test(\"login api response success\", function () {",
+              "  pm.expect(responseJson.success).to.eql(true);",
+              "  pm.expect(responseJson.data).to.be.an(\"object\");",
+              "  pm.expect(responseJson.data.authenticated).to.eql(true);",
+              "});",
+              "",
+              "const setCookieHeaders = pm.response.headers",
+              "  .all()",
+              "  .filter(function (h) { return h.key && h.key.toLowerCase() === \"set-cookie\"; })",
+              "  .map(function (h) { return h.value || \"\"; });",
+              "",
+              "const tokenCookieName = pm.variables.get(\"authTokenCookieName\") || \"ACCESS_TOKEN\";",
+              "const tokenCookiePattern = new RegExp(",
+              "  \"(?:^|;\\\\s*)\" + tokenCookieName.replace(/[.*+?^${}()|[\\\\]\\\\]/g, \"\\\\$&\") + \"=([^;]+)\"",
+              ");",
+              "",
+              "let authToken = null;",
+              "for (const cookieHeader of setCookieHeaders) {",
+              "  const match = cookieHeader.match(tokenCookiePattern);",
+              "  if (match && match[1]) {",
+              "    authToken = decodeURIComponent(match[1]);",
+              "    break;",
+              "  }",
+              "}",
+              "",
+              "if (!authToken && responseJson && responseJson.data) {",
+              "  authToken = responseJson.data.access_token || responseJson.data.accessToken || responseJson.data.ACCESS_TOKEN || null;",
+              "}",
+              "",
+              "pm.test(\"access token captured\", function () {",
+              "  pm.expect(authToken, tokenCookieName + \" cookie or token in body is required\").to.be.a(\"string\").and.not.empty;",
+              "});",
+              "",
+              "if (authToken) {",
+              "  pm.collectionVariables.set(\"authToken\", authToken);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth Status (Bearer)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}{{authStatusPath}}"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.collectionVariables.get(\"authToken\");",
+              "if (!token) {",
+              "  throw new Error(\"authToken is missing. Ensure Auth Login request succeeded.\");",
+              "}"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"auth status is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "let responseJson = {};",
+              "try {",
+              "  responseJson = pm.response.json();",
+              "} catch (e) {",
+              "  responseJson = {};",
+              "}",
+              "",
+              "pm.test(\"authenticated is true\", function () {",
+              "  pm.expect(responseJson.success).to.eql(true);",
+              "  pm.expect(responseJson.data.authenticated).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://gateway:8888"
+    },
+    {
+      "key": "loginUserId",
+      "value": ""
+    },
+    {
+      "key": "loginPassword",
+      "value": ""
+    },
+    {
+      "key": "loginUserIdKey",
+      "value": "user_id"
+    },
+    {
+      "key": "loginPasswordKey",
+      "value": "password"
+    },
+    {
+      "key": "authLoginPath",
+      "value": "/api/auth/login"
+    },
+    {
+      "key": "authStatusPath",
+      "value": "/api/auth/status"
+    },
+    {
+      "key": "authTokenCookieName",
+      "value": "ACCESS_TOKEN"
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    }
+  ]
+}

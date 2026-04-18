@@ -1,0 +1,48 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  apache:
+    endpoint: http://apache:80/server-status?auto
+    collection_interval: 30s
+  httpcheck:
+    collection_interval: 30s
+    targets:
+      - endpoint: http://apache:80/
+        method: GET
+      - endpoint: http://tomcat:8080/
+        method: GET
+
+processors:
+  batch: {}
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:9464"
+  debug: {}
+  influxdb:
+    endpoint: http://influxdb:8086
+    v1_compatibility:
+      enabled: true
+      db: ci_metrics
+      username: admin
+      password: adminpass
+    metrics_schema: telegraf-prometheus-v1
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+    metrics:
+      receivers: [apache, httpcheck]
+      processors: [batch]
+      exporters: [influxdb, prometheus, debug]

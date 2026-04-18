@@ -1,0 +1,95 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+    {
+      "label": "frontend Test",
+      "type": "process",
+      "command": "npm",
+      "args": [
+        "test"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}fe\\spa-next\\my-next-app"
+      },
+      "group": "test",
+    },
+    {
+      "label": "Commit with checks",
+      "type": "shell",
+      "command": "npm run lint && npx tsc -p tsconfig.jest.json --noEmit && git add . && git commit",
+      "options": {
+        "cwd": "${workspaceFolder}/FE/spa-next/my-next-app"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "lint and tscNoEmit",
+      "type": "shell",
+      "command": "npm run lint && npx tsc -p tsconfig.jest.json --noEmit",
+      "options": {
+        "cwd": "${workspaceFolder}/FE/spa-next/my-next-app"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Lint check",
+      "type": "shell",
+      "command": "npm run lint",
+      "options": {
+        "cwd": "${workspaceFolder}/FE/spa-next/my-next-app"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "TypeScript check",
+      "type": "shell",
+      "command": "npx tsc -p tsconfig.jest.json --noEmit",
+      "options": {
+        "cwd": "${workspaceFolder}/FE/spa-next/my-next-app"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    }
+  ]
+}

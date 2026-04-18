@@ -1,0 +1,106 @@
+# =====================
+# Backend Deploy
+# =====================
+backend-deploy:
+  stage: deploy
+  image: maven:3.9.9-eclipse-temurin-21
+  needs:
+    - job: backend-build
+      artifacts: true
+  script:
+    - |
+      set -euo pipefail
+      TARGET_BRANCH="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-${CI_COMMIT_BRANCH:-}}"
+      echo "DEBUG: TARGET_BRANCH=$TARGET_BRANCH"
+      echo "DEBUG: CI_COMMIT_BRANCH=${CI_COMMIT_BRANCH:-<unset>}"
+      echo "DEBUG: CI_MERGE_REQUEST_SOURCE_BRANCH_NAME=${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:-<unset>}"
+      echo "DEBUG: CI_MERGE_REQUEST_TARGET_BRANCH_NAME=${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-<unset>}"
+
+      echo "SSH接続テスト開始 57.182.223.75"
+
+      KEY_PATH="$CI_PROJECT_DIR/tmp_ssh_key.pem"
+      echo "$SSH_PRIVATE_KEY" > "$KEY_PATH"
+      chmod 600 "$KEY_PATH"
+
+      echo "鍵ファイル確認"
+      ls -l "$KEY_PATH"
+
+      echo "鍵の先頭3行（確認用）"
+      head -3 "$KEY_PATH"
+
+      echo "デプロイ開始"
+      echo "openssh-client をインストール中..."
+      apt-get update -y
+      apt-get install -y openssh-client
+
+      echo "SSH クライアントのインストール完了"
+      ssh -V
+      if ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no ec2-user@172.17.0.1 "echo \"SSH接続成功 $(hostname)\"" >/dev/null 2>&1; then
+        echo "SSH接続成功 (57.182.223.75)"
+      else
+        echo "SSH接続失敗 (57.182.223.75)"
+        echo "詳細ログ: SSH -vvv を出力します"
+        ssh -vvv -i "$KEY_PATH" -o StrictHostKeyChecking=no ec2-user@172.17.0.1 "exit" || true
+        exit 1
+      fi
+
+      mkdir -p /home/app/gitlab-runner/backend/appserver
+      mkdir -p /home/app/gitlab-runner/backend/batchserver
+      mkdir -p /home/app/gitlab-runner/backend/servercommon
+      mkdir -p /home/app/gitlab-runner/frontend/my-next-app
+
+      echo "DEBUG: CI_PROJECT_DIR=$CI_PROJECT_DIR"
+      echo "DEBUG: copying appserver.jar..."
+
+      if cp "$CI_PROJECT_DIR/BE/appserver/target/appserver-1.0.0-SNAPSHOT.jar" \
+            /home/app/gitlab-runner/backend/appserver/appserver-1.0.0-SNAPSHOT.jar; then
+        echo "appserver.jar コピー成功"
+        ls -lh /home/app/gitlab-runner/backend/appserver/
+      else
+        echo "appserver.jar コピー失敗"
+      fi
+
+      echo "DEBUG: copying resource yml files..."
+      if cp "$CI_PROJECT_DIR/BE/appserver/src/main/resources/"*.yml \
+            /home/app/gitlab-runner/backend/appserver/; then
+        echo "application.yml などのリソース yml をコピー成功"
+        ls -lh /home/app/gitlab-runner/backend/appserver/*.yml
+      else
+        echo "yml ファイルのコピーに失敗（存在しない可能性）"
+      fi
+
+      echo "DEBUG: copying batchserver.jar..."
+      if cp "$CI_PROJECT_DIR/BE/batchserver/target/batchserver-1.0.0-SNAPSHOT.jar" \
+            /home/app/gitlab-runner/backend/batchserver/batchserver-1.0.0-SNAPSHOT.jar; then
+        echo "batchserver.jar コピー成功"
+        ls -lh /home/app/gitlab-runner/backend/batchserver/
+      else
+        echo "batchserver.jar コピー失敗"
+      fi
+
+      echo "DEBUG: copying resource yml files..."
+      if cp "$CI_PROJECT_DIR/BE/batchserver/src/main/resources/"*.yml \
+            /home/app/gitlab-runner/backend/batchserver/; then
+        echo "application.yml などのリソース yml をコピー成功"
+        ls -lh /home/app/gitlab-runner/backend/batchserver/*.yml
+      else
+        echo "yml ファイルのコピーに失敗（存在しない可能性）"
+      fi
+
+      echo "EC2 サーバーのデプロイコマンドを実行"
+      if /home/app/gitlab-runner/restart_services.sh; then
+        echo "デプロイ成功"
+      else
+        echo "デプロイ失敗"
+      fi
+
+      rm -f "$KEY_PATH"
+      echo "一時鍵ファイルを削除しました"
+  tags:
+    - docker-runner
+  rules:
+    - if: '$FRONTEND_ONLY == "true"'
+      when: never
+    - if: '$BACKEND_DEPLOY == "true"'
+      when: manual
+    - when: never

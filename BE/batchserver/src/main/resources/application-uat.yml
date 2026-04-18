@@ -1,0 +1,31 @@
+spring:
+  config:
+    activate:
+      on-profile: uat
+
+  datasource:
+    url: jdbc:mysql://uat-db-host:3306/common
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: uat_user
+    password: ${DB_PASSWORD_DEV}
+
+  batch:
+    initialize-schema: never
+
+storage:
+  type: local  # ← UAT ではローカル使う例
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_DEV}
+
+logging:
+  level:
+    root: INFO
+  appender: PLAIN_CONSOLE
+  file:
+    path: logs/${spring.application.name}
+
+report:
+  cache:
+    enabled: true  # ← falseにすればキャッシュ無効で毎回DB取得

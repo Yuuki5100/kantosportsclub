@@ -1,0 +1,60 @@
+package com.example.appserver.cache;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class JobStatusCacheWithStreamTest {
+
+    @BeforeEach
+    void setUp() {
+        // 各テスト前にキャッシュをクリア
+        JobStatusCacheWithStream.clearStatus("job1");
+        JobStatusCacheWithStream.clearStatus("job2");
+    }
+
+    @Test
+    void testUpdateAndGetStatus() {
+        // 準備
+        InputStream inputStream = new ByteArrayInputStream("test".getBytes());
+
+        // 実行
+        JobStatusCacheWithStream.updateStatus("job1", "RUNNING", inputStream);
+
+        // 検証
+        JobStatusCacheWithStream.JobStatus status = JobStatusCacheWithStream.getStatus("job1");
+        assertNotNull(status);
+        assertEquals("RUNNING", status.getStatus());
+        assertEquals(inputStream, status.getInputStream());
+    }
+
+    @Test
+    void testClearStatus_closesInputStream() throws Exception {
+        // InputStreamをモック化
+        InputStream inputStream = mock(InputStream.class);
+
+        // キャッシュにセット
+        JobStatusCacheWithStream.updateStatus("job2", "DONE", inputStream);
+
+        // 実行
+        JobStatusCacheWithStream.clearStatus("job2");
+
+        // キャッシュから削除されていること
+        assertNull(JobStatusCacheWithStream.getStatus("job2"));
+
+        // close() が呼ばれたことを検証
+        verify(inputStream).close();
+    }
+
+    @Test
+    void testClearStatus_whenJobDoesNotExist() {
+        // 存在しないジョブをクリアしても例外が出ないこと
+        assertDoesNotThrow(() -> JobStatusCacheWithStream.clearStatus("nonexistent"));
+    }
+}

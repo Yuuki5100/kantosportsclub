@@ -1,0 +1,80 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  application:
+    name: batchserver
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:app}?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:app}
+    password: ${DB_PASSWORD:app}
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:/schema-mysql.sql
+      data-locations: classpath:/data-mysql.sql
+
+  batch:
+    initialize-schema: always
+
+  flyway:
+    enabled: false
+
+server:
+  port: ${SERVER_PORT:8083}
+
+storage:
+  type: s3
+  s3:
+    endpoint: ${MINIO_ENDPOINT:http://minio:9000}
+    access-key: ${MINIO_ACCESS_KEY:minio}
+    secret-key: ${MINIO_SECRET_KEY:minio123}
+    bucket: ${MINIO_BUCKET:app-bucket}
+    input-dir: input
+    archive-dir: archive
+    error-dir: error
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_URL:https://example.com/dummy-webhook-url-docker}
+
+app:
+  login:
+    url: ${APP_LOGIN_URL:http://frontend:3000/login}
+
+jwt:
+  secret: ${BATCH_JWT_SECRET:9Z7dhgOfEYM1wn+K3BVKzZ9qrG1C3BGOWFmc+q3A0RZbhH+0v2K7cF5VvwCqOAUHTqNqZY+cIT6VEt3JKbcQdg==}
+  expiration: ${BATCH_JWT_EXPIRATION:86400000}
+
+logging:
+  level:
+    root: INFO
+  appender: PLAIN_CONSOLE
+  file:
+    path: logs/${spring.application.name}
+
+report:
+  cache:
+    enabled: false
+
+template:
+  schema:
+    base-path: classpath:config/templates
+
+management:
+  tracing:
+    enabled: ${OTEL_TRACING_ENABLED:true}
+    sampling:
+      probability: ${OTEL_TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4318/v1/traces}}
+    metrics:
+      export:
+        enabled: ${OTEL_METRICS_EXPORT_ENABLED:true}
+        url: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4318/v1/metrics}}
+        step: ${OTEL_METRICS_EXPORT_STEP:30s}

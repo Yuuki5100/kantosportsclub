@@ -1,0 +1,88 @@
+## 【帳票】010_R01_入構証
+reportId: 080_R05_report
+mappings:
+  ## 拠点コード
+  - field: baseCd
+    entity: com.example.servercommon.model.CostCalculationReportHeader
+    repository: costCalculationReportHeaderRepository
+
+  ## 年月の月
+  - field: yearMonth
+    entity: com.example.servercommon.model.CostCalculationReportHeader
+    repository: costCalculationReportHeaderRepository
+
+  ## 作成日時
+  - field: createdDateAndTime
+    entity: com.example.servercommon.model.CostCalculationReportHeader
+    repository: costCalculationReportHeaderRepository
+
+  ## 適用開始日
+  - field: startDateOfApplication
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+
+  ## 第一区分
+  - field: firstCategory
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 第二区分
+  - field: secondCategory
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 第三区分
+  - field: thirdCategory
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 第四区分
+  - field: fourthCategory
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 品目コード
+  - field: itemCd
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 単位
+  - field: unit
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 数量
+  - field: quantity
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 単位あたり（変動費）
+  - field: perUnitVariableCost
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 合計（変動費）
+  - field: amountVariableCost
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 単位あたり（固定費）
+  - field: perUnitVariableCost
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 合計（固定費）
+  - field: amountFixedCost
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 合計の単位あたり
+  - field: perUnitFixedCost
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository
+
+  ## 合計の金額
+  - field: amount_fixed_cost
+    entity: com.example.servercommon.model.CostCalculationReportProductDetail
+    repository: costCalculationReportProductDetailRepository

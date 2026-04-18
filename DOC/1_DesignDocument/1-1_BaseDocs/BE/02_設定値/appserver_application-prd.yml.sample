@@ -1,0 +1,57 @@
+spring:
+  config:
+    activate:
+      on-profile: prd
+  datasource:
+    url: ${APP_DB_URL_PRD}
+    username: ${APP_DB_USER_PRD}
+    password: ${APP_DB_PASSWORD_PRD}
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+security:
+  authorization:
+    legacy-interceptor-enabled: false
+  permission:
+    legacy-endpoint-config-enabled: false
+    cache-refresh-fixed-delay-ms: 600000
+    method-security-allow-if-unmapped: true
+    method-security-default-method: GET
+
+jwt:
+  secret: ${JWT_SECRET_PRD}
+
+teams:
+  webhook:
+    url: ${TEAMS_WEBHOOK_PRD}
+
+mail:
+  access-key: ${MAIL_ACCESS_KEY_PRD}
+  secret-key: ${MAIL_SECRET_KEY_PRD}
+  from: ${MAIL_FROM_PRD}
+
+logging:
+  appender: NONE
+  file:
+    path: /var/logs/${spring.application.name}
+
+system:
+  setting:
+    cache:
+      enabled: true
+      ttl-seconds: 300
+      max-entries: 512
+
+notify:
+  queue:
+    scan:
+      limit: 100
+      fixed-delay-ms: 10000000
+      max-retry: 5
+      backoff-initial-delay-ms: 1000
+      backoff-multiplier: 2.0
+      backoff-max-delay-ms: 60000

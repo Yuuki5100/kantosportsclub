@@ -1,0 +1,71 @@
+package com.example.appserver.script;
+
+import com.example.servercommon.model.UserModel;
+import com.example.servercommon.model.UserRole;
+import com.example.servercommon.model.UserRolePermission;
+import com.example.servercommon.repository.UserRepository;
+import com.example.servercommon.repository.UserRolePermissionRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class InitialDataLoaderTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private UserRolePermissionRepository permissionRepository;
+
+    @Mock
+    private BCryptPasswordEncoder passwordEncoder;
+
+    private InitialDataLoader dataLoader;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        dataLoader = new InitialDataLoader(userRepository, passwordEncoder, permissionRepository);
+    }
+
+    @Test
+    void run_ShouldCreateTestTaroUserWithPermissionsIfNotExists() throws Exception {
+        when(userRepository.existsByUserId("admin")).thenReturn(true);
+        when(userRepository.existsByUserId("testtaro")).thenReturn(false);
+        when(passwordEncoder.encode("testtaro")).thenReturn("encodedTestTaro");
+
+        UserModel savedTestTaro = new UserModel();
+        savedTestTaro.setUserId("testtaro");
+        when(userRepository.save(any(UserModel.class))).thenReturn(savedTestTaro);
+
+        dataLoader.run();
+
+        ArgumentCaptor<UserModel> userCaptor = ArgumentCaptor.forClass(UserModel.class);
+        verify(userRepository).save(userCaptor.capture());
+        UserModel savedUser = userCaptor.getValue();
+
+        assertEquals("testtaro", savedUser.getUserId());
+        assertEquals("encodedTestTaro", savedUser.getPassword());
+        assertEquals("testtaro@example.com", savedUser.getEmail());
+        assertEquals(UserRole.CUSTOM, savedUser.getRoleId());
+
+        verify(permissionRepository, times(5)).save(any(UserRolePermission.class));
+    }
+
+    @Test
+    void run_ShouldNotCreateUsersIfAlreadyExist() throws Exception {
+        when(userRepository.existsByUserId("admin")).thenReturn(true);
+        when(userRepository.existsByUserId("testtaro")).thenReturn(true);
+
+        dataLoader.run();
+
+        verify(userRepository, never()).save(any(UserModel.class));
+        verify(permissionRepository, never()).save(any(UserRolePermission.class));
+    }
+}

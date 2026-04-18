@@ -1,0 +1,6 @@
+.default-frontend:
+  image: node:24.14.0-bookworm-slim
+  tags:
+    - docker-runner
+  before_script:
+    - cd FE/spa-next/my-next-app

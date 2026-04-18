@@ -1,0 +1,5 @@
+{
+  "status": "ok",
+  "source": "wiremock",
+  "message": "external api mock response"
+}

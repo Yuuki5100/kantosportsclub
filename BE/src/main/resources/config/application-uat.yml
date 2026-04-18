@@ -1,0 +1,69 @@
+spring:
+  config:
+    activate:
+      on-profile: uat
+
+# ==============================
+# Appserver
+# ==============================
+appserver:
+  spring:
+    datasource:
+      url: jdbc:mysql://uat-db-host:3306/common
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: dev_user
+      password: ${DB_PASSWORD_DEV}
+    flyway:
+      enabled: false
+  jwt:
+    secret: ${JWT_SECRET_DEV}
+    expiration: 86400000
+  teams:
+    webhook:
+      url: ${TEAMS_WEBHOOK_DEV}
+  logging:
+    level:
+      root: INFO
+    appender: PLAIN_CONSOLE
+    file:
+      path: logs/${spring.application.name}
+
+# ==============================
+# Batchserver
+# ==============================
+batchserver:
+  spring:
+    datasource:
+      url: jdbc:mysql://uat-db-host:3306/common
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: uat_user
+      password: ${DB_PASSWORD_DEV}
+    batch:
+      initialize-schema: never
+    flyway:
+      enabled: false
+  storage:
+    type: local
+  teams:
+    webhook:
+      url: ${TEAMS_WEBHOOK_DEV}
+  logging:
+    level:
+      root: INFO
+    appender: PLAIN_CONSOLE
+    file:
+      path: logs/${spring.application.name}
+
+# ==============================
+# Gateway
+# ==============================
+gateway:
+  spring:
+    redis:
+      host: redis-uat
+      port: 6379
+  jwt:
+    secret: ${JWT_SECRET_DEV}
+  teams:
+    webhook:
+      url: ${TEAMS_WEBHOOK_DEV}
