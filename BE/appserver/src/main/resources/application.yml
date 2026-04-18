@@ -27,8 +27,11 @@ spring:
   application:
     name: appserver
   datasource:
-    hikari:
-      connection-init-sql: SET time_zone = '+00:00'
+      url: jdbc:mysql://localhost:3306/app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Tokyo
+      username: app
+      password: app
+  hikari:
+    connection-init-sql: SET time_zone = '+00:00'
 
   jpa:
     hibernate:
@@ -102,19 +105,19 @@ storage:
     archive-dir: archive
     error-dir: error
 
-# mail:
-#   host: email-smtp.ap-northeast-1.amazonaws.com
-#   port: 587
-#   properties:
-#     mail:
-#       smtp:
-#         auth: true
-#         starttls:
-#           enable: true
-#   #以下のアクセスキーを使うクラスは、実装古いのでそこからアップデートしないようにお願いします
-#   access-key: aaa
-#   secret-key: bbb
-#   from: no-reply@example.com
+mail:
+  # host: email-smtp.ap-northeast-1.amazonaws.com
+  # port: 587
+  # properties:
+  #   mail:
+  #     smtp:
+  #       auth: true
+  #       starttls:
+  #         enable: true
+  #以下のアクセスキーを使うクラスは、実装古いのでそこからアップデートしないようにお願いします
+  # access-key: aaa
+  # secret-key: bbb
+  from: no-reply@example.com
 
 app:
   login:
