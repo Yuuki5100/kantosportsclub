@@ -60,6 +60,9 @@ spring:
 
   flyway:
     enabled: false
+  sql:
+    init:
+      mode: always
 
 logging:
   level:

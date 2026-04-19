@@ -18,6 +18,8 @@ Modes:
   all-in-one-sync  Start all-in-one stack with optional syncconnector
   instance1    Start instance-1 role (appserver + gateway) without infra dependencies
   instance1-sync   Start instance-1 role (appserver + gateway + syncconnector option)
+  appserver-build  Rebuild and restart appserver only (--build --no-deps backend)
+                   Backend Docker build includes dependent servercommon module (-am)
   instance2    Start instance-2 role (batchserver) without infra dependencies
   instance3    Start instance-3 role (frontend static on nginx) without infra dependencies
   instance3-dev    Start instance-3 role in Next.js dev mode
@@ -55,6 +57,7 @@ Examples:
   docker/stack.sh all-in-one
   docker/stack.sh instance1 docker/env/instance1.env
   docker/stack.sh instance1-sync docker/env/instance1.env
+  docker/stack.sh appserver-build
   docker/stack.sh instance1 docker/env/instance1.env --logs
   docker/stack.sh instance1 docker/env/instance1.env --logs=tmux
   docker/stack.sh cloudfront-export docker/env/instance3.env
@@ -565,6 +568,11 @@ case "${MODE}" in
     compose --profile syncconnector up -d --wait --no-deps gateway
     compose --profile syncconnector up -d --wait --no-deps syncconnector
     MODE_SERVICES=(backend gateway syncconnector)
+    FOLLOWABLE=1
+    ;;
+  appserver-build)
+    compose up -d --build --no-deps backend
+    MODE_SERVICES=(backend)
     FOLLOWABLE=1
     ;;
   instance2)
