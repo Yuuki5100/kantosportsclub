@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Header } from '@composite/Header';
 import { Footer } from '@composite/Footer';
@@ -15,6 +15,7 @@ import { getPageConfig } from '@/config/PageConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { pageLang } from '@/config/PageLang';
 import { SnackbarListener } from '@/components/composite/SnackbarListener';
+import { useTheme, useMediaQuery } from '@mui/material';
 // import { useGlobalWebSocket } from '@/hooks/useGlobalWebSocket';
 
 type BasePageProps = {
@@ -23,6 +24,8 @@ type BasePageProps = {
 
 const BasePage = ({ children }: BasePageProps) => {
   const [menuOpen, setMenuOpen] = useState(true);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const router = useRouter();
   const { name } = useAuth();
@@ -52,6 +55,10 @@ const BasePage = ({ children }: BasePageProps) => {
   // console.log('Websocketを起動しました。');
   //-------------------------------------------------------------------
 
+  useEffect(() => {
+    setMenuOpen(!isMobile);
+  }, [isMobile]);
+
   return (
     <Box
       sx={{
@@ -69,11 +76,12 @@ const BasePage = ({ children }: BasePageProps) => {
           sx={{
             flexGrow: 1,
             pt: `${HEADER_HEIGHT}px`,
-            ml: `${SIDEBAR_COLLAPSED_WIDTH}px`,
+            ml: isMobile ? 0 : `${SIDEBAR_COLLAPSED_WIDTH}px`,
             transition: 'margin-left 0.3s ease',
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100vh',
+            minWidth: 0,
           }}
         >
 

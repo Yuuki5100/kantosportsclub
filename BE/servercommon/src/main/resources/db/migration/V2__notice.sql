@@ -12,9 +12,7 @@ CREATE TABLE notice (
   creator_user_id CHAR(36) NOT NULL,
   editor_user_id CHAR(36) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT fk_notice_creator FOREIGN KEY (creator_user_id) REFERENCES users(user_id),
-  CONSTRAINT fk_notice_editor FOREIGN KEY (editor_user_id) REFERENCES users(user_id)
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_notice_end_date ON notice(end_date);

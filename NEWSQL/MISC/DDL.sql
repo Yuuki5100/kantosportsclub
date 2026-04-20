@@ -303,3 +303,5 @@ ALTER TABLE notice
 ALTER TABLE notice_file
   ADD CONSTRAINT fk_notice_file_notice
     FOREIGN KEY (notice_id) REFERENCES notice(notice_id);
+
+
