@@ -27,13 +27,9 @@ spring:
   application:
     name: appserver
   datasource:
-      # url: jdbc:mysql://localhost:3306/app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Tokyo
-      # username: app
-      # password: app
-      url: jdbc:mysql://localhost:3306/kantosportsclub
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      username: root
-      password: admin
+      url: jdbc:mysql://localhost:3306/kantosportsclub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Tokyo
+      username: app
+      password: app
   hikari:
     connection-init-sql: SET time_zone = '+00:00'
 

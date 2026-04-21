@@ -17,11 +17,12 @@ Modes:
   all-in-one   Legacy alias for multi-container
   all-in-one-sync  Start all-in-one stack with optional syncconnector
   instance1    Start instance-1 role (appserver + gateway) without infra dependencies
+  instance1-backend Start instance-1 backend only without infra dependencies
   instance1-sync   Start instance-1 role (appserver + gateway + syncconnector option)
   appserver-build  Rebuild and restart appserver only (--build --no-deps backend)
                    Backend Docker build includes dependent servercommon module (-am)
   instance2    Start instance-2 role (batchserver) without infra dependencies
-  instance3    Start instance-3 role (frontend static on nginx) without infra dependencies
+  instance3    Rebuild and start instance-3 role (frontend static on nginx) without infra dependencies
   instance3-dev    Start instance-3 role in Next.js dev mode
   cloudfront-export Build static assets for CloudFront/S3 deployment into dist/frontend-static
   test-fe      Run frontend lint + Jest coverage inside Docker
@@ -45,6 +46,8 @@ Modes:
   seed-data    Re-apply shared QA seed data to MySQL and MinIO
   status       Show container status
   logs         Tail logs for major services
+  logs-backend Tail logs for backend only
+  logs-backend-f Follow backend logs in real time
   down         Stop and remove containers/networks
   down-v       Stop and remove containers/networks/volumes
 
@@ -56,10 +59,13 @@ Examples:
   docker/stack.sh --family java-legacy up
   docker/stack.sh all-in-one
   docker/stack.sh instance1 docker/env/instance1.env
+  docker/stack.sh instance1-backend docker/env/instance1.env
   docker/stack.sh instance1-sync docker/env/instance1.env
   docker/stack.sh appserver-build
   docker/stack.sh instance1 docker/env/instance1.env --logs
+  docker/stack.sh instance1-backend docker/env/instance1.env --logs
   docker/stack.sh instance1 docker/env/instance1.env --logs=tmux
+  docker/stack.sh instance3 docker/env/instance3.env --logs
   docker/stack.sh cloudfront-export docker/env/instance3.env
   docker/stack.sh test-fe
   docker/stack.sh test-be
@@ -78,6 +84,8 @@ Examples:
   docker/stack.sh zap-frontend-build
   docker/stack.sh seed-data
   docker/stack.sh status
+  docker/stack.sh logs-backend docker/env/instance1.env
+  docker/stack.sh logs-backend-f docker/env/instance1.env
 
 Log options:
   --logs               Follow logs after startup (combined view)
@@ -563,6 +571,11 @@ case "${MODE}" in
     MODE_SERVICES=(backend gateway)
     FOLLOWABLE=1
     ;;
+  instance1-backend)
+    bring_up_wait --no-deps backend
+    MODE_SERVICES=(backend)
+    FOLLOWABLE=1
+    ;;
   instance1-sync)
     compose --profile syncconnector up -d --wait --no-deps backend
     compose --profile syncconnector up -d --wait --no-deps gateway
@@ -581,7 +594,7 @@ case "${MODE}" in
     FOLLOWABLE=1
     ;;
   instance3)
-    compose up -d --no-deps frontend-static
+    compose up -d --build --no-deps frontend-static
     MODE_SERVICES=(frontend-static)
     FOLLOWABLE=1
     ;;
@@ -683,6 +696,12 @@ case "${MODE}" in
     else
       compose logs --tail=150
     fi
+    ;;
+  logs-backend)
+    compose logs --tail=150 backend
+    ;;
+  logs-backend-f)
+    compose logs -f backend
     ;;
   down)
     compose down

@@ -112,6 +112,14 @@ docker/stack.sh [--family <name>] <mode> [env-file] --logs
 docker/stack.sh [--family <name>] <mode> [env-file] --logs=tmux
 ```
 
+起動失敗の切り分けだけをまとめて実行する場合:
+
+```bash
+docker/diagnose.sh backend docker/env/instance1.env
+docker/diagnose.sh gateway docker/env/instance1.env
+docker/diagnose.sh instance1 docker/env/instance1.env
+```
+
 テスト/検証コマンド例:
 
 ```bash
@@ -144,7 +152,7 @@ docker/stack.sh zap-baseline
 - `instance1`: `backend(appserver) + gateway` を起動（`--no-deps`）
 - `instance1-sync`: `instance1 + syncconnector` を起動（`--no-deps`）
 - `instance2`: `batchserver` を起動（`--no-deps`）
-- `instance3`: `frontend-static(nginx)` を起動（`--no-deps`）
+- `instance3`: `frontend-static(nginx)` を再ビルドして起動（`--build --no-deps`）
 - `instance3-dev`: `frontend(Next.js dev)` を起動（`--no-deps`）
 - `cloudfront-export`: CloudFront/S3 配信用の静的成果物を `dist/frontend-static` に出力
 - `test-fe`: frontend の `lint + jest --coverage` を Docker 内で実行
@@ -787,6 +795,8 @@ docker/stack.sh instance3 docker/env/instance3.env
 - `frontend-static` サービスを起動します。
 - Docker イメージ内で Next.js を静的 export して nginx で配信します。
 - `docker/env/instance3.env` の `NEXT_PUBLIC_API_BASE_URL` を API の公開 URL に設定してください。
+- `NEXT_PUBLIC_API_BASE_URL` はコンテナ起動時ではなく Docker build 時に静的ファイルへ埋め込まれます。
+- `docker/stack.sh instance3 ...` は毎回 `frontend-static` を再ビルドしてから起動するので、`docker/env/instance3.env` の変更もこのコマンドで反映されます。
 
 ### 方式B: CloudFront/S3 静的配信（成果物エクスポート）
 
