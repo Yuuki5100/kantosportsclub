@@ -1,5 +1,6 @@
 package com.example.appserver.controller;
 
+import com.example.appserver.security.RequirePermission;
 import com.example.servercommon.model.Picture;
 import com.example.servercommon.repository.PictureRepository;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ public class PictureController {
     }
 
     @GetMapping
+    @RequirePermission(permissionId = 7, statusLevelId = 1) // PICTURE, なし
     public List<Picture> findAll() {
         return pictureRepository.findAll();
     }

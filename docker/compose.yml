@@ -106,9 +106,9 @@ services:
       SERVER_PORT: 8081
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_NAME: app
-      DB_USER: app
-      DB_PASSWORD: app
+      DB_NAME: kantosportsclub
+      DB_USER: root
+      DB_PASSWORD: admin
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123

@@ -6,6 +6,7 @@ import type { TableState } from "@/components/composite/Listview/ControllableLis
 import type { ColumnDefinition, RowDefinition } from "@/components/composite/Listview/ListView";
 import { useFetch } from "@/hooks/useApi";
 import colors from "@/styles/colors";
+import type { ApiResponse } from "@/types/api";
 
 type MediaItem = {
   id: number;
@@ -21,6 +22,18 @@ type MediaListPageProps = {
   title: string;
   endpoint: string;
   queryKey: string;
+};
+
+const extractMediaItems = (
+  response: MediaItem[] | ApiResponse<MediaItem[]> | null | undefined
+): MediaItem[] => {
+  if (Array.isArray(response)) {
+    return response;
+  }
+  if (response && Array.isArray(response.data)) {
+    return response.data;
+  }
+  return [];
 };
 
 const columns: ColumnDefinition[] = [
@@ -54,11 +67,16 @@ const MediaListPage: React.FC<MediaListPageProps> = ({ title, endpoint, queryKey
     },
   });
 
-  const { data, isLoading, isError, error } = useFetch<MediaItem[]>(queryKey, endpoint);
+  const { data, isLoading, isError, error } = useFetch<MediaItem[] | ApiResponse<MediaItem[]>>(
+    queryKey,
+    endpoint
+  );
+
+  const mediaItems = useMemo(() => extractMediaItems(data), [data]);
 
   const rowData: RowDefinition[] = useMemo(
     () =>
-      (data ?? []).map((item) => ({
+      mediaItems.map((item) => ({
         cells: [
           createCell("id", item.id, item.id),
           createCell("title", item.id, item.title ?? undefined),
@@ -69,7 +87,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({ title, endpoint, queryKey
           createCell("updatedAt", item.id, item.updatedAt ?? undefined),
         ],
       })),
-    [data]
+    [mediaItems]
   );
 
   return (

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, FlexBox } from "@/components/base/Box";
 import FormRow from "@/components/base/Input/FormRow";
 import TextBox from "@/components/base/Input/TextBox";
@@ -6,16 +6,18 @@ import ButtonAction from "@/components/base/Button/ButtonAction";
 import { Font16 } from "@/components/base";
 import colors from "@/styles/colors";
 import {
-  getSystemSettingApi,
   updateSystemSettingApi,
 } from "@/api/services/v1/systemSettingService";
 import {
+  SystemSettingData,
   SystemSettingItem,
   SystemSettingUpdateRequest,
 } from "@/types/systemSetting";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { usePermission } from "@/hooks/usePermission";
 import { getMessage, MessageCodes } from "@/message";
+import { useFetch } from "@/hooks/useApi";
+import { API_ENDPOINTS } from "@/api/apiEndpoints";
 
 type SystemSettings = {
   passwordExpiryDays: number;
@@ -54,20 +56,24 @@ const SystemSettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<SystemSettings>(defaultSettings);
   const [isEditMode, setIsEditMode] = useState(false);
   const { showSnackbar } = useSnackbar();
-
-  const fetchSettings = useCallback(async () => {
-    try {
-      const data = await getSystemSettingApi();
-      setSettings(mapApiToState(data.systemSettings));
-    } catch (error) {
-      console.error("Failed to fetch system settings:", error);
-      showSnackbar(getMessage(MessageCodes.FETCH_FAILED, "システム設定"), "ERROR");
-    }
-  }, []);
+  const {
+    data: systemSettingData,
+    isError: isSystemSettingError,
+    error: systemSettingError,
+  } = useFetch<SystemSettingData>("system-setting", API_ENDPOINTS.SYSTEM_SETTING.GET);
 
   useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+    if (systemSettingData) {
+      setSettings(mapApiToState(systemSettingData.systemSettings));
+    }
+  }, [systemSettingData]);
+
+  useEffect(() => {
+    if (isSystemSettingError) {
+      console.error("Failed to fetch system settings:", systemSettingError);
+      showSnackbar(getMessage(MessageCodes.FETCH_FAILED, "システム設定"), "ERROR");
+    }
+  }, [isSystemSettingError, systemSettingError, showSnackbar]);
 
   const handleChange = (field: keyof SystemSettings, value: string) => {
     const numValue = parseInt(value, 10);

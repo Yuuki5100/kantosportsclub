@@ -100,6 +100,12 @@ export const API_ENDPOINTS = {
     GET: '/api/system',
     UPDATE: '/api/system',
   },
+  MOVIE: {
+    LIST: '/api/movies',
+  },
+  PICTURE: {
+    LIST: '/api/pictures',
+  },
   MANUAL: {
     LIST: '/api/manual/list',
     DETAIL: '/api/manual',
