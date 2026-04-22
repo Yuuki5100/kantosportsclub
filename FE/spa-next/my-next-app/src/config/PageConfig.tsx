@@ -128,6 +128,20 @@ const pageConfig: PageConfigType = [
     langKey: "systemSettings",
     breadcrumb: { id: "systemSettings", parentId: "top" },
   },
+  {
+    name: "動画一覧",
+    resourceKey: "/movies",
+    requiredPermission: 0,
+    icon: <ListIcon />,
+    breadcrumb: { id: "movies", parentId: "top" },
+  },
+  {
+    name: "写真一覧",
+    resourceKey: "/pictures",
+    requiredPermission: 0,
+    icon: <ListIcon />,
+    breadcrumb: { id: "pictures", parentId: "top" },
+  },
 
 ];
 
