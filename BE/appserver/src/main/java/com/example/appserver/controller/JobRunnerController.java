@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/batch-runner")
+@RequestMapping("/api/batch-runner")
 @RequiredArgsConstructor
 public class JobRunnerController {
 

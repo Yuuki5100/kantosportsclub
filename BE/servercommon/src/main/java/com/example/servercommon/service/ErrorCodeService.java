@@ -18,6 +18,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,12 +55,22 @@ public class ErrorCodeService {
     @Cacheable(value = "errorCodes", key = "#code + '_' + #locale")
     public String getErrorMessage(String code, String locale) {
         if (usePropertiesOnly) {
-            return propertiesMessages.getOrDefault(
-                    code,
-                    BackendMessageCatalog.MSG_UNKNOWN_ERROR_PREFIX + code + ")");
+            String resolved = propertiesMessages.get(code);
+            if (resolved != null) {
+                return resolved;
+            }
+            if (!Locale.JAPAN.getLanguage().equalsIgnoreCase(locale)) {
+                String fallback = propertiesMessages.get(code);
+                if (fallback != null) {
+                    return fallback;
+                }
+            }
+            return BackendMessageCatalog.MSG_UNKNOWN_ERROR_PREFIX + code + ")";
         }
         return errorCodeRepository.findByCodeAndLocale(code, locale)
                 .map(ErrorCode::getMessage)
+                .or(() -> errorCodeRepository.findByCodeAndLocale(code, Locale.JAPAN.getLanguage())
+                        .map(ErrorCode::getMessage))
                 .orElse(BackendMessageCatalog.MSG_UNKNOWN_ERROR_PREFIX + code + ")");
     }
 

@@ -76,8 +76,29 @@ public class GlobalExceptionHandler {
         log.warn(BackendMessageCatalog.LOG_CUSTOM_EXCEPTION, ex.getMessage());
         String formattedMessage = getMessage(ex, locale); // ✅ uses fallback logic
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.status(resolveHttpStatus(ex.getCode()))
                 .body(ApiResponse.error(ex.getCode(), formattedMessage));
+    }
+
+    private HttpStatus resolveHttpStatus(String code) {
+        if (BackendMessageCatalog.CODE_E403.equals(code) || BackendMessageCatalog.CODE_E4031.equals(code)) {
+            return HttpStatus.FORBIDDEN;
+        }
+        if (BackendMessageCatalog.CODE_E401.equals(code)
+                || BackendMessageCatalog.CODE_E4011.equals(code)
+                || BackendMessageCatalog.CODE_E4012.equals(code)
+                || BackendMessageCatalog.CODE_E4013.equals(code)
+                || BackendMessageCatalog.CODE_E4014.equals(code)
+                || BackendMessageCatalog.CODE_E4015.equals(code)) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        if (BackendMessageCatalog.CODE_E4041.equals(code)) {
+            return HttpStatus.NOT_FOUND;
+        }
+        if (BackendMessageCatalog.CODE_E409.equals(code)) {
+            return HttpStatus.CONFLICT;
+        }
+        return HttpStatus.BAD_REQUEST;
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

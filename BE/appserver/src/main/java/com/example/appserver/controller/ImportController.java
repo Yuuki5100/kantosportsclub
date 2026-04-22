@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/import")
+@RequestMapping("/api/import")
 public class ImportController {
 //実装サンプル
     private final AsyncTaskService asyncTaskService;

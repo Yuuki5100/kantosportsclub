@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("mail-templates")
+@RequestMapping("/api/mail-templates")
 public class MailTemplateSettingController {
 
     @Autowired

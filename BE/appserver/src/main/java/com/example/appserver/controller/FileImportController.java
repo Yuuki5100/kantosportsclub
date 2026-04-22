@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Value;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
-@RequestMapping("/import")
+@RequestMapping("/api/import")
 public class FileImportController {
 
     private final JobStatusRepository jobStatusRepository;

@@ -14,7 +14,7 @@ import jakarta.validation.Valid;
 import java.util.Locale;
 
 @RestController
-@RequestMapping("/report/export")
+@RequestMapping("/api/report/export")
 @RequiredArgsConstructor
 public class BulkReportExportController {
 

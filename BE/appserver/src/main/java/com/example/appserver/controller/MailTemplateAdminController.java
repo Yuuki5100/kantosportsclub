@@ -16,7 +16,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin/templates")
+@RequestMapping("/api/admin/templates")
 @RequiredArgsConstructor
 public class MailTemplateAdminController {
 

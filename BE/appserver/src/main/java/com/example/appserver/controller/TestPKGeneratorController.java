@@ -13,7 +13,7 @@ import com.example.servercommon.utils.PrimaryKeyGenerator;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("auth/test-pk")
+@RequestMapping("/api/auth/test-pk")
 @RequiredArgsConstructor
 public class TestPKGeneratorController {
     @PostMapping

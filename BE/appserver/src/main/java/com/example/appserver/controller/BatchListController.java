@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/system-transfer/batch-list")
+@RequestMapping("/api/system-transfer/batch-list")
 public class BatchListController {
 
     /**

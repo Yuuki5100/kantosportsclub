@@ -14,8 +14,11 @@ public class AuthorizationInterceptorProperties {
      * 認可チェックを適用しないパス。
      */
     private List<String> paths = new ArrayList<>(List.of(
+            "/auth/login",
             "/api/auth/login",
+            "/user/reset-password/**",
             "/api/user/reset-password/**",
+            "/user/forgot-password",
             "/api/user/forgot-password",
             "/error",
             "/ws/**",
@@ -25,7 +28,8 @@ public class AuthorizationInterceptorProperties {
             "/oauth/token",
             "/callback",
             "/swagger-ui/**",
-            "/v3/api-docs/**"
+            "/v3/api-docs/**",
+            "/files/**"
     ));
 
     public List<String> getPaths() {

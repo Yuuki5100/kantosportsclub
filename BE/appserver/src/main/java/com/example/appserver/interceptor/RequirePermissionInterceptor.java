@@ -84,7 +84,7 @@ public class RequirePermissionInterceptor implements HandlerInterceptor {
 
     private boolean isExcluded(HttpServletRequest request) {
         String path = request.getRequestURI();
-        if (pathMatcher.match("/api/auth/**", path)) {
+        if (pathMatcher.match("/auth/**", path) || pathMatcher.match("/api/auth/**", path)) {
             return true;
         }
 

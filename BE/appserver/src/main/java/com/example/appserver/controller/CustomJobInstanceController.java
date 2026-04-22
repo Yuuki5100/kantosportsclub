@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/system-transfer/custom-job-instance")
+@RequestMapping("/api/system-transfer/custom-job-instance")
 public class CustomJobInstanceController {
     private final CustomJobInstanceService service;
 

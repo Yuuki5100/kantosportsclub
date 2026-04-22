@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("error-codes")
+@RequestMapping("/api/error-codes")
 public class ErrorCodeSettingController {
 
     @Autowired
