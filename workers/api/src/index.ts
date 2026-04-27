@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import type { AppVariables, Bindings } from "./env";
 import { requestId } from "./middleware/requestId";
 import { healthRoutes } from "./routes/health";
+import { mediaRoutes } from "./routes/media";
 
 const app = new Hono<{
   Bindings: Bindings;
@@ -25,6 +26,7 @@ app.use(
 
 app.get("/", (c) => c.redirect("/api/health"));
 app.route("/api/health", healthRoutes);
+app.route("/api", mediaRoutes);
 
 app.notFound((c) =>
   c.json(

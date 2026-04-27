@@ -265,7 +265,3 @@ BE/appserver/src/main/java/com/example/appserver/controller/PictureController.ja
 8. `npm --prefix workers/api run typecheck` を実行する。
 9. README に API を追記する。
 10. 最終回答で未実行の検証があれば明示する。
-
-## 命名
-
-このファイル名はユーザー依頼に合わせて `AGENETS.md` とする。一般的な `AGENTS.md` ではないため、参照するときはファイル名を間違えないこと。

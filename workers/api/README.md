@@ -47,3 +47,32 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8787
 ```
 
 既存 Spring Boot / gateway に戻す場合は、`http://localhost:8888` に戻してください。
+
+## 実装済み API
+
+```text
+GET /api/health
+GET /api/movies
+GET /api/pictures
+```
+
+`/api/movies` と `/api/pictures` は、既存 Spring Boot の以下の Controller に合わせて配列を直接返します。
+
+```text
+BE/appserver/src/main/java/com/example/appserver/controller/MovieController.java
+BE/appserver/src/main/java/com/example/appserver/controller/PictureController.java
+```
+
+レスポンス項目:
+
+```ts
+type MediaItem = {
+  id: number;
+  title: string | null;
+  description: string | null;
+  url: string | null;
+  locationId: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+```

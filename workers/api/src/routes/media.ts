@@ -1,0 +1,18 @@
+import { Hono } from "hono";
+import type { AppVariables, Bindings } from "../env";
+import { findAllMedia } from "../repositories/mediaRepository";
+
+export const mediaRoutes = new Hono<{
+  Bindings: Bindings;
+  Variables: AppVariables;
+}>();
+
+mediaRoutes.get("/movies", async (c) => {
+  const movies = await findAllMedia(c.env.DB, "movies");
+  return c.json(movies);
+});
+
+mediaRoutes.get("/pictures", async (c) => {
+  const pictures = await findAllMedia(c.env.DB, "pictures");
+  return c.json(pictures);
+});
