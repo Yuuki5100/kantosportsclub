@@ -1,8 +1,10 @@
-BE/appserver/src/main/resources/application-local.yml
-BE/servercommon/logging/target/maven-archiver/pom.properties
-BE/servercommon/logging/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
-BE/servercommon/logging/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst
-BE/servercommon/logging/target/logging-1.0.0-SNAPSHOT.jar
+BE/
 .vscode/settings.json
 dist/
 .m2/
+node_modules/
+.wrangler/
+.dev.vars
+workers/**/node_modules/
+workers/**/.wrangler/
+
