@@ -8,10 +8,15 @@ export const mediaRoutes = new Hono<{
 }>();
 
 mediaRoutes.get("/movies", async (c) => {
-  const movies = await findAllMedia(c.env.DB, "movies", {
-    title: c.req.query("title"),
-    description: c.req.query("description")
-  });
+  const movies = await findAllMedia(
+    c.env.DB,
+    "movies",
+    {
+      title: c.req.query("title"),
+      description: c.req.query("description")
+    },
+    { order: "createdAtDesc" }
+  );
   return c.json(movies);
 });
 

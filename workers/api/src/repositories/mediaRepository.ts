@@ -2,6 +2,16 @@ import type { Bindings } from "../env";
 import type { MediaItem, MediaRow, MediaSearchFilter } from "../types/media";
 
 type MediaTable = "movies" | "pictures";
+type MediaOrder = "idAsc" | "createdAtDesc";
+
+type FindAllMediaOptions = {
+  order?: MediaOrder;
+};
+
+const mediaOrderSql: Record<MediaOrder, string> = {
+  idAsc: "id ASC",
+  createdAtDesc: "created_at DESC, id DESC"
+};
 
 const mediaSelect = `
   SELECT
@@ -79,10 +89,12 @@ const buildMediaSearch = (filter?: MediaSearchFilter) => {
 export const findAllMedia = async (
   db: Bindings["DB"],
   table: MediaTable,
-  filter?: MediaSearchFilter
+  filter?: MediaSearchFilter,
+  options?: FindAllMediaOptions
 ): Promise<MediaItem[]> => {
   const search = buildMediaSearch(filter);
-  const statement = db.prepare(`${mediaSelect} FROM ${table}${search.whereSql} ORDER BY id ASC`);
+  const orderSql = mediaOrderSql[options?.order ?? "idAsc"];
+  const statement = db.prepare(`${mediaSelect} FROM ${table}${search.whereSql} ORDER BY ${orderSql}`);
   const prepared = search.params.length > 0 ? statement.bind(...search.params) : statement;
   const result = await prepared.all<MediaRow>();
 
