@@ -15,6 +15,7 @@
 # testing
 /coverage
 /scripts/jest-report.html
+/api/services/v1/mock
 
 # next.js
 /.next/
