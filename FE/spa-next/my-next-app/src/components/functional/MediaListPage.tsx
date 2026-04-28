@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
+import { TextField } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import FormRow from "@/components/base/Input/FormRow";
-import TextBox from "@/components/base/Input/TextBox";
 import PageContainer from "@base/Layout/PageContainer";
 import { ControllableListView } from "@/components/composite";
 import type { TableState } from "@/components/composite/Listview/ControllableListView";
@@ -149,11 +149,17 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   );
 
   const searchElements = enableTitleDescriptionSearch ? (
-    <Box sx={{ p: 2, width: "100%", gap: 1 }}>
+    <Box
+      sx={{ p: 2, width: "100%", gap: 1 }}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
       <FormRow label="タイトル" labelAlignment="center" labelMinWidth="120px">
-        <TextBox
+        <TextField
           name="pictureTitle"
           value={searchCondition.title}
+          size="small"
+          fullWidth
           onChange={(event) =>
             setSearchCondition((current) => ({ ...current, title: event.target.value }))
           }
@@ -161,9 +167,11 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
       </FormRow>
 
       <FormRow label="説明" labelAlignment="center" labelMinWidth="120px">
-        <TextBox
+        <TextField
           name="pictureDescription"
           value={searchCondition.description}
+          size="small"
+          fullWidth
           onChange={(event) =>
             setSearchCondition((current) => ({ ...current, description: event.target.value }))
           }

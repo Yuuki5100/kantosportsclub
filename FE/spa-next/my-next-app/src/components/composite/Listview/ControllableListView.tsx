@@ -41,7 +41,7 @@ export type TableState = {
 
 const ControllableListView: React.FC<ListViewProps> = (props) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {
     page,
     rowsPerPage,

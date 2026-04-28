@@ -8,6 +8,7 @@ const MoviesPage: React.FC = () => {
       title="映画一覧"
       endpoint={API_ENDPOINTS.MOVIE.LIST}
       queryKey="movies"
+      enableTitleDescriptionSearch
     />
   );
 };

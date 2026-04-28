@@ -56,9 +56,10 @@ GET /api/movies
 GET /api/pictures
 ```
 
-`GET /api/pictures` は query parameter による部分一致検索に対応しています。指定しない場合は全件を返します。
+`GET /api/movies` と `GET /api/pictures` は query parameter による部分一致検索に対応しています。指定しない場合は全件を返します。
 
 ```bash
+curl "http://localhost:8787/api/movies?title=サンプル&description=疎通"
 curl "http://localhost:8787/api/pictures?title=サンプル&description=疎通"
 ```
 
