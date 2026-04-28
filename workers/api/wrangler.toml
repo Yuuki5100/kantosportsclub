@@ -1,4 +1,5 @@
-name = "kantosportsclub-api"
+# workers/api/wrangler.toml
+name = 'kantosportsclub'
 main = "src/index.ts"
 compatibility_date = "2026-04-27"
 compatibility_flags = ["nodejs_compat"]
