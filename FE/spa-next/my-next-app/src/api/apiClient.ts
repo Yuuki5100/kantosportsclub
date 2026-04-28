@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosHeaders, AxiosResponse } from "axios";
 import qs from "qs";
 import { handleApiError } from "@/utils/errorHandler";
 import Sentry from "@/utils/sentry";
@@ -34,15 +34,9 @@ apiClient.interceptors.request.use(
     if (isTraceparentEnabled()) {
       const traceparent = buildTraceparentHeader();
       if (traceparent) {
-        const headers = config.headers;
-        if (headers && typeof headers.set === "function") {
-          headers.set("traceparent", traceparent);
-        } else {
-          config.headers = {
-            ...(headers ?? {}),
-            traceparent,
-          };
-        }
+        const headers = AxiosHeaders.from(config.headers);
+        headers.set("traceparent", traceparent);
+        config.headers = headers;
       }
     }
     return config;
