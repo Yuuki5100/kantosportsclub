@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { TextField } from "@mui/material";
+import { Link, TextField } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import FormRow from "@/components/base/Input/FormRow";
@@ -69,6 +69,47 @@ const createCell = (
   value: value ?? "",
 });
 
+const toLinkHref = (url: string): string => {
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url) || url.startsWith("/")) {
+    return url;
+  }
+  return `https://${url}`;
+};
+
+const createUrlCell = (rowId: number, url: string | null | undefined) => {
+  const value = url?.trim();
+  const href = value ? toLinkHref(value) : "";
+
+  return {
+    id: `url-${rowId}`,
+    columnId: "url",
+    cell: value ? (
+      <Link
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={value}
+        onClick={(event) => event.stopPropagation()}
+        sx={{
+          display: "block",
+          maxWidth: "100%",
+          color: colors.primary,
+          textDecoration: "underline",
+          whiteSpace: "normal",
+          overflowWrap: "anywhere",
+          wordBreak: "break-all",
+          "&:hover": {
+            textDecoration: "none",
+          },
+        }}
+      >
+        {value}
+      </Link>
+    ) : "-",
+    value: value ?? "",
+  };
+};
+
 const MediaListPage: React.FC<MediaListPageProps> = ({
   title,
   endpoint,
@@ -121,7 +162,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
         cells: [
           createCell("title", item.id, item.title ?? undefined),
           createCell("description", item.id, item.description ?? undefined),
-          createCell("url", item.id, item.url ?? undefined),
+          createUrlCell(item.id, item.url),
           createCell("locationId", item.id, item.locationId ?? undefined),
           createCell("createdAt", item.id, item.createdAt ?? undefined),
         ],
