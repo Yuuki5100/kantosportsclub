@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { Box, Font14, Font20 } from "@/components/base";
+import ButtonAction from "@/components/base/Button/ButtonAction";
+import FormRow from "@/components/base/Input/FormRow";
+import TextBox from "@/components/base/Input/TextBox";
 import PageContainer from "@base/Layout/PageContainer";
 import { ControllableListView } from "@/components/composite";
 import type { TableState } from "@/components/composite/Listview/ControllableListView";
@@ -22,6 +25,17 @@ type MediaListPageProps = {
   title: string;
   endpoint: string;
   queryKey: string;
+  enableTitleDescriptionSearch?: boolean;
+};
+
+type MediaSearchCondition = {
+  title: string;
+  description: string;
+};
+
+const INITIAL_SEARCH_CONDITION: MediaSearchCondition = {
+  title: "",
+  description: "",
 };
 
 const extractMediaItems = (
@@ -37,13 +51,11 @@ const extractMediaItems = (
 };
 
 const columns: ColumnDefinition[] = [
-  { id: "id", label: "ID", display: true, sortable: true, align: "center", widthPercent: 8 },
   { id: "title", label: "タイトル", display: true, sortable: true, align: "left", widthPercent: 16 },
   { id: "description", label: "説明", display: true, sortable: true, align: "left", widthPercent: 24 },
   { id: "url", label: "URL", display: true, sortable: true, align: "left", widthPercent: 22 },
   { id: "locationId", label: "ロケーションID", display: true, sortable: true, align: "center", widthPercent: 10 },
   { id: "createdAt", label: "作成日時", display: true, sortable: true, align: "center", widthPercent: 10 },
-  { id: "updatedAt", label: "更新日時", display: true, sortable: true, align: "center", widthPercent: 10 },
 ];
 
 const createCell = (
@@ -57,7 +69,16 @@ const createCell = (
   value: value ?? "",
 });
 
-const MediaListPage: React.FC<MediaListPageProps> = ({ title, endpoint, queryKey }) => {
+const MediaListPage: React.FC<MediaListPageProps> = ({
+  title,
+  endpoint,
+  queryKey,
+  enableTitleDescriptionSearch = false,
+}) => {
+  const [searchCondition, setSearchCondition] = useState<MediaSearchCondition>(INITIAL_SEARCH_CONDITION);
+  const [appliedSearchCondition, setAppliedSearchCondition] = useState<MediaSearchCondition>(
+    INITIAL_SEARCH_CONDITION
+  );
   const [tableState, setTableState] = useState<TableState>({
     page: 1,
     rowsPerPage: 10,
@@ -67,9 +88,29 @@ const MediaListPage: React.FC<MediaListPageProps> = ({ title, endpoint, queryKey
     },
   });
 
+  const searchParams = useMemo(() => {
+    const params: Record<string, string> = {};
+    const titleValue = appliedSearchCondition.title.trim();
+    const descriptionValue = appliedSearchCondition.description.trim();
+
+    if (titleValue) {
+      params.title = titleValue;
+    }
+    if (descriptionValue) {
+      params.description = descriptionValue;
+    }
+
+    if (!enableTitleDescriptionSearch) {
+      return undefined;
+    }
+
+    return Object.keys(params).length > 0 ? params : undefined;
+  }, [appliedSearchCondition, enableTitleDescriptionSearch]);
+
   const { data, isLoading, isError, error } = useFetch<MediaItem[] | ApiResponse<MediaItem[]>>(
     queryKey,
-    endpoint
+    endpoint,
+    searchParams
   );
 
   const mediaItems = useMemo(() => extractMediaItems(data), [data]);
@@ -78,17 +119,74 @@ const MediaListPage: React.FC<MediaListPageProps> = ({ title, endpoint, queryKey
     () =>
       mediaItems.map((item) => ({
         cells: [
-          createCell("id", item.id, item.id),
           createCell("title", item.id, item.title ?? undefined),
           createCell("description", item.id, item.description ?? undefined),
           createCell("url", item.id, item.url ?? undefined),
           createCell("locationId", item.id, item.locationId ?? undefined),
           createCell("createdAt", item.id, item.createdAt ?? undefined),
-          createCell("updatedAt", item.id, item.updatedAt ?? undefined),
         ],
       })),
     [mediaItems]
   );
+
+  const handleSearch = () => {
+    setTableState((current) => ({ ...current, page: 1 }));
+    setAppliedSearchCondition(searchCondition);
+  };
+
+  const handleClear = () => {
+    setSearchCondition(INITIAL_SEARCH_CONDITION);
+    setAppliedSearchCondition(INITIAL_SEARCH_CONDITION);
+    setTableState((current) => ({ ...current, page: 1 }));
+  };
+
+  const listInfoElements = (
+    <Box sx={{ p: 2, color: colors.grayDark }}>
+      {isLoading
+        ? "読み込み中です。"
+        : `${rowData.length} 件のデータを表示しています。`}
+    </Box>
+  );
+
+  const searchElements = enableTitleDescriptionSearch ? (
+    <Box sx={{ p: 2, width: "100%", gap: 1 }}>
+      <FormRow label="タイトル" labelAlignment="center" labelMinWidth="120px">
+        <TextBox
+          name="pictureTitle"
+          value={searchCondition.title}
+          onChange={(event) =>
+            setSearchCondition((current) => ({ ...current, title: event.target.value }))
+          }
+        />
+      </FormRow>
+
+      <FormRow label="説明" labelAlignment="center" labelMinWidth="120px">
+        <TextBox
+          name="pictureDescription"
+          value={searchCondition.description}
+          onChange={(event) =>
+            setSearchCondition((current) => ({ ...current, description: event.target.value }))
+          }
+        />
+      </FormRow>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 1.5,
+          width: "100%",
+          alignItems: { xs: "stretch", sm: "center" },
+        }}
+      >
+        <ButtonAction label="検索" onClick={handleSearch} />
+        <ButtonAction label="クリア" color="secondary" onClick={handleClear} />
+        <Font14 sx={{ color: colors.grayDark }}>
+          {isLoading ? "読み込み中です。" : `${rowData.length} 件のデータを表示しています。`}
+        </Font14>
+      </Box>
+    </Box>
+  ) : listInfoElements;
 
   return (
     <PageContainer>
@@ -112,18 +210,13 @@ const MediaListPage: React.FC<MediaListPageProps> = ({ title, endpoint, queryKey
               rowsPerPage={tableState.rowsPerPage}
               onTableStateChange={setTableState}
               rowsPerPageOptions={[10, 20, 50]}
+              topPaginationHidden={false}
               rowData={rowData}
               totalRowCount={rowData.length}
               columns={columns}
               searchOptions={{
-                title: "一覧情報",
-                elements: (
-                  <Box sx={{ p: 2, color: colors.grayDark }}>
-                    {isLoading
-                      ? "読み込み中です。"
-                      : `${rowData.length} 件のデータを表示しています。`}
-                  </Box>
-                ),
+                title: enableTitleDescriptionSearch ? "検索条件" : "一覧情報",
+                elements: searchElements,
                 accordionSx: { width: "100%" },
               }}
               sx={{

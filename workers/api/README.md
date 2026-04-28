@@ -56,6 +56,19 @@ GET /api/movies
 GET /api/pictures
 ```
 
+`GET /api/pictures` は query parameter による部分一致検索に対応しています。指定しない場合は全件を返します。
+
+```bash
+curl "http://localhost:8787/api/pictures?title=サンプル&description=疎通"
+```
+
+検索条件:
+
+```text
+title        タイトルの部分一致
+description  説明の部分一致
+```
+
 `/api/movies` と `/api/pictures` は、既存 Spring Boot の以下の Controller に合わせて配列を直接返します。
 
 ```text

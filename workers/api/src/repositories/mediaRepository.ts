@@ -1,5 +1,5 @@
 import type { Bindings } from "../env";
-import type { MediaItem, MediaRow } from "../types/media";
+import type { MediaItem, MediaRow, MediaSearchFilter } from "../types/media";
 
 type MediaTable = "movies" | "pictures";
 
@@ -24,13 +24,67 @@ const toMediaItem = (row: MediaRow): MediaItem => ({
   updatedAt: row.updated_at
 });
 
+const normalizeSearchText = (value: string | undefined): string | undefined => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const escapeLikePattern = (value: string): string => value.replace(/[\\%_]/g, "\\$&");
+
+const toHalfWidthAscii = (value: string): string =>
+  value.replace(/[Ａ-Ｚａ-ｚ０-９]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0xfee0)
+  );
+
+const toFullWidthAscii = (value: string): string =>
+  value.replace(/[A-Za-z0-9]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) + 0xfee0)
+  );
+
+const buildLikePatterns = (value: string): string[] => {
+  const variants = [value, toHalfWidthAscii(value), toFullWidthAscii(value)];
+  return [...new Set(variants)].map((variant) => `%${escapeLikePattern(variant)}%`);
+};
+
+const appendLikeSearch = (
+  conditions: string[],
+  params: string[],
+  columnName: "title" | "description",
+  value: string | undefined
+) => {
+  if (!value) return;
+
+  const patterns = buildLikePatterns(value);
+  conditions.push(
+    `(${patterns.map(() => `LOWER(${columnName}) LIKE LOWER(?) ESCAPE '\\'`).join(" OR ")})`
+  );
+  params.push(...patterns);
+};
+
+const buildMediaSearch = (filter?: MediaSearchFilter) => {
+  const conditions: string[] = [];
+  const params: string[] = [];
+  const title = normalizeSearchText(filter?.title);
+  const description = normalizeSearchText(filter?.description);
+
+  appendLikeSearch(conditions, params, "title", title);
+  appendLikeSearch(conditions, params, "description", description);
+
+  return {
+    whereSql: conditions.length > 0 ? ` WHERE ${conditions.join(" AND ")}` : "",
+    params
+  };
+};
+
 export const findAllMedia = async (
   db: Bindings["DB"],
-  table: MediaTable
+  table: MediaTable,
+  filter?: MediaSearchFilter
 ): Promise<MediaItem[]> => {
-  const result = await db
-    .prepare(`${mediaSelect} FROM ${table} ORDER BY id ASC`)
-    .all<MediaRow>();
+  const search = buildMediaSearch(filter);
+  const statement = db.prepare(`${mediaSelect} FROM ${table}${search.whereSql} ORDER BY id ASC`);
+  const prepared = search.params.length > 0 ? statement.bind(...search.params) : statement;
+  const result = await prepared.all<MediaRow>();
 
   return result.results.map(toMediaItem);
 };

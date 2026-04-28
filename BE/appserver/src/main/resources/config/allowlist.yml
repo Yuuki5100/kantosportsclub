@@ -16,7 +16,10 @@ security:
       - /api/test/**
       - /import/**
       - /report/**
+      - /files/**
       - /api/files/**
+      - /user/forgot-password
       - /api/user/forgot-password
+      - /user/reset-password/**
       - /api/user/reset-password/**
       - /error

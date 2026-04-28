@@ -8,6 +8,11 @@ export type MediaItem = {
   updatedAt: string | null;
 };
 
+export type MediaSearchFilter = {
+  title?: string;
+  description?: string;
+};
+
 export type MediaRow = {
   id: number;
   title: string | null;

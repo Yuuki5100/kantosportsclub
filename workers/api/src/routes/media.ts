@@ -13,6 +13,9 @@ mediaRoutes.get("/movies", async (c) => {
 });
 
 mediaRoutes.get("/pictures", async (c) => {
-  const pictures = await findAllMedia(c.env.DB, "pictures");
+  const pictures = await findAllMedia(c.env.DB, "pictures", {
+    title: c.req.query("title"),
+    description: c.req.query("description")
+  });
   return c.json(pictures);
 });

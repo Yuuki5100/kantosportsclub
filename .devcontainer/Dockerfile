@@ -29,6 +29,8 @@ RUN apt-get update \
   && curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-${AWS_ARCH}.zip" -o /tmp/awscliv2.zip \
   && unzip -q /tmp/awscliv2.zip -d /tmp \
   && /tmp/aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli \
+  && npm install -g @openai/codex \
+  && npm cache clean --force \
   && rm -rf /tmp/aws /tmp/awscliv2.zip /tmp/node.tar.xz /tmp/maven.tar.gz \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

@@ -1,6 +1,6 @@
 # Codex Project Guide
 
-最終更新: 2026-04-27
+最終更新: 2026-04-28
 
 このファイルは、Codex がこのリポジトリで作業するときの前提・設計思想・確認手順を固定し、回答品質のばらつきと不要なトークン消費を減らすための作業指針です。
 
@@ -146,6 +146,56 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8888
 ```
 
 フロント側の既存 API path は `FE/spa-next/my-next-app/src/api/apiEndpoints.ts` を正本として確認する。
+
+## ローカル起動手順
+
+API だけを起動する場合は `workers/api` で Worker を起動する。
+
+```bash
+cd workers/api
+npm run dev
+```
+
+Worker API は通常 `http://localhost:8787` で起動する。
+
+ブラウザでアプリ全体を確認する場合は、Worker API と Next.js フロントエンドを別々のターミナルで起動する。
+
+ターミナル 1:
+
+```bash
+cd workers/api
+npm run dev
+```
+
+ターミナル 2:
+
+```bash
+cd FE/spa-next/my-next-app
+npm run dev
+```
+
+Next.js は通常 `http://localhost:3000` で起動する。
+
+初回セットアップ、または `node_modules` が無い場合は、各ディレクトリで先に依存関係をインストールする。
+
+```bash
+cd workers/api
+npm install
+```
+
+```bash
+cd FE/spa-next/my-next-app
+npm install
+```
+
+D1 のローカル DB が未作成、または migration を反映していない場合は、Worker 起動前に次を実行する。
+
+```bash
+cd workers/api
+npm run db:migrate:local
+```
+
+注意: `workers/api/package.json` では Node `>=22` が必要。
 
 ## 検証コマンド
 

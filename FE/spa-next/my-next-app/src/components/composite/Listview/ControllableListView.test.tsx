@@ -7,6 +7,22 @@ import SortParams from './SortParams';
 import { ColumnDefinition, RowDefinition } from '@/components/composite/Listview/ListView';
 
 describe('ControllableListView コンポーネント', () => {
+  const setMatchMedia = (matches: boolean) => {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockImplementation((query: string) => ({
+        matches,
+        media: query,
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      })),
+    });
+  };
+
   // テスト用のモックデータ
   const columns: ColumnDefinition[] = [
     { id: 'id', label: 'ID', display: true, sortable: true },
@@ -52,6 +68,7 @@ describe('ControllableListView コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    setMatchMedia(false);
   });
 
   test('コンポーネントが正常にレンダリングされること', () => {
@@ -569,5 +586,36 @@ describe('ControllableListView コンポーネント', () => {
     // 最低限、SelectChangeEventが期待通りにハンドリングされることを確認
     expect(selectElement).toBeInTheDocument();
     expect(selectElement).toHaveValue('20');
+  });
+
+  test('モバイル幅ではカード形式のリストが表示され、ソート操作ができること', () => {
+    setMatchMedia(true);
+
+    render(
+      <ControllableListView
+        page={1}
+        rowsPerPage={10}
+        sortParams={defaultSortParams}
+        rowData={rowData}
+        totalRowCount={3}
+        columns={columns}
+        onTableStateChange={mockOnTableStateChange}
+      />
+    );
+
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getByText('並び替え')).toBeInTheDocument();
+    expect(screen.getAllByTestId('mobile-list-card')).toHaveLength(rowData.length);
+
+    fireEvent.click(screen.getByRole('button', { name: /名前/ }));
+
+    expect(mockOnTableStateChange).toHaveBeenCalledWith({
+      page: 1,
+      rowsPerPage: 10,
+      sortParams: {
+        sortColumn: 'name',
+        sortOrder: 'asc',
+      },
+    });
   });
 });

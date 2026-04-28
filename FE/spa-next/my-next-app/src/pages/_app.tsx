@@ -12,7 +12,6 @@ import ErrorBoundary from '@/components/functional/ErrorBoundary';
 import ErrorNotification from '@/components/functional/ErrorNotification';
 import SnackbarNotification from '@/components/functional/SnackbarNotification';
 import { useAuthError } from '@/hooks/useAuthError';
-import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { AuthInitializer } from '@/components/functional';
 import ProtectedRoute from '@components/functional/ProtectedRoute';
@@ -64,7 +63,6 @@ const publicPaths = ['/login', '/callback', '/403', '/404', '/_error', '/forgot-
 
 function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'pageProps'>) {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const headerLanguageRecord = useLanguage(headerLang);
@@ -156,13 +154,13 @@ function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'page
       return <Component {...pageProps} />;
     }
 
-    // それ以外のページは認証が必要
+    // それ以外のページも、ProtectedRoute 側で開発確認用に通過させる
     return (
       <ProtectedRoute>
         <Component {...pageProps} />
       </ProtectedRoute>
     );
-  }, [router.pathname, Component, pageProps, isPublicPath]);
+  }, [Component, pageProps, isPublicPath]);
 
   // グローバルエラーハンドラ登録（console 出力）
   useEffect(() => {
@@ -193,16 +191,6 @@ function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'page
   // 公開ページはBasePageレイアウトを使用しない
   const renderContent = () => {
     if (isPublicPath) {
-      return (
-        <>
-          {PageContent}
-          <SnackbarNotification />
-        </>
-      );
-    }
-
-    // 未認証 or 認証確認中はBasePageレイアウトを表示しない
-    if (!isAuthenticated) {
       return (
         <>
           {PageContent}

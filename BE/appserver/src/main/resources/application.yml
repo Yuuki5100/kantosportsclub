@@ -28,8 +28,8 @@ spring:
     name: appserver
   datasource:
       url: jdbc:mysql://localhost:3306/kantosportsclub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Tokyo
-      username: app
-      password: app
+      username: root
+      password: admin
   hikari:
     connection-init-sql: SET time_zone = '+00:00'
 
@@ -42,6 +42,7 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         jdbc:
           time_zone: UTC
+    defer-datasource-initialization: true
 
   jackson:
     time-zone: Asia/Tokyo

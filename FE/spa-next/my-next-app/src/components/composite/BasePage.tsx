@@ -1,8 +1,8 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Header } from '@composite/Header';
+import { Header, MobileHeader } from '@composite/Header';
 import { Footer } from '@composite/Footer';
-import SideMenu from '@composite/SideMenu/SideMenu';
+import { MobileSideMenu, SideMenu } from '@composite/SideMenu';
 import ErrorNotification from '@functional/ErrorNotification';
 import { PageContainer } from '@base/Layout/PageContainer';
 import { Box } from '@/components/base';
@@ -67,10 +67,23 @@ const BasePage = ({ children }: BasePageProps) => {
         minHeight: '100vh',
       }}
     >
-      <Header onLogoClick={() => router.push('#')} language={headerLanguage} userName={name} />
+      {isMobile ? (
+        <MobileHeader
+          onLogoClick={() => router.push('#')}
+          onMenuClick={() => setMenuOpen(true)}
+          language={headerLanguage}
+          userName={name}
+        />
+      ) : (
+        <Header onLogoClick={() => router.push('#')} language={headerLanguage} userName={name} />
+      )}
 
       <Box sx={{ display: 'flex', flexGrow: 1 }} flexDirection="row">
-        <SideMenu open={menuOpen} setOpen={setMenuOpen} />
+        {isMobile ? (
+          <MobileSideMenu open={menuOpen} setOpen={setMenuOpen} />
+        ) : (
+          <SideMenu open={menuOpen} setOpen={setMenuOpen} />
+        )}
 
         <Box
           sx={{

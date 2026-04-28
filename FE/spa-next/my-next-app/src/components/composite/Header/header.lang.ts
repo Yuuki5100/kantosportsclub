@@ -1,7 +1,7 @@
 // components/composite/header/Header.lang.ts
 export const headerLang: HeaderLangs = {
     ja: {
-      title: "共通基盤テンプレート",
+      title: "関東スポーツクラブ",
       defaultUserName: "JEMS 太郎",
       logoUrl: "/Logo.png",
       logoHeight: "40px",

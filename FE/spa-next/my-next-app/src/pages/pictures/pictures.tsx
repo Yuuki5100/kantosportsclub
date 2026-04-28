@@ -8,6 +8,7 @@ const PicturesPage: React.FC = () => {
       title="画像一覧"
       endpoint={API_ENDPOINTS.PICTURE.LIST}
       queryKey="pictures"
+      enableTitleDescriptionSearch
     />
   );
 };

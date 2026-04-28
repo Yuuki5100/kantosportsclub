@@ -12,7 +12,7 @@ services:
       - ..:/workspace/common-archetecture:cached
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - devcontainer
+      - appnet
 
   plantuml:
     image: plantuml/plantuml-server:jetty
@@ -21,8 +21,5 @@ services:
     ports:
       - "8082:8080"
     networks:
-      - devcontainer
+      - appnet
 
-networks:
-  devcontainer:
-    driver: bridge

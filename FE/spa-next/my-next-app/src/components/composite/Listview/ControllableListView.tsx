@@ -2,6 +2,7 @@
 import React from 'react';
 import { Box, Table, TableContainer } from '@/components/base';
 import type { SelectChangeEvent, SxProps, Theme } from '@/components/base';
+import { useMediaQuery, useTheme } from '@mui/material';
 import ListViewPagination from './ListViewPagination';
 import { TableHeaderRow } from '@/components/composite/Listview/TableHeaderRow';
 import { SortableTableRows } from '@/components/composite/Listview/SortableTableRows';
@@ -14,6 +15,7 @@ import SortParams from '@/components/composite/Listview/SortParams';
 import CommonAccordion from '@/components/base/utils/CommonAccordion';
 import { computeColumnWidths } from '@composite/Listview/utils/columnWidthUtils';
 import { ColumnWithComputedWidth } from '@composite/Listview/utils/columnWidthUtils';
+import MobileListRows from '@/components/composite/Listview/MobileListRows';
 
 type ListViewProps = {
   page: number;
@@ -38,6 +40,8 @@ export type TableState = {
 };
 
 const ControllableListView: React.FC<ListViewProps> = (props) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true });
   const {
     page,
     rowsPerPage,
@@ -102,30 +106,39 @@ const ControllableListView: React.FC<ListViewProps> = (props) => {
         hidden={topPaginationHidden}
       />
 
-      {/* テーブル表示 */}
-      <TableContainer
-        sx={{
-          maxHeight: '400px',
-          overflowY: 'auto',
-          overflowX: 'auto',
-        }}
-      >
-        <Table>
-          <TableHeaderRow
-            columns={computedColumns}
-            sortParams={sortParams}
-            handleSortChange={handleSortChange}
-          />
-          <SortableTableRows
-            sortParams={sortParams}
-            rowData={rowData}
-            columnDefinition={computedColumns}
-            page={page}
-            rowsPerPage={rowsPerPage}
-            onRowClick={onRowClick}
-          />
-        </Table>
-      </TableContainer>
+      {isMobile ? (
+        <MobileListRows
+          columns={computedColumns}
+          rowData={rowData}
+          sortParams={sortParams}
+          onSortChange={handleSortChange}
+          onRowClick={onRowClick}
+        />
+      ) : (
+        <TableContainer
+          sx={{
+            maxHeight: '400px',
+            overflowY: 'auto',
+            overflowX: 'auto',
+          }}
+        >
+          <Table>
+            <TableHeaderRow
+              columns={computedColumns}
+              sortParams={sortParams}
+              handleSortChange={handleSortChange}
+            />
+            <SortableTableRows
+              sortParams={sortParams}
+              rowData={rowData}
+              columnDefinition={computedColumns}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              onRowClick={onRowClick}
+            />
+          </Table>
+        </TableContainer>
+      )}
 
       {/* ▼ ページネーション（下） */}
       <ListViewPagination
