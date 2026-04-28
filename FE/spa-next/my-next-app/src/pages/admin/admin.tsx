@@ -11,7 +11,7 @@ const AdminPage = () => {
   // ✅ `useFetch` の戻り値に型を設定
   const { data: UserFetchType, isLoading: isUsersLoading } = useAdminUserPermissionsList();
 
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [permissions, setPermissions] = useState<{ [key: string]: number }>({});
   const users = UserFetchType?.data ?? [];
 

@@ -17,7 +17,18 @@ export const useAdminUsers = () => {
 export const useAdminUserPermissionsList = () => {
   return useQuery({
     queryKey: ["userList", Date.now()],
-    queryFn: () => mockGetUserListForUseFetch(),
+    queryFn: async () => {
+      const result = await mockGetUserListForUseFetch();
+
+      return {
+        success: result.success,
+        data: result.data.map((user) => ({
+          id: Number(user.id),
+          username: user.username,
+          rolePermissions: user.rolePermissions as Record<string, number>,
+        })),
+      };
+    },
   });
 };
 
