@@ -104,7 +104,7 @@ export const findAllMedia = async (
   const statement = db.prepare(
     `${mediaSelect}
      FROM ${table} m
-     LEFT JOIN master_locations ON master_locations.location_id = CAST(m.location_id AS INTEGER)
+     LEFT JOIN master_locations ml ON ml.location_id = CAST(m.location_id AS INTEGER)
      ${search.whereSql}
      ORDER BY ${orderSql}`
   );
