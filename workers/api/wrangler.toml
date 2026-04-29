@@ -5,7 +5,8 @@ compatibility_date = "2026-04-27"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-CORS_ORIGIN = "http://localhost:3000"
+# CORS_ORIGIN = "http://localhost:3000"
+CORS_ORIGIN = kantosportsclub-api.gotoken-yuutyan-e78.workers.dev
 
 [[d1_databases]]
 binding = "DB"
