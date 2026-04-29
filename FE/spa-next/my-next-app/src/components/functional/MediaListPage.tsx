@@ -16,7 +16,7 @@ export type MediaItem = {
   title: string | null;
   description: string | null;
   url: string | null;
-  locationId: string | null;
+  locationName: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -52,11 +52,11 @@ const extractMediaItems = (
 };
 
 const columns: ColumnDefinition[] = [
+  { id: "createdAt", label: "開催日時", display: true, sortable: true, align: "center", widthPercent: 10 },
+  { id: "locationName", label: "場所", display: true, sortable: true, align: "center", widthPercent: 10 },
   { id: "title", label: "タイトル", display: true, sortable: true, align: "left", widthPercent: 16 },
   { id: "description", label: "説明", display: true, sortable: true, align: "left", widthPercent: 24 },
   { id: "url", label: "URL", display: true, sortable: true, align: "left", widthPercent: 22 },
-  { id: "locationId", label: "ロケーションID", display: true, sortable: true, align: "center", widthPercent: 10 },
-  { id: "createdAt", label: "作成日時", display: true, sortable: true, align: "center", widthPercent: 10 },
 ];
 
 const createCell = (
@@ -172,7 +172,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
           createCell("title", item.id, item.title ?? undefined),
           createCell("description", item.id, item.description ?? undefined),
           createUrlCell(item.id, item.url),
-          createCell("locationId", item.id, item.locationId ?? undefined),
+          createCell("locationName", item.id, item.locationName ?? undefined),
           createCell("createdAt", item.id, item.createdAt ?? undefined),
         ],
       })),

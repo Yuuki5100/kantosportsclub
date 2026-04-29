@@ -16,7 +16,7 @@ type MovieDetail = {
   title: string;
   description: string;
   url: string;
-  locationId: string;
+  locationName: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -37,7 +37,7 @@ const EMPTY_MOVIE: MovieDetail = {
   title: "",
   description: "",
   url: "",
-  locationId: "",
+  locationName: "",
   createdAt: "",
   updatedAt: "",
 };
@@ -72,7 +72,7 @@ const MovieDetailPage: React.FC = () => {
       title: getQueryValue(router.query.title),
       description: getQueryValue(router.query.description),
       url: getQueryValue(router.query.url),
-      locationId: getQueryValue(router.query.locationId),
+      locationName: getQueryValue(router.query.locationName),
       createdAt: getQueryValue(router.query.createdAt),
       updatedAt: getQueryValue(router.query.updatedAt),
     });
@@ -127,7 +127,7 @@ const MovieDetailPage: React.FC = () => {
   const fields: DetailField[] = [
     { label: "ID", value: movie.id },
     { label: "URL", value: movie.url, link: true },
-    { label: "ロケーションID", value: movie.locationId },
+    { label: "場所", value: movie.locationName },
     { label: "作成日時", value: movie.createdAt },
     { label: "更新日時", value: movie.updatedAt },
   ];

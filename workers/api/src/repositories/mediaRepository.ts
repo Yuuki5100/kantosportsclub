@@ -14,19 +14,19 @@ type FindAllMediaOptions = {
 };
 
 const mediaOrderSql: Record<MediaOrder, string> = {
-  idAsc: "id ASC",
-  createdAtDesc: "created_at DESC, id DESC"
+  idAsc: "m.id ASC",
+  createdAtDesc: "m.created_at DESC, m.id DESC"
 };
 
 const mediaSelect = `
   SELECT
-    id,
-    title,
-    description,
-    url,
-    location_id,
-    created_at,
-    updated_at
+    m.id,
+    m.title,
+    m.description,
+    m.url,
+    master_locations.location_name AS location_name,
+    m.created_at,
+    m.updated_at
 `;
 
 const toMediaItem = (row: MediaRow): MediaItem => ({
@@ -34,7 +34,7 @@ const toMediaItem = (row: MediaRow): MediaItem => ({
   title: row.title,
   description: row.description,
   url: row.url,
-  locationId: row.location_id,
+  locationName: row.location_name,
   createdAt: row.created_at,
   updatedAt: row.updated_at
 });
@@ -64,7 +64,7 @@ const buildLikePatterns = (value: string): string[] => {
 const appendLikeSearch = (
   conditions: string[],
   params: string[],
-  columnName: "title" | "description" | "url",
+  columnName: "m.title" | "m.description" | "m.url",
   value: string | undefined
 ) => {
   if (!value) return;
@@ -83,9 +83,9 @@ const buildMediaSearch = (filter?: MediaSearchFilter) => {
   const description = normalizeSearchText(filter?.description);
   const url = normalizeSearchText(filter?.url);
 
-  appendLikeSearch(conditions, params, "title", title);
-  appendLikeSearch(conditions, params, "description", description);
-  appendLikeSearch(conditions, params, "url", url);
+  appendLikeSearch(conditions, params, "m.title", title);
+  appendLikeSearch(conditions, params, "m.description", description);
+  appendLikeSearch(conditions, params, "m.url", url);
 
   return {
     whereSql: conditions.length > 0 ? ` WHERE ${conditions.join(" AND ")}` : "",
@@ -101,7 +101,13 @@ export const findAllMedia = async (
 ): Promise<MediaItem[]> => {
   const search = buildMediaSearch(filter);
   const orderSql = mediaOrderSql[options?.order ?? "idAsc"];
-  const statement = db.prepare(`${mediaSelect} FROM ${table}${search.whereSql} ORDER BY ${orderSql}`);
+  const statement = db.prepare(
+    `${mediaSelect}
+     FROM ${table} m
+     LEFT JOIN master_locations ON master_locations.location_id = CAST(m.location_id AS INTEGER)
+     ${search.whereSql}
+     ORDER BY ${orderSql}`
+  );
   const prepared = search.params.length > 0 ? statement.bind(...search.params) : statement;
   const result = await prepared.all<MediaRow>();
 
@@ -119,7 +125,15 @@ export const updateMedia = async (
     .bind(input.title, input.description, id)
     .run();
 
-  const row = await db.prepare(`${mediaSelect} FROM ${table} WHERE id = ?`).bind(id).first<MediaRow>();
+  const row = await db
+    .prepare(
+      `${mediaSelect}
+       FROM ${table} m
+       LEFT JOIN master_locations ON master_locations.location_id = CAST(m.location_id AS INTEGER)
+       WHERE m.id = ?`
+    )
+    .bind(id)
+    .first<MediaRow>();
 
   return row ? toMediaItem(row) : null;
 };
@@ -129,13 +143,27 @@ export const createMedia = async (
   table: MediaTable,
   input: MediaCreateInput
 ): Promise<MediaItem | null> => {
-  const row = await db
+  const created = await db
     .prepare(
       `INSERT INTO ${table} (title, description, url, location_id, created_at, updated_at)
        VALUES (?, ?, ?, '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-       RETURNING id, title, description, url, location_id, created_at, updated_at`
+       RETURNING id`
     )
     .bind(input.title, input.description, input.url)
+    .first<{ id: number }>();
+
+  if (!created) {
+    return null;
+  }
+
+  const row = await db
+    .prepare(
+      `${mediaSelect}
+       FROM ${table} m
+       LEFT JOIN master_locations ON master_locations.location_id = CAST(m.location_id AS INTEGER)
+       WHERE m.id = ?`
+    )
+    .bind(created.id)
     .first<MediaRow>();
 
   return row ? toMediaItem(row) : null;

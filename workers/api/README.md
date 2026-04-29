@@ -25,7 +25,7 @@ curl http://localhost:8787/api/health
 
 ```bash
 cd workers/api
-npx wrangler d1 create kantosportsclub
+npx wrangler d1 create kantosportsclub-db
 ```
 
 作成後:
@@ -91,6 +91,7 @@ curl -X POST "http://localhost:8787/api/movies" \
 ```
 
 `POST /api/movies` は `location_id = 1` として保存し、`createdAt` / `updatedAt` は現在日時で登録します。
+レスポンスでは `master_locations` と結合した `locationName` を返します。
 
 `/api/movies` と `/api/pictures` は、既存 Spring Boot の以下の Controller に合わせて配列を直接返します。
 
@@ -107,7 +108,7 @@ type MediaItem = {
   title: string | null;
   description: string | null;
   url: string | null;
-  locationId: string | null;
+  locationName: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };

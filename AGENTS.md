@@ -274,6 +274,8 @@ workers/api/src/index.ts
 - `.env.local` 以外の環境ファイルを不用意に変更する。
 - secrets を `.dev.vars` や Markdown に書く。
 - `node_modules` や `.wrangler` を git 管理対象にする。
+- lintが通るかの検証
+- curlを用いた動作確認
 
 ## 回答品質とトークン節約
 

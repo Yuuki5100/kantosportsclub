@@ -3,7 +3,7 @@ export type MediaItem = {
   title: string | null;
   description: string | null;
   url: string | null;
-  locationId: string | null;
+  locationName: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -30,7 +30,7 @@ export type MediaRow = {
   title: string | null;
   description: string | null;
   url: string | null;
-  location_id: string | null;
+  location_name: string | null;
   created_at: string | null;
   updated_at: string | null;
 };

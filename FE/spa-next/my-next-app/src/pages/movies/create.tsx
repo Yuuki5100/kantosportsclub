@@ -68,7 +68,7 @@ const MovieCreatePage: React.FC = () => {
           title: created.title ?? "",
           description: created.description ?? "",
           url: created.url ?? "",
-          locationId: created.locationId ?? "",
+          locationName: created.locationName ?? "",
           createdAt: created.createdAt ?? "",
           updatedAt: created.updatedAt ?? "",
         },
@@ -79,7 +79,7 @@ const MovieCreatePage: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
-  }, [form.description, form.title, router, showSnackbar]);
+  }, [form.description, form.title, form.url, router, showSnackbar]);
 
   return (
     <PageContainer>
