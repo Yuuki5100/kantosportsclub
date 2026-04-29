@@ -1,11 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, TextField } from "@mui/material";
 import { useRouter } from "next/router";
 import { Box, Font14, Font20 } from "@/components/base";
 import { API_ENDPOINTS } from "@/api/apiEndpoints";
 import { apiService } from "@/api/apiService";
+import AutoComplete from "@/components/base/Input/AutoComplete";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import PageContainer from "@base/Layout/PageContainer";
+import { useFetch } from "@/hooks/useApi";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
@@ -27,9 +29,20 @@ type DetailField = {
   link?: boolean;
 };
 
+type MasterLocationItem = {
+  locationId: number;
+  locationName: string | null;
+};
+
+type LocationOption = {
+  label: string;
+  value: string;
+};
+
 type MovieUpdateRequest = {
   title: string;
   description: string;
+  locationId: string | null;
 };
 
 const EMPTY_MOVIE: MovieDetail = {
@@ -60,7 +73,27 @@ const MovieDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
   const [movie, setMovie] = useState<MovieDetail>(EMPTY_MOVIE);
+  const [selectedLocationId, setSelectedLocationId] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const {
+    data: masterLocations,
+    isLoading: isMasterLocationsLoading,
+    isError: isMasterLocationsError,
+  } = useFetch<MasterLocationItem[]>(
+    "masterLocations",
+    API_ENDPOINTS.MASTER_LOCATION.LIST,
+    undefined,
+    { useCache: true }
+  );
+
+  const locationOptions: LocationOption[] = useMemo(
+    () =>
+      (masterLocations ?? []).map((location) => ({
+        label: location.locationName ?? "",
+        value: String(location.locationId),
+      })),
+    [masterLocations]
+  );
 
   useEffect(() => {
     if (!router.isReady) {
@@ -76,7 +109,19 @@ const MovieDetailPage: React.FC = () => {
       createdAt: getQueryValue(router.query.createdAt),
       updatedAt: getQueryValue(router.query.updatedAt),
     });
+    setSelectedLocationId("");
   }, [router.isReady, router.query]);
+
+  useEffect(() => {
+    if (selectedLocationId || !movie.locationName) {
+      return;
+    }
+
+    const currentLocation = locationOptions.find((option) => option.label === movie.locationName);
+    if (currentLocation) {
+      setSelectedLocationId(currentLocation.value);
+    }
+  }, [locationOptions, movie.locationName, selectedLocationId]);
 
   const handleTextChange = useCallback(
     (field: "title" | "description") => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,6 +133,14 @@ const MovieDetailPage: React.FC = () => {
     []
   );
 
+  const handleLocationChange = useCallback((option: LocationOption | null) => {
+    setSelectedLocationId(option?.value ?? "");
+    setMovie((current) => ({
+      ...current,
+      locationName: option?.label ?? "",
+    }));
+  }, []);
+
   const handleUpdate = useCallback(async () => {
     if (!movie.id) {
       showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
@@ -96,11 +149,16 @@ const MovieDetailPage: React.FC = () => {
 
     setIsUpdating(true);
     try {
+      const locationId =
+        selectedLocationId ||
+        locationOptions.find((option) => option.label === movie.locationName)?.value ||
+        null;
       const updated = await apiService.put<MediaItem>(
         `${API_ENDPOINTS.MOVIE.UPDATE}/${movie.id}`,
         {
           title: movie.title,
           description: movie.description,
+          locationId,
         } satisfies MovieUpdateRequest
       );
 
@@ -117,7 +175,15 @@ const MovieDetailPage: React.FC = () => {
     } finally {
       setIsUpdating(false);
     }
-  }, [movie.description, movie.id, movie.title, showSnackbar]);
+  }, [
+    locationOptions,
+    movie.description,
+    movie.id,
+    movie.locationName,
+    movie.title,
+    selectedLocationId,
+    showSnackbar,
+  ]);
 
   const handleBack = useCallback(
     () => router.push("/movies"),
@@ -127,7 +193,6 @@ const MovieDetailPage: React.FC = () => {
   const fields: DetailField[] = [
     { label: "ID", value: movie.id },
     { label: "URL", value: movie.url, link: true },
-    { label: "場所", value: movie.locationName },
     { label: "作成日時", value: movie.createdAt },
     { label: "更新日時", value: movie.updatedAt },
   ];
@@ -206,6 +271,46 @@ const MovieDetailPage: React.FC = () => {
                 multiline
                 minRows={3}
                 onChange={handleTextChange("description")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              場所
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <AutoComplete
+                name="movieLocation"
+                id="movieLocation"
+                options={locationOptions}
+                defaultValue={selectedLocationId || movie.locationName || undefined}
+                disabled={isMasterLocationsLoading || isMasterLocationsError}
+                helperText={
+                  isMasterLocationsError
+                    ? "場所の取得に失敗しました。"
+                    : isMasterLocationsLoading
+                      ? "場所を読み込み中です。"
+                      : undefined
+                }
+                error={isMasterLocationsError}
+                onChange={handleLocationChange}
+                customStyle={{ mt: 0 }}
               />
             </Box>
           </Box>

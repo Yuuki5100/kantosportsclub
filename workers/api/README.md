@@ -56,6 +56,7 @@ GET /api/movies
 POST /api/movies
 PUT /api/movies/:id
 GET /api/pictures
+GET /api/master_locations
 ```
 
 `GET /api/movies` と `GET /api/pictures` は query parameter による部分一致検索に対応しています。指定しない場合は全件を返します。
@@ -111,5 +112,14 @@ type MediaItem = {
   locationName: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+};
+```
+
+`GET /api/master_locations` は場所選択用の配列を直接返します。
+
+```ts
+type MasterLocationItem = {
+  locationId: number;
+  locationName: string | null;
 };
 ```

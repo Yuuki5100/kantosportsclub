@@ -108,6 +108,9 @@ export const API_ENDPOINTS = {
   PICTURE: {
     LIST: '/api/pictures',
   },
+  MASTER_LOCATION: {
+    LIST: '/api/master_locations',
+  },
   MANUAL: {
     LIST: '/api/manual/list',
     DETAIL: '/api/manual',
