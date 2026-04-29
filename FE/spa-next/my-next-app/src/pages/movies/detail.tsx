@@ -18,6 +18,7 @@ type MovieDetail = {
   title: string;
   description: string;
   url: string;
+  locationId: number;
   locationName: string;
   createdAt: string;
   updatedAt: string;
@@ -42,6 +43,7 @@ type LocationOption = {
 type MovieUpdateRequest = {
   title: string;
   description: string;
+  url: string;
   locationId: string | null;
 };
 
@@ -50,6 +52,7 @@ const EMPTY_MOVIE: MovieDetail = {
   title: "",
   description: "",
   url: "",
+  locationId: 0,
   locationName: "",
   createdAt: "",
   updatedAt: "",
@@ -105,6 +108,7 @@ const MovieDetailPage: React.FC = () => {
       title: getQueryValue(router.query.title),
       description: getQueryValue(router.query.description),
       url: getQueryValue(router.query.url),
+      locationId: Number(getQueryValue(router.query.locationId)) || 0,
       locationName: getQueryValue(router.query.locationName),
       createdAt: getQueryValue(router.query.createdAt),
       updatedAt: getQueryValue(router.query.updatedAt),
@@ -158,7 +162,8 @@ const MovieDetailPage: React.FC = () => {
         {
           title: movie.title,
           description: movie.description,
-          locationId,
+          url: movie.url,
+          locationId: locationId ?? "",
         } satisfies MovieUpdateRequest
       );
 

@@ -156,13 +156,10 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
               data-testid="mobile-list-card"
               role={onRowClick ? 'button' : undefined}
               tabIndex={onRowClick ? 0 : undefined}
-              onClick={(event) => {
-                if (isInteractiveElement(event.target)) return;
-                onRowClick?.(row, rowIndex);
-              }}
+              onClick={() => onRowClick?.(row, rowIndex)}
               onKeyDown={(event) => {
                 if (!onRowClick) return;
-                if (isInteractiveElement(event.target)) return;
+                // if (isInteractiveElement(event.target)) return;
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
                   onRowClick(row, rowIndex);

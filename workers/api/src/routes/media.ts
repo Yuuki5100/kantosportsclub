@@ -35,16 +35,15 @@ const parseMediaCreateInput = (body: unknown): MediaCreateInput | null => {
     return null;
   }
 
-  const { title, description, url } = body;
-  if (typeof title !== "string" || typeof description !== "string" || typeof url !== "string") {
+  const { title, description, url, locationId } = body;
+  if (typeof title !== "string" || typeof description !== "string" || typeof url !== "string" || typeof locationId !== "string") {
     return null;
   }
 
   const trimmedTitle = title.trim();
   const trimmedDescription = description.trim();
   const trimmedUrl = url.trim();
-  const trimmedLocationId = url.trim();
-  if (!trimmedTitle || !trimmedDescription || !trimmedUrl || trimmedLocationId) {
+  if (!trimmedTitle || !trimmedDescription || !trimmedUrl) {
     return null;
   }
 
@@ -52,7 +51,7 @@ const parseMediaCreateInput = (body: unknown): MediaCreateInput | null => {
     title: trimmedTitle,
     description: trimmedDescription,
     url: trimmedUrl,
-    locationId: trimmedLocationId,
+    locationId: locationId,
   };
 };
 
