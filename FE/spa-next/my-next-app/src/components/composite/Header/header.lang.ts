@@ -2,14 +2,14 @@
 export const headerLang: HeaderLangs = {
     ja: {
       title: "関東スポーツクラブ",
-      defaultUserName: "JEMS 太郎",
+      defaultUserName: "関東 太郎",
       logoUrl: "/Logo.png",
       logoHeight: "40px",
       iconMarginRight: "8px",
     },
     en: {
-      title: "Common Architecture Sample App",
-      defaultUserName: "JEMS Taro",
+      title: "Kanto Sports Club",
+      defaultUserName: "Kanto Taro",
       logoUrl: "/Logo.png",
       logoHeight: "40px",
       iconMarginRight: "8px",

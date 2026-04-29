@@ -8,7 +8,7 @@ export const footerLang: FooterLangs = {
     passwordPlaceholder: 'パスワード',
     loginButton: 'ログイン',
     loginError: 'ログインに失敗しました。',
-    copyrightText: `©${getCurrentYear()} ＪＥＭＳ Inc.`,
+    copyrightText: `©${getCurrentYear()} 関東スポーツクラブ Inc.`,
   },
   en: {
     title: 'Login Page',
@@ -17,7 +17,7 @@ export const footerLang: FooterLangs = {
     passwordPlaceholder: 'Password',
     loginButton: 'Login',
     loginError: 'Login failed.',
-    copyrightText: `© ${getCurrentYear()} ＪＥＭＳ Inc. All rights reserved.`,
+    copyrightText: `© ${getCurrentYear()} 関東スポーツクラブ Inc. All rights reserved.`,
   },
 };
 
