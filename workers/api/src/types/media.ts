@@ -11,6 +11,7 @@ export type MediaItem = {
 export type MediaSearchFilter = {
   title?: string;
   description?: string;
+  url?: string;
 };
 
 export type MediaUpdateInput = {
@@ -21,6 +22,7 @@ export type MediaUpdateInput = {
 export type MediaCreateInput = {
   title: string;
   description: string;
+  url: string;
 };
 
 export type MediaRow = {

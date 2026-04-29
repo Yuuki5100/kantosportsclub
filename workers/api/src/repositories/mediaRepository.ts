@@ -64,7 +64,7 @@ const buildLikePatterns = (value: string): string[] => {
 const appendLikeSearch = (
   conditions: string[],
   params: string[],
-  columnName: "title" | "description",
+  columnName: "title" | "description" | "url",
   value: string | undefined
 ) => {
   if (!value) return;
@@ -81,9 +81,11 @@ const buildMediaSearch = (filter?: MediaSearchFilter) => {
   const params: string[] = [];
   const title = normalizeSearchText(filter?.title);
   const description = normalizeSearchText(filter?.description);
+  const url = normalizeSearchText(filter?.url);
 
   appendLikeSearch(conditions, params, "title", title);
   appendLikeSearch(conditions, params, "description", description);
+  appendLikeSearch(conditions, params, "url", url);
 
   return {
     whereSql: conditions.length > 0 ? ` WHERE ${conditions.join(" AND ")}` : "",
@@ -129,11 +131,11 @@ export const createMedia = async (
 ): Promise<MediaItem | null> => {
   const row = await db
     .prepare(
-      `INSERT INTO ${table} (title, description, location_id, created_at, updated_at)
-       VALUES (?, ?, '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `INSERT INTO ${table} (title, description, url, location_id, created_at, updated_at)
+       VALUES (?, ?, ?, '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        RETURNING id, title, description, url, location_id, created_at, updated_at`
     )
-    .bind(input.title, input.description)
+    .bind(input.title, input.description, input.url)
     .first<MediaRow>();
 
   return row ? toMediaItem(row) : null;

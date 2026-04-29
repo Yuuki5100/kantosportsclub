@@ -35,20 +35,22 @@ const parseMediaCreateInput = (body: unknown): MediaCreateInput | null => {
     return null;
   }
 
-  const { title, description } = body;
-  if (typeof title !== "string" || typeof description !== "string") {
+  const { title, description, url } = body;
+  if (typeof title !== "string" || typeof description !== "string" || typeof url !== "string") {
     return null;
   }
 
   const trimmedTitle = title.trim();
   const trimmedDescription = description.trim();
-  if (!trimmedTitle || !trimmedDescription) {
+  const trimmedUrl = url.trim();
+  if (!trimmedTitle || !trimmedDescription || !trimmedUrl) {
     return null;
   }
 
   return {
     title: trimmedTitle,
-    description: trimmedDescription
+    description: trimmedDescription,
+    url: trimmedUrl,
   };
 };
 

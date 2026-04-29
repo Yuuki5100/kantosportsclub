@@ -14,6 +14,7 @@ import type { MediaItem } from "@/components/functional/MediaListPage";
 type MovieCreateRequest = {
   title: string;
   description: string;
+  url: string;
 };
 
 type MovieCreateState = MovieCreateRequest;
@@ -21,6 +22,7 @@ type MovieCreateState = MovieCreateRequest;
 const INITIAL_STATE: MovieCreateState = {
   title: "",
   description: "",
+  url: "",
 };
 
 const MovieCreatePage: React.FC = () => {
@@ -44,7 +46,8 @@ const MovieCreatePage: React.FC = () => {
   const handleSave = useCallback(async () => {
     const title = form.title.trim();
     const description = form.description.trim();
-    if (!title || !description) {
+    const url = form.url.trim();
+    if (!title || !description || !url) {
       showSnackbar(getMessage(MessageCodes.ALL_FIELDS_REQUIRED), "ERROR");
       return;
     }
@@ -54,6 +57,7 @@ const MovieCreatePage: React.FC = () => {
       const created = await apiService.post<MediaItem>(API_ENDPOINTS.MOVIE.CREATE, {
         title,
         description,
+        url,
       } satisfies MovieCreateRequest);
 
       showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "動画を追加"), "SUCCESS");
