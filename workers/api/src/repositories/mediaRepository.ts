@@ -1,4 +1,3 @@
-import type { Bindings } from "../env";
 import type { MediaItem, MediaRow, MediaSearchFilter } from "../types/media";
 
 type MediaTable = "movies" | "pictures";
@@ -87,7 +86,7 @@ const buildMediaSearch = (filter?: MediaSearchFilter) => {
 };
 
 export const findAllMedia = async (
-  db: Bindings["DB"],
+  db: D1Database,
   table: MediaTable,
   filter?: MediaSearchFilter,
   options?: FindAllMediaOptions

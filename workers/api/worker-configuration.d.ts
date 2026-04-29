@@ -3,6 +3,6 @@
 // You can refresh this file with: npm run cf-typegen --prefix workers/api
 
 interface CloudflareBindings {
-  DB: D1Database;
+  kantosportsclub_db: D1Database;
   CORS_ORIGIN?: string;
 }

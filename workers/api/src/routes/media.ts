@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { AppVariables, Bindings } from "../env";
+import { getDb, type AppVariables, type Bindings } from "../env";
 import { findAllMedia } from "../repositories/mediaRepository";
 
 export const mediaRoutes = new Hono<{
@@ -9,7 +9,7 @@ export const mediaRoutes = new Hono<{
 
 mediaRoutes.get("/movies", async (c) => {
   const movies = await findAllMedia(
-    c.env.DB,
+    getDb(c.env),
     "movies",
     {
       title: c.req.query("title"),
@@ -21,7 +21,7 @@ mediaRoutes.get("/movies", async (c) => {
 });
 
 mediaRoutes.get("/pictures", async (c) => {
-  const pictures = await findAllMedia(c.env.DB, "pictures", {
+  const pictures = await findAllMedia(getDb(c.env), "pictures", {
     title: c.req.query("title"),
     description: c.req.query("description")
   });

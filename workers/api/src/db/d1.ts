@@ -1,6 +1,4 @@
-import type { Bindings } from "../env";
-
-export const getSchemaVersion = async (db: Bindings["DB"]): Promise<string | null> => {
+export const getSchemaVersion = async (db: D1Database): Promise<string | null> => {
   try {
     const row = await db
       .prepare("SELECT value FROM app_metadata WHERE key = ?")
@@ -13,7 +11,7 @@ export const getSchemaVersion = async (db: Bindings["DB"]): Promise<string | nul
   }
 };
 
-export const pingD1 = async (db: Bindings["DB"]): Promise<boolean> => {
+export const pingD1 = async (db: D1Database): Promise<boolean> => {
   const row = await db.prepare("SELECT 1 AS ok").first<{ ok: number }>();
   return row?.ok === 1;
 };

@@ -9,6 +9,6 @@ compatibility_flags = ["nodejs_compat"]
 CORS_ORIGIN = "https://kantosportsclub.pages.dev"
 
 [[d1_databases]]
-binding = "DB"
+binding = "kantosportsclub_db"
 database_name = "kantosportsclub-db"
 database_id = "04cc1e4a-dc18-4fb4-9de9-301b6b700d8a"

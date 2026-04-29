@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { AppVariables, Bindings } from "../env";
+import { getDb, type AppVariables, type Bindings } from "../env";
 import { getSchemaVersion, pingD1 } from "../db/d1";
 
 export const healthRoutes = new Hono<{
@@ -8,8 +8,9 @@ export const healthRoutes = new Hono<{
 }>();
 
 healthRoutes.get("/", async (c) => {
-  const db = await pingD1(c.env.DB);
-  const schemaVersion = await getSchemaVersion(c.env.DB);
+  const d1 = getDb(c.env);
+  const db = await pingD1(d1);
+  const schemaVersion = await getSchemaVersion(d1);
 
   return c.json({
     status: "ok",
