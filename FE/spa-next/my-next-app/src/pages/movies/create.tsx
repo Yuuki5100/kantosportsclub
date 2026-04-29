@@ -156,6 +156,35 @@ const MovieCreatePage: React.FC = () => {
                 onChange={handleChange("description")}
               />
             </Box>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+                width: "100%",
+                borderTop: `1.5px solid ${colors.commonBorderGray}`,
+              }}
+            >
+              <Box
+                sx={{
+                  width: "100%",
+                  p: 1.5,
+                  bgcolor: colors.commonTableHeader,
+                  color: colors.commonFontColorBlack,
+                  fontWeight: 600,
+                }}
+              >
+                URL
+              </Box>
+              <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+                <TextField
+                  name="movieCreateUrl"
+                  value={form.url}
+                  size="small"
+                  fullWidth
+                  onChange={handleChange("url")}
+                />
+              </Box>
+            </Box>
           </Box>
         </Box>
 
