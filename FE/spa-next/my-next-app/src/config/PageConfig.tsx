@@ -3,6 +3,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import ListIcon from "@mui/icons-material/List";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { ReactNode } from "react";
 import { PageLang } from '@/config/PageLang';
 
@@ -31,6 +32,20 @@ const pageConfig: PageConfigType = [
     requiredPermission: 0,
     langKey: "top",
     breadcrumb: { id: "top" },
+  },
+  {
+    name: "管理者ページ",
+    resourceKey: "/admin/menu",
+    requiredPermission: 0,
+    icon: <AdminPanelSettingsIcon />,
+    breadcrumb: { id: "adminMenu", parentId: "top" },
+  },
+  {
+    name: "動画追加",
+    resourceKey: "/movies/create",
+    requiredPermission: 0,
+    breadcrumb: { id: "moviesCreate", parentId: "movies" },
+    hidden: true,
   },
 
   {

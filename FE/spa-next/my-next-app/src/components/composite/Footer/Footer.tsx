@@ -1,10 +1,8 @@
 // components/composite/footer/Footer.tsx
 import React from "react";
-import { Container } from "@/components/base";
-import { Box } from "@/components/base";
+import { Box, Container, Font14 } from "@/components/base";
 import { FooterLang } from "./footer.lang";
 import { footerBgColor, footerTextColor } from "../../color";
-import { Font14 } from "@/components/base";
 
 /**
  * Footerコンポーネントのプロパティ
@@ -21,25 +19,47 @@ type FooterProps = {
    * @type {FooterLang}
    */
   language: FooterLang;
-}
+};
 
 const Footer: React.FC<FooterProps> = ({ onClick, language }) => {
-
   return (
     <Box
       component="footer"
       sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         bgcolor: footerBgColor,
         color: footerTextColor,
-        py: 2,
+        flexShrink: 0,
+        minHeight: 48,
+        px: { xs: 2, sm: 3 },
+        py: 1.25,
         textAlign: "center",
         width: "100%",
+        boxSizing: "border-box",
       }}
     >
-      <Container>
+      <Container maxWidth={false} disableGutters sx={{ width: "100%", minWidth: 0 }}>
         <Font14
           bold={false}
-          sx={{ cursor: "pointer", "&:hover": { textDecoration: "underline" }, color: "inherit" }}
+          sx={{
+            color: "inherit",
+            cursor: onClick ? "pointer" : "default",
+            display: "block",
+            lineHeight: 1.5,
+            overflowWrap: "anywhere",
+            textAlign: "center",
+            whiteSpace: "normal",
+            width: "100%",
+            ...(onClick
+              ? {
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }
+              : {}),
+          }}
           onClick={onClick}
         >
           {language.copyrightText}

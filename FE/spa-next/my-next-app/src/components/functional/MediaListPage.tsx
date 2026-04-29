@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Link, TextField } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
@@ -11,7 +11,7 @@ import { useFetch } from "@/hooks/useApi";
 import colors from "@/styles/colors";
 import type { ApiResponse } from "@/types/api";
 
-type MediaItem = {
+export type MediaItem = {
   id: number;
   title: string | null;
   description: string | null;
@@ -26,6 +26,7 @@ type MediaListPageProps = {
   endpoint: string;
   queryKey: string;
   enableTitleDescriptionSearch?: boolean;
+  onItemClick?: (item: MediaItem) => void;
 };
 
 type MediaSearchCondition = {
@@ -115,6 +116,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   endpoint,
   queryKey,
   enableTitleDescriptionSearch = false,
+  onItemClick,
 }) => {
   const [searchCondition, setSearchCondition] = useState<MediaSearchCondition>(INITIAL_SEARCH_CONDITION);
   const [appliedSearchCondition, setAppliedSearchCondition] = useState<MediaSearchCondition>(
@@ -159,7 +161,9 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   const rowData: RowDefinition[] = useMemo(
     () =>
       mediaItems.map((item) => ({
+        rowSx: onItemClick ? { cursor: "pointer" } : undefined,
         cells: [
+          createCell("id", item.id, item.id),
           createCell("title", item.id, item.title ?? undefined),
           createCell("description", item.id, item.description ?? undefined),
           createUrlCell(item.id, item.url),
@@ -167,7 +171,21 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
           createCell("createdAt", item.id, item.createdAt ?? undefined),
         ],
       })),
-    [mediaItems]
+    [mediaItems, onItemClick]
+  );
+
+  const handleRowClick = useCallback(
+    (row: RowDefinition) => {
+      if (!onItemClick) return;
+
+      const rowId = row.cells.find((cell) => cell.columnId === "id")?.value;
+      const item = mediaItems.find((mediaItem) => mediaItem.id === Number(rowId));
+
+      if (item) {
+        onItemClick(item);
+      }
+    },
+    [mediaItems, onItemClick]
   );
 
   const handleSearch = () => {
@@ -263,6 +281,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
               rowData={rowData}
               totalRowCount={rowData.length}
               columns={columns}
+              onRowClick={onItemClick ? handleRowClick : undefined}
               searchOptions={{
                 title: enableTitleDescriptionSearch ? "検索条件" : "一覧情報",
                 elements: searchElements,

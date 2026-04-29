@@ -64,7 +64,9 @@ const BasePage = ({ children }: BasePageProps) => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '100vh',
+        minHeight: '100dvh',
+        width: '100%',
+        overflowX: 'hidden',
       }}
     >
       {isMobile ? (
@@ -78,7 +80,7 @@ const BasePage = ({ children }: BasePageProps) => {
         <Header onLogoClick={() => router.push('#')} language={headerLanguage} userName={name} />
       )}
 
-      <Box sx={{ display: 'flex', flexGrow: 1 }} flexDirection="row">
+      <Box sx={{ display: 'flex', flexGrow: 1, minHeight: 0, minWidth: 0 }} flexDirection="row">
         {isMobile ? (
           <MobileSideMenu open={menuOpen} setOpen={setMenuOpen} />
         ) : (
@@ -93,8 +95,9 @@ const BasePage = ({ children }: BasePageProps) => {
             transition: 'margin-left 0.3s ease',
             display: 'flex',
             flexDirection: 'column',
-            minHeight: '100vh',
+            minHeight: '100dvh',
             minWidth: 0,
+            boxSizing: 'border-box',
           }}
         >
 
@@ -108,15 +111,16 @@ const BasePage = ({ children }: BasePageProps) => {
             />
           </Box>
 
-          <PageContainer>
+          <PageContainer sx={{ flexGrow: 1, width: '100%', minWidth: 0 }}>
             {children}
           </PageContainer>
+
+          <Footer language={footerLanguage} />
         </Box>
       </Box>
 
       <ErrorNotification />
       <SnackbarListener />
-      <Footer language={footerLanguage} />
     </Box>
   );
 };

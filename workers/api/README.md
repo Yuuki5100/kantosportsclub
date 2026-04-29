@@ -32,8 +32,8 @@ npx wrangler d1 create kantosportsclub
 
 ```toml
 [[d1_databases]]
-binding = "DB"
-database_name = "kantosportsclub"
+binding = "kantosportsclub_db"
+database_name = "kantosportsclub-db"
 database_id = "Cloudflare が発行した database_id"
 migrations_dir = "migrations"
 ```
@@ -53,6 +53,8 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8787
 ```text
 GET /api/health
 GET /api/movies
+POST /api/movies
+PUT /api/movies/:id
 GET /api/pictures
 ```
 
@@ -69,6 +71,26 @@ curl "http://localhost:8787/api/pictures?title=サンプル&description=疎通"
 title        タイトルの部分一致
 description  説明の部分一致
 ```
+
+映画のタイトル・説明を更新する場合:
+
+```bash
+curl -X PUT "http://localhost:8787/api/movies/1" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"更新後タイトル","description":"更新後説明"}'
+```
+
+`PUT /api/movies/:id` は `updatedAt` を現在日時で更新し、更新後の `MediaItem` を返します。
+
+映画を追加する場合:
+
+```bash
+curl -X POST "http://localhost:8787/api/movies" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"新規動画","description":"動画の説明"}'
+```
+
+`POST /api/movies` は `location_id = 1` として保存し、`createdAt` / `updatedAt` は現在日時で登録します。
 
 `/api/movies` と `/api/pictures` は、既存 Spring Boot の以下の Controller に合わせて配列を直接返します。
 

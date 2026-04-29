@@ -1,4 +1,10 @@
-import type { MediaItem, MediaRow, MediaSearchFilter } from "../types/media";
+import type {
+  MediaCreateInput,
+  MediaItem,
+  MediaRow,
+  MediaSearchFilter,
+  MediaUpdateInput
+} from "../types/media";
 
 type MediaTable = "movies" | "pictures";
 type MediaOrder = "idAsc" | "createdAtDesc";
@@ -98,4 +104,37 @@ export const findAllMedia = async (
   const result = await prepared.all<MediaRow>();
 
   return result.results.map(toMediaItem);
+};
+
+export const updateMedia = async (
+  db: D1Database,
+  table: MediaTable,
+  id: number,
+  input: MediaUpdateInput
+): Promise<MediaItem | null> => {
+  await db
+    .prepare(`UPDATE ${table} SET title = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
+    .bind(input.title, input.description, id)
+    .run();
+
+  const row = await db.prepare(`${mediaSelect} FROM ${table} WHERE id = ?`).bind(id).first<MediaRow>();
+
+  return row ? toMediaItem(row) : null;
+};
+
+export const createMedia = async (
+  db: D1Database,
+  table: MediaTable,
+  input: MediaCreateInput
+): Promise<MediaItem | null> => {
+  const row = await db
+    .prepare(
+      `INSERT INTO ${table} (title, description, location_id, created_at, updated_at)
+       VALUES (?, ?, '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       RETURNING id, title, description, url, location_id, created_at, updated_at`
+    )
+    .bind(input.title, input.description)
+    .first<MediaRow>();
+
+  return row ? toMediaItem(row) : null;
 };

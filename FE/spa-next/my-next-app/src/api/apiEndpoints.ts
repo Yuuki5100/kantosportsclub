@@ -102,6 +102,8 @@ export const API_ENDPOINTS = {
   },
   MOVIE: {
     LIST: '/api/movies',
+    CREATE: '/api/movies',
+    UPDATE: '/api/movies',
   },
   PICTURE: {
     LIST: '/api/pictures',

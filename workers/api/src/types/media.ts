@@ -13,6 +13,16 @@ export type MediaSearchFilter = {
   description?: string;
 };
 
+export type MediaUpdateInput = {
+  title: string | null;
+  description: string | null;
+};
+
+export type MediaCreateInput = {
+  title: string;
+  description: string;
+};
+
 export type MediaRow = {
   id: number;
   title: string | null;

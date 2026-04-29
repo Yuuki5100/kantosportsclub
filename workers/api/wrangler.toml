@@ -5,10 +5,11 @@ compatibility_date = "2026-04-27"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-# CORS_ORIGIN = "http://localhost:3000"
-CORS_ORIGIN = "https://kantosportsclub.pages.dev"
+CORS_ORIGIN = "http://localhost:3000"
+# CORS_ORIGIN = "https://kantosportsclub.pages.dev"
 
 [[d1_databases]]
+# binding = "kantosportsclub"
 binding = "kantosportsclub_db"
 database_name = "kantosportsclub-db"
 database_id = "04cc1e4a-dc18-4fb4-9de9-301b6b700d8a"
