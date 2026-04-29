@@ -24,7 +24,7 @@ const mediaSelect = `
     m.title,
     m.description,
     m.url,
-    master_locations.location_name AS location_name,
+    ml.location_name AS location_name,
     m.created_at,
     m.updated_at
 `;
@@ -120,16 +120,25 @@ export const updateMedia = async (
   id: number,
   input: MediaUpdateInput
 ): Promise<MediaItem | null> => {
+  const locationId =
+    input.locationId === undefined || input.locationId === null || input.locationId === ""
+      ? null
+      : Number(input.locationId);
+
   await db
-    .prepare(`UPDATE ${table} SET title = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`)
-    .bind(input.title, input.description, id)
+    .prepare(
+      `UPDATE ${table}
+       SET title = ?, description = ?, url = ?, location_id = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`
+    )
+    .bind(input.title, input.description, input.url, locationId, id)
     .run();
 
   const row = await db
     .prepare(
       `${mediaSelect}
        FROM ${table} m
-       LEFT JOIN master_locations ON master_locations.location_id = CAST(m.location_id AS INTEGER)
+       LEFT JOIN master_locations ml ON ml.location_id = CAST(m.location_id AS INTEGER)
        WHERE m.id = ?`
     )
     .bind(id)
@@ -143,13 +152,18 @@ export const createMedia = async (
   table: MediaTable,
   input: MediaCreateInput
 ): Promise<MediaItem | null> => {
+  const locationId =
+    input.locationId === undefined || input.locationId === null || input.locationId === ""
+      ? null
+      : Number(input.locationId);
+
   const created = await db
     .prepare(
       `INSERT INTO ${table} (title, description, url, location_id, created_at, updated_at)
-       VALUES (?, ?, ?, '1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        RETURNING id`
     )
-    .bind(input.title, input.description, input.url)
+    .bind(input.title, input.description, input.url, locationId)
     .first<{ id: number }>();
 
   if (!created) {
@@ -160,7 +174,7 @@ export const createMedia = async (
     .prepare(
       `${mediaSelect}
        FROM ${table} m
-       LEFT JOIN master_locations ON master_locations.location_id = CAST(m.location_id AS INTEGER)
+       LEFT JOIN master_locations ml ON ml.location_id = CAST(m.location_id AS INTEGER)
        WHERE m.id = ?`
     )
     .bind(created.id)
