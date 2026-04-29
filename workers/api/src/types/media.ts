@@ -17,15 +17,15 @@ export type MediaSearchFilter = {
 export type MediaUpdateInput = {
   title: string | null;
   description: string | null;
-  locationId: string | null;
   url?: string | null;
+  locationId: string | null;
 };
 
 export type MediaCreateInput = {
   title: string;
   description: string;
-  locationId: string | null;
   url: string;
+  locationId: string | null;
 };
 
 export type MediaRow = {

@@ -21,13 +21,13 @@ const parseMediaUpdateInput = (body: unknown): MediaUpdateInput | null => {
     return null;
   }
 
-  const { title, description } = body;
+  const { title, description, url, locationId } = body;
 
-  if ((typeof title !== "string" && title !== null) || (typeof description !== "string" && description !== null)) {
+  if ((typeof title !== "string" && title !== null) || (typeof description !== "string" && description !== null) || (typeof url !== "string" && url !== null) || (typeof locationId !== "string" && locationId !== null)) {
     return null;
   }
 
-  return { title, description };
+  return { title, description, url, locationId };
 };
 
 const parseMediaCreateInput = (body: unknown): MediaCreateInput | null => {
@@ -43,7 +43,8 @@ const parseMediaCreateInput = (body: unknown): MediaCreateInput | null => {
   const trimmedTitle = title.trim();
   const trimmedDescription = description.trim();
   const trimmedUrl = url.trim();
-  if (!trimmedTitle || !trimmedDescription || !trimmedUrl) {
+  const trimmedLocationId = url.trim();
+  if (!trimmedTitle || !trimmedDescription || !trimmedUrl || trimmedLocationId) {
     return null;
   }
 
@@ -51,6 +52,7 @@ const parseMediaCreateInput = (body: unknown): MediaCreateInput | null => {
     title: trimmedTitle,
     description: trimmedDescription,
     url: trimmedUrl,
+    locationId: trimmedLocationId,
   };
 };
 

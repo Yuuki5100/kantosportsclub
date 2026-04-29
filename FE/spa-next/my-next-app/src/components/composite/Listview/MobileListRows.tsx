@@ -28,6 +28,10 @@ const isActiveSortColumn = (
 
 const EXCLUDED_SORT_COLUMN_IDS = ['url', 'description'];
 
+const isInteractiveElement = (target: EventTarget | null): boolean =>
+  target instanceof HTMLElement &&
+  Boolean(target.closest('button, a, input, textarea, select, [role="button"]'));
+
 const MobileListRows: React.FC<MobileListRowsProps> = ({
   columns,
   rowData,
@@ -152,9 +156,13 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
               data-testid="mobile-list-card"
               role={onRowClick ? 'button' : undefined}
               tabIndex={onRowClick ? 0 : undefined}
-              onClick={() => onRowClick?.(row, rowIndex)}
+              onClick={(event) => {
+                if (isInteractiveElement(event.target)) return;
+                onRowClick?.(row, rowIndex);
+              }}
               onKeyDown={(event) => {
                 if (!onRowClick) return;
+                if (isInteractiveElement(event.target)) return;
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
                   onRowClick(row, rowIndex);
