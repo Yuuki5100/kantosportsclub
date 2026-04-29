@@ -116,6 +116,35 @@ const createUrlCell = (rowId: number, url: string | null | undefined) => {
   };
 };
 
+const getMediaSortValue = (item: MediaItem, columnId: string): string | number => {
+  const value = item[columnId as keyof MediaItem];
+
+  if (typeof value === "number" || typeof value === "string") {
+    return value;
+  }
+
+  return "";
+};
+
+const sortMediaItems = (items: MediaItem[], sortParams: TableState["sortParams"]): MediaItem[] => {
+  const { sortColumn, sortOrder } = sortParams;
+  if (!sortColumn || sortOrder === false) {
+    return items;
+  }
+
+  return [...items].sort((a, b) => {
+    const aValue = getMediaSortValue(a, sortColumn);
+    const bValue = getMediaSortValue(b, sortColumn);
+    const direction = sortOrder === "asc" ? 1 : -1;
+
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      return (aValue - bValue) * direction;
+    }
+
+    return String(aValue).localeCompare(String(bValue), "ja", { numeric: true }) * direction;
+  });
+};
+
 const MediaListPage: React.FC<MediaListPageProps> = ({
   title,
   endpoint,
@@ -162,10 +191,18 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   );
 
   const mediaItems = useMemo(() => extractMediaItems(data), [data]);
+  const sortedMediaItems = useMemo(
+    () => sortMediaItems(mediaItems, tableState.sortParams),
+    [mediaItems, tableState.sortParams]
+  );
+  const paginatedMediaItems = useMemo(() => {
+    const startIndex = (tableState.page - 1) * tableState.rowsPerPage;
+    return sortedMediaItems.slice(startIndex, startIndex + tableState.rowsPerPage);
+  }, [sortedMediaItems, tableState.page, tableState.rowsPerPage]);
 
   const rowData: RowDefinition[] = useMemo(
     () =>
-      mediaItems.map((item) => ({
+      paginatedMediaItems.map((item) => ({
         rowSx: onItemClick ? { cursor: "pointer" } : undefined,
         cells: [
           createCell("id", item.id, item.id),
@@ -176,7 +213,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
           createCell("createdAt", item.id, item.createdAt ?? undefined),
         ],
       })),
-    [mediaItems, onItemClick]
+    [paginatedMediaItems, onItemClick]
   );
 
   const handleRowClick = useCallback(
@@ -208,7 +245,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
     <Box sx={{ p: 2, color: colors.grayDark }}>
       {isLoading
         ? "読み込み中です。"
-        : `${rowData.length} 件のデータを表示しています。`}
+        : `${mediaItems.length} 件のデータを表示しています。`}
     </Box>
   );
 
@@ -254,7 +291,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
         <ButtonAction label="検索" onClick={handleSearch} />
         <ButtonAction label="クリア" color="secondary" onClick={handleClear} />
         <Font14 sx={{ color: colors.grayDark }}>
-          {isLoading ? "読み込み中です。" : `${rowData.length} 件のデータを表示しています。`}
+          {isLoading ? "読み込み中です。" : `${mediaItems.length} 件のデータを表示しています。`}
         </Font14>
       </Box>
     </Box>
@@ -284,7 +321,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
               rowsPerPageOptions={[10, 20, 50]}
               topPaginationHidden={false}
               rowData={rowData}
-              totalRowCount={rowData.length}
+              totalRowCount={mediaItems.length}
               columns={columns}
               onRowClick={onItemClick ? handleRowClick : undefined}
               searchOptions={{
