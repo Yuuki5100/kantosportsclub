@@ -26,6 +26,8 @@ const isActiveSortColumn = (
   sortColumn: string
 ): boolean => sortColumn === getColumnSortKey(column) || sortColumn === column.id.toString();
 
+const EXCLUDED_SORT_COLUMN_IDS = ['url', 'description'];
+
 const MobileListRows: React.FC<MobileListRowsProps> = ({
   columns,
   rowData,
@@ -34,7 +36,9 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
   onRowClick,
 }) => {
   const visibleColumns = columns.filter((column) => column.display);
-  const sortableColumns = visibleColumns.filter((column) => column.sortable);
+  const sortableColumns = visibleColumns.filter(
+    (column) => column.sortable && column.id !== 'url' && column.id !== 'description'
+  );
 
   const handleSortClick = (column: ColumnWithComputedWidth) => {
     if (!column.sortable) return;
@@ -88,7 +92,6 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
                 <Box
                   key={column.id}
                   component="button"
-                  type="button"
                   onClick={() => handleSortClick(column)}
                   sx={{
                     display: 'inline-flex',
@@ -160,6 +163,9 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
               sx={[
                 {
                   width: '100%',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  boxSizing: 'border-box',
                   p: 1.5,
                   borderColor: colors.commonBorderGray,
                   cursor: onRowClick ? 'pointer' : 'default',
@@ -197,7 +203,11 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
                       sx={{
                         color: colors.commonFontColorBlack,
                         minWidth: 0,
+                        maxWidth: '100%',
+                        whiteSpace: 'normal',
                         overflowWrap: 'anywhere',
+                        wordBreak: 'break-word',
+                        overflow: 'hidden',
                       }}
                     >
                       {cell?.cell ?? '-'}

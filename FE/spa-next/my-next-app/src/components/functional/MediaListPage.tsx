@@ -68,6 +68,11 @@ const createCell = (
   columnId,
   cell: value ?? "-",
   value: value ?? "",
+  sx: {
+    whiteSpace: "normal",
+    overflowWrap: "anywhere", // 推奨（モダン）
+    wordBreak: "break-word",  // 保険
+  }
 });
 
 const toLinkHref = (url: string): string => {
@@ -289,6 +294,11 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
               }}
               sx={{
                 width: "100%",
+                tableLayout: "fixed",
+                "& table": {
+                  tableLayout: "fixed",
+                  width: "100%",
+                },
                 "& .MuiTableHead-root .MuiTableCell-root": {
                   backgroundColor: colors.commonTableHeader,
                   color: colors.commonFontColorBlack,
@@ -302,6 +312,9 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
                 "& .MuiTableRow-root:hover .MuiTableCell-root": {
                   backgroundColor: colors.commonTableHover,
                 },
+                whiteSpace: "normal",
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
               }}
             />
             {isLoading && (
