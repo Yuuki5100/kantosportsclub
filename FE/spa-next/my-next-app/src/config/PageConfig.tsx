@@ -3,6 +3,8 @@ import PeopleIcon from "@mui/icons-material/People";
 import ListIcon from "@mui/icons-material/List";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import GroupsIcon from "@mui/icons-material/Settings";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { ReactNode } from "react";
 import { PageLang } from '@/config/PageLang';
@@ -32,13 +34,6 @@ const pageConfig: PageConfigType = [
     requiredPermission: 0,
     langKey: "top",
     breadcrumb: { id: "top" },
-  },
-  {
-    name: "管理者ページ",
-    resourceKey: "/admin/menu",
-    requiredPermission: 0,
-    icon: <AdminPanelSettingsIcon />,
-    breadcrumb: { id: "adminMenu", parentId: "top" },
   },
   {
     name: "動画追加",
@@ -144,6 +139,13 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "systemSettings", parentId: "top" },
   },
   {
+    name: "バスケ概要",
+    resourceKey: "/admin/basketball-overview",
+    requiredPermission: 0,
+    icon: <AccountTreeIcon />,
+    breadcrumb: { id: "basketballOverview", parentId: "top" },
+  },
+  {
     name: "動画一覧",
     resourceKey: "/movies",
     requiredPermission: 0,
@@ -157,7 +159,13 @@ const pageConfig: PageConfigType = [
     icon: <ListIcon />,
     breadcrumb: { id: "pictures", parentId: "top" },
   },
-
+  {
+    name: "管理者ページ",
+    resourceKey: "/admin/menu",
+    requiredPermission: 0,
+    icon: <AdminPanelSettingsIcon />,
+    breadcrumb: { id: "adminMenu", parentId: "top" },
+  },
 ];
 
 export const getPageConfig = (): PageConfigType => pageConfig;
