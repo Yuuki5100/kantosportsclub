@@ -32,7 +32,7 @@ const InfoPage: React.FC = () => {
   }, []);
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ width: "min(100vw - 32px, 1280px)", maxWidth: "100%", mx: "auto", p: 2 }}>
       <Typography variant="h6">🏀 開催頻度</Typography>
       <ul>
         <li>月1〜2回程度</li>

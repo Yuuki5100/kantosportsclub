@@ -305,6 +305,18 @@ BE/appserver/src/main/java/com/example/appserver/controller/MovieController.java
 BE/appserver/src/main/java/com/example/appserver/controller/PictureController.java
 ```
 
+## 画面幅メモ
+
+`FE/spa-next/my-next-app/src/pages/movies/detail.tsx` の横幅感を基準にする。
+
+外側コンテナを `width: "min(100vw - 32px, 1280px)"` と `mx: "auto"` で揃えると見やすいページ:
+
+```text
+FE/spa-next/my-next-app/src/pages/admin/basketball-overview.tsx
+FE/spa-next/my-next-app/src/pages/pictures/detail.tsx
+FE/spa-next/my-next-app/src/pages/boardgames/detail.tsx
+```
+
 ## API 追加時のチェックリスト
 
 1. Spring Controller の path / method / response を確認する。
