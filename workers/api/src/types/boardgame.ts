@@ -32,3 +32,14 @@ export type BoardgameSearchFilter = {
   people?: string;
   needTime?: string;
 };
+
+export type BoardgameCreateInput = {
+  boardgameName: string | null;
+  ownerName: string | null;
+  peopleMin: number | null;
+  peopleMax: number | null;
+  needTime: number | null;
+  urlStr: string | null;
+  howToPlay: string | null;
+  remarks: string | null;
+};

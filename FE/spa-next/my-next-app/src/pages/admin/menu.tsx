@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import SettingsSuggestIcon from "@mui/icons-material/SettingsSuggest";
 import VideoCallIcon from "@mui/icons-material/VideoCall";
+import ExtensionIcon from "@mui/icons-material/Extension";
 import { Button, Paper } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
 import PageContainer from "@base/Layout/PageContainer";
@@ -24,6 +25,11 @@ const adminActions: AdminAction[] = [
     label: "動画追加",
     description: "動画データを追加するための入口です。",
     icon: <VideoCallIcon />,
+  },
+  {
+    label: "ボドゲ追加",
+    description: "ボドゲを追加するための入口です。",
+    icon: <ExtensionIcon />,
   },
   {
     label: "設定追加",
@@ -83,6 +89,9 @@ const AdminMenuPage: React.FC = () => {
                   }
                   if (action.label === "動画追加") {
                     router.push("/movies/create");
+                  }
+                  if (action.label === "ボドゲ追加") {
+                    router.push("/boardgames/create");
                   }
                   if (action.label === "設定追加") {
                     alert('開発中です');

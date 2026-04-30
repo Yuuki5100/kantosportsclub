@@ -1,4 +1,9 @@
-import type { BoardgameItem, BoardgameRow, BoardgameSearchFilter } from "../types/boardgame";
+import type {
+  BoardgameCreateInput,
+  BoardgameItem,
+  BoardgameRow,
+  BoardgameSearchFilter
+} from "../types/boardgame";
 
 const toBoardgameItem = (row: BoardgameRow): BoardgameItem => ({
   id: row.id,
@@ -35,6 +40,66 @@ export const findAllBoardgames = async (db: D1Database): Promise<BoardgameItem[]
     .all<BoardgameRow>();
 
   return result.results.map(toBoardgameItem);
+};
+
+export const createBoardgame = async (
+  db: D1Database,
+  input: BoardgameCreateInput
+): Promise<BoardgameItem | null> => {
+  const created = await db
+    .prepare(
+      `INSERT INTO boardgames (
+         boardgame_name,
+         owner_name,
+         people_min,
+         people_max,
+         need_time,
+         url_str,
+         how_to_play,
+         remarks,
+         created_at,
+         updated_at
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       RETURNING id`
+    )
+    .bind(
+      input.boardgameName,
+      input.ownerName,
+      input.peopleMin,
+      input.peopleMax,
+      input.needTime,
+      input.urlStr,
+      input.howToPlay,
+      input.remarks
+    )
+    .first<{ id: number }>();
+
+  if (!created) {
+    return null;
+  }
+
+  const row = await db
+    .prepare(
+      `SELECT
+         id,
+         boardgame_name,
+         owner_name,
+         people_min,
+         people_max,
+         need_time,
+         url_str,
+         how_to_play,
+         remarks,
+         created_at,
+         updated_at
+       FROM boardgames
+       WHERE id = ?`
+    )
+    .bind(created.id)
+    .first<BoardgameRow>();
+
+  return row ? toBoardgameItem(row) : null;
 };
 
 

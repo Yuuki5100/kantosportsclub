@@ -1,135 +1,125 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { TextField } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
-import { API_ENDPOINTS } from "@/api/apiEndpoints";
 import { apiService } from "@/api/apiService";
-import AutoComplete from "@/components/base/Input/AutoComplete";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import PageContainer from "@base/Layout/PageContainer";
-import { useFetch } from "@/hooks/useApi";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
-import type { MediaItem } from "@/components/functional/MediaListPage";
 
-type PictureCreateRequest = {
-  title: string;
-  description: string;
-  url: string;
-  locationId: string | null;
+const BOARDGAME_CREATE_ENDPOINT = "/api/boardgames";
+
+type BoardgameCreateRequest = {
+  boardgameName: string | null;
+  ownerName: string | null;
+  peopleMin: number | null;
+  peopleMax: number | null;
+  needTime: number | null;
+  urlStr: string | null;
+  howToPlay: string | null;
+  remarks: string | null;
 };
 
-type PictureCreateState = {
-  title: string;
-  description: string;
-  url: string;
+type BoardgameCreateState = {
+  boardgameName: string;
+  ownerName: string;
+  peopleMin: string;
+  peopleMax: string;
+  needTime: string;
+  urlStr: string;
+  howToPlay: string;
+  remarks: string;
 };
 
-type MasterLocationItem = {
-  locationId: number;
-  locationName: string | null;
+const INITIAL_STATE: BoardgameCreateState = {
+  boardgameName: "",
+  ownerName: "",
+  peopleMin: "",
+  peopleMax: "",
+  needTime: "",
+  urlStr: "",
+  howToPlay: "",
+  remarks: "",
 };
 
-type LocationOption = {
-  label: string;
-  value: string;
+const toNullableNumber = (value: string): number | null => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
-const INITIAL_STATE: PictureCreateState = {
-  title: "",
-  description: "",
-  url: "",
+const isInvalidPositiveIntegerInput = (value: string): boolean => {
+  const trimmed = value.trim();
+  const parsed = Number(trimmed);
+  return trimmed !== "" && (!Number.isInteger(parsed) || parsed <= 0);
 };
 
-const PictureCreatePage: React.FC = () => {
+const BoardgameCreatePage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
-  const [form, setForm] = useState<PictureCreateState>(INITIAL_STATE);
-  const [selectedLocationId, setSelectedLocationId] = useState("");
+  const [form, setForm] = useState<BoardgameCreateState>(INITIAL_STATE);
   const [isSaving, setIsSaving] = useState(false);
-  const {
-    data: masterLocations,
-    isLoading: isMasterLocationsLoading,
-    isError: isMasterLocationsError,
-  } = useFetch<MasterLocationItem[]>(
-    "masterLocations",
-    API_ENDPOINTS.MASTER_LOCATION.LIST,
-    undefined,
-    { useCache: true }
-  );
-
-  const locationOptions: LocationOption[] = useMemo(
-    () =>
-      (masterLocations ?? []).map((location) => ({
-        label: location.locationName ?? "",
-        value: String(location.locationId),
-      })),
-    [masterLocations]
-  );
 
   const handleChange = useCallback(
-    (field: keyof PictureCreateState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof BoardgameCreateState) => (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
       setForm((current) => ({ ...current, [field]: value }));
     },
     []
   );
 
-  const handleLocationChange = useCallback((option: LocationOption | null) => {
-    setSelectedLocationId(option?.value ?? "");
-  }, []);
-
   const handleBack = useCallback(() => {
     router.push("/admin/menu");
   }, [router]);
 
   const handleSave = useCallback(async () => {
-    const title = form.title.trim();
-    const description = form.description.trim();
-    const url = form.url.trim();
-    if (!title || !description || !url) {
-      showSnackbar(getMessage(MessageCodes.ALL_FIELDS_REQUIRED), "ERROR");
+    if (
+      isInvalidPositiveIntegerInput(form.peopleMin) ||
+      isInvalidPositiveIntegerInput(form.peopleMax) ||
+      isInvalidPositiveIntegerInput(form.needTime)
+    ) {
+      showSnackbar("人数と目安時間は正の整数で入力してください。", "ERROR");
       return;
     }
 
+    const payload: BoardgameCreateRequest = {
+      boardgameName: form.boardgameName.trim() || null,
+      ownerName: form.ownerName.trim() || null,
+      peopleMin: toNullableNumber(form.peopleMin),
+      peopleMax: toNullableNumber(form.peopleMax),
+      needTime: toNullableNumber(form.needTime),
+      urlStr: form.urlStr.trim() || null,
+      howToPlay: form.howToPlay.trim() || null,
+      remarks: form.remarks.trim() || null,
+    };
+
     setIsSaving(true);
     try {
-      const created = await apiService.post<MediaItem>(API_ENDPOINTS.PICTURE.LIST, {
-        title,
-        description,
-        url,
-        locationId: selectedLocationId || null,
-      } satisfies PictureCreateRequest);
-
-      showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "画像を追加"), "SUCCESS");
-      router.push({
-        pathname: "/pictures/detail",
-        query: {
-          id: String(created.id),
-          title: created.title ?? "",
-          description: created.description ?? "",
-          url: created.url ?? "",
-          locationId: selectedLocationId,
-          locationName: created.locationName ?? "",
-          createdAt: created.createdAt ?? "",
-          updatedAt: created.updatedAt ?? "",
-        },
-      });
+      await apiService.post(BOARDGAME_CREATE_ENDPOINT, payload);
+      showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "ボードゲームを追加"), "SUCCESS");
+      router.push("/boardgames");
     } catch (error) {
-      console.error("Create picture failed:", error);
-      showSnackbar(getMessage(MessageCodes.ACTION_FAILED, "画像の追加"), "ERROR");
+      console.error("Create boardgame failed:", error);
+      showSnackbar(getMessage(MessageCodes.ACTION_FAILED, "ボードゲームの追加"), "ERROR");
     } finally {
       setIsSaving(false);
     }
-  }, [form.description, form.title, form.url, router, selectedLocationId, showSnackbar]);
+  }, [form, router, showSnackbar]);
 
   return (
     <PageContainer>
       <Box sx={{ width: "100%", gap: 2 }}>
         <Box sx={{ width: "100%", gap: 0.5 }}>
-          <Font20>画像追加</Font20>
-          <Font14 sx={{ color: colors.grayDark }}>タイトル、説明、URLを入力して画像を登録します。</Font14>
+          <Font20>ボードゲーム追加</Font20>
+          <Font14 sx={{ color: colors.grayDark }}>
+            ボードゲームの基本情報を入力して登録します。
+          </Font14>
         </Box>
 
         <Box
@@ -157,15 +147,15 @@ const PictureCreatePage: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              タイトル
+              ゲーム名
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
               <TextField
-                name="pictureCreateTitle"
-                value={form.title}
+                name="boardgameCreateName"
+                value={form.boardgameName}
                 size="small"
                 fullWidth
-                onChange={handleChange("title")}
+                onChange={handleChange("boardgameName")}
               />
             </Box>
           </Box>
@@ -187,17 +177,111 @@ const PictureCreatePage: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              説明
+              所有者
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
               <TextField
-                name="pictureCreateDescription"
-                value={form.description}
+                name="boardgameCreateOwner"
+                value={form.ownerName}
                 size="small"
                 fullWidth
-                multiline
-                minRows={3}
-                onChange={handleChange("description")}
+                onChange={handleChange("ownerName")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              人数最小
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="boardgameCreatePeopleMin"
+                value={form.peopleMin}
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ min: 1 }}
+                onChange={handleChange("peopleMin")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              人数最大
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="boardgameCreatePeopleMax"
+                value={form.peopleMax}
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ min: 1 }}
+                onChange={handleChange("peopleMax")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              目安時間
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="boardgameCreateNeedTime"
+                value={form.needTime}
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ min: 1 }}
+                onChange={handleChange("needTime")}
               />
             </Box>
           </Box>
@@ -223,11 +307,43 @@ const PictureCreatePage: React.FC = () => {
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
               <TextField
-                name="pictureCreateUrl"
-                value={form.url}
+                name="boardgameCreateUrl"
+                value={form.urlStr}
                 size="small"
                 fullWidth
-                onChange={handleChange("url")}
+                onChange={handleChange("urlStr")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              遊び方
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="boardgameCreateHowToPlay"
+                value={form.howToPlay}
+                size="small"
+                fullWidth
+                multiline
+                minRows={3}
+                onChange={handleChange("howToPlay")}
               />
             </Box>
           </Box>
@@ -248,25 +364,17 @@ const PictureCreatePage: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              場所
+              備考
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <AutoComplete
-                name="pictureCreateLocation"
-                id="pictureCreateLocation"
-                options={locationOptions}
-                defaultValue={selectedLocationId || undefined}
-                disabled={isMasterLocationsLoading || isMasterLocationsError}
-                helperText={
-                  isMasterLocationsError
-                    ? "場所の取得に失敗しました。"
-                    : isMasterLocationsLoading
-                      ? "場所を読み込み中です。"
-                      : undefined
-                }
-                error={isMasterLocationsError}
-                onChange={handleLocationChange}
-                customStyle={{ mt: 0 }}
+              <TextField
+                name="boardgameCreateRemarks"
+                value={form.remarks}
+                size="small"
+                fullWidth
+                multiline
+                minRows={3}
+                onChange={handleChange("remarks")}
               />
             </Box>
           </Box>
@@ -281,4 +389,4 @@ const PictureCreatePage: React.FC = () => {
   );
 };
 
-export default PictureCreatePage;
+export default BoardgameCreatePage;
