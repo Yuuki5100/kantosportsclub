@@ -2,24 +2,25 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { TextField } from "@mui/material";
 import { useRouter } from "next/router";
 import { Box, Font14, Font20 } from "@/components/base";
-import { API_ENDPOINTS } from "@/api/apiEndpoints";
 import { apiService } from "@/api/apiService";
-import AutoComplete from "@/components/base/Input/AutoComplete";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import PageContainer from "@base/Layout/PageContainer";
-import { useFetch } from "@/hooks/useApi";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
-import type { MediaItem } from "@/components/functional/MediaListPage";
 
-type PictureDetail = {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  locationId: string;
-  locationName: string;
+const BOARDGAME_DETAIL_ENDPOINT = "/api/boardgames";
+
+type BoardgameDetail = {
+  id: number | null;
+  boardgameName: string;
+  ownerName: string;
+  peopleMin: string;
+  peopleMax: string;
+  needTime: string;
+  urlStr: string;
+  howToPlay: string;
+  remarks: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -29,30 +30,27 @@ type DetailField = {
   value: string;
 };
 
-type MasterLocationItem = {
-  locationId: number;
-  locationName: string | null;
+type BoardgameUpdateRequest = {
+  boardgameName: string | null;
+  ownerName: string | null;
+  peopleMin: number | null;
+  peopleMax: number | null;
+  needTime: number | null;
+  urlStr: string | null;
+  howToPlay: string | null;
+  remarks: string | null;
 };
 
-type LocationOption = {
-  label: string;
-  value: string;
-};
-
-type PictureUpdateRequest = {
-  title: string;
-  description: string;
-  url: string;
-  locationId: string | null;
-};
-
-const EMPTY_PICTURE: PictureDetail = {
-  id: "",
-  title: "",
-  description: "",
-  url: "",
-  locationId: "",
-  locationName: "",
+const EMPTY_BOARDGAME: BoardgameDetail = {
+  id: null,
+  boardgameName: "",
+  ownerName: "",
+  peopleMin: "",
+  peopleMax: "",
+  needTime: "",
+  urlStr: "",
+  howToPlay: "",
+  remarks: "",
   createdAt: "",
   updatedAt: "",
 };
@@ -64,156 +62,149 @@ const getQueryValue = (value: string | string[] | undefined): string => {
   return value ?? "";
 };
 
-const PictureDetailPage: React.FC = () => {
+const getQueryNumber = (value: string | string[] | undefined): number | null => {
+  const text = getQueryValue(value).trim();
+  if (!text) {
+    return null;
+  }
+
+  const parsed = Number(text);
+  return Number.isInteger(parsed) ? parsed : null;
+};
+
+const toNullableNumber = (value: string): number | null => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+};
+
+const isInvalidPositiveIntegerInput = (value: string): boolean => {
+  const trimmed = value.trim();
+  const parsed = Number(trimmed);
+  return trimmed !== "" && (!Number.isInteger(parsed) || parsed <= 0);
+};
+
+const BoardgameDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
-  const [picture, setPicture] = useState<PictureDetail>(EMPTY_PICTURE);
-  const [selectedLocationId, setSelectedLocationId] = useState("");
+  const [boardgame, setBoardgame] = useState<BoardgameDetail>(EMPTY_BOARDGAME);
   const [isUpdating, setIsUpdating] = useState(false);
-  const {
-    data: masterLocations,
-    isLoading: isMasterLocationsLoading,
-    isError: isMasterLocationsError,
-  } = useFetch<MasterLocationItem[]>(
-    "masterLocations",
-    API_ENDPOINTS.MASTER_LOCATION.LIST,
-    undefined,
-    { useCache: true }
-  );
-
-  const locationOptions: LocationOption[] = useMemo(
-    () =>
-      (masterLocations ?? []).map((location) => ({
-        label: location.locationName ?? "",
-        value: String(location.locationId),
-      })),
-    [masterLocations]
-  );
 
   useEffect(() => {
     if (!router.isReady) {
       return;
     }
 
-    const locationId = getQueryValue(router.query.locationId);
+    const boardgameName = getQueryValue(router.query.boardgameName || router.query.boardgame_name);
+    const ownerName = getQueryValue(router.query.ownerName || router.query.owner_name);
+    const peopleMin = getQueryValue(router.query.peopleMin || router.query.people_min);
+    const peopleMax = getQueryValue(router.query.peopleMax || router.query.people_max);
+    const needTime = getQueryValue(router.query.needTime || router.query.need_time);
+    const urlStr = getQueryValue(router.query.urlStr || router.query.url_str);
+    const howToPlay = getQueryValue(router.query.howToPlay || router.query.how_to_play);
+    const remarks = getQueryValue(router.query.remarks);
 
-    setPicture({
-      id: getQueryValue(router.query.id),
-      title: getQueryValue(router.query.title),
-      description: getQueryValue(router.query.description),
-      url: getQueryValue(router.query.url),
-      locationId,
-      locationName: getQueryValue(router.query.locationName),
+    setBoardgame({
+      id: getQueryNumber(router.query.id),
+      boardgameName,
+      ownerName,
+      peopleMin,
+      peopleMax,
+      needTime,
+      urlStr,
+      howToPlay,
+      remarks,
       createdAt: getQueryValue(router.query.createdAt),
       updatedAt: getQueryValue(router.query.updatedAt),
     });
-    setSelectedLocationId(locationId);
   }, [router.isReady, router.query]);
 
-  useEffect(() => {
-    if (selectedLocationId || !picture.locationName) {
-      return;
-    }
-
-    const currentLocation = locationOptions.find((option) => option.label === picture.locationName);
-    if (currentLocation) {
-      setSelectedLocationId(currentLocation.value);
-      setPicture((current) => ({
-        ...current,
-        locationId: currentLocation.value,
-      }));
-    }
-  }, [locationOptions, picture.locationName, selectedLocationId]);
-
   const handleTextChange = useCallback(
-    (field: "title" | "description" | "url") => (event: React.ChangeEvent<HTMLInputElement>) => {
-      setPicture((current) => ({
-        ...current,
-        [field]: event.target.value,
-      }));
-    },
+    (field: "boardgameName" | "ownerName" | "peopleMin" | "peopleMax" | "needTime" | "urlStr" | "howToPlay" | "remarks") =>
+      (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setBoardgame((current) => ({
+          ...current,
+          [field]: event.target.value,
+        }));
+      },
     []
   );
 
-  const handleLocationChange = useCallback((option: LocationOption | null) => {
-    setSelectedLocationId(option?.value ?? "");
-    setPicture((current) => ({
-      ...current,
-      locationId: option?.value ?? "",
-      locationName: option?.label ?? "",
-    }));
-  }, []);
-
   const handleUpdate = useCallback(async () => {
-    if (!picture.id) {
+    if (boardgame.id === null) {
       showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
+      return;
+    }
+
+    if (
+      isInvalidPositiveIntegerInput(boardgame.peopleMin) ||
+      isInvalidPositiveIntegerInput(boardgame.peopleMax) ||
+      isInvalidPositiveIntegerInput(boardgame.needTime)
+    ) {
+      showSnackbar("人数と目安時間は正の整数で入力してください。", "ERROR");
       return;
     }
 
     setIsUpdating(true);
     try {
-      const locationId =
-        selectedLocationId ||
-        picture.locationId ||
-        locationOptions.find((option) => option.label === picture.locationName)?.value ||
-        null;
-      const updated = await apiService.put<MediaItem>(
-        `${API_ENDPOINTS.PICTURE.LIST}/${picture.id}`,
+      const updated = await apiService.put<BoardgameDetail>(
+        `${BOARDGAME_DETAIL_ENDPOINT}/${boardgame.id}`,
         {
-          title: picture.title,
-          description: picture.description,
-          url: picture.url,
-          locationId,
-        } satisfies PictureUpdateRequest
+          boardgameName: boardgame.boardgameName.trim() || null,
+          ownerName: boardgame.ownerName.trim() || null,
+          peopleMin: toNullableNumber(boardgame.peopleMin),
+          peopleMax: toNullableNumber(boardgame.peopleMax),
+          needTime: toNullableNumber(boardgame.needTime),
+          urlStr: boardgame.urlStr.trim() || null,
+          howToPlay: boardgame.howToPlay.trim() || null,
+          remarks: boardgame.remarks.trim() || null,
+        } satisfies BoardgameUpdateRequest
       );
 
-      setPicture((current) => ({
+      setBoardgame((current) => ({
         ...current,
-        title: updated.title ?? "",
-        description: updated.description ?? "",
-        url: updated.url ?? "",
-        locationId: locationId ?? "",
-        locationName: updated.locationName ?? current.locationName,
+        id: updated.id ?? current.id,
+        boardgameName: updated.boardgameName ?? "",
+        ownerName: updated.ownerName ?? "",
+        peopleMin: updated.peopleMin === null ? "" : String(updated.peopleMin),
+        peopleMax: updated.peopleMax === null ? "" : String(updated.peopleMax),
+        needTime: updated.needTime === null ? "" : String(updated.needTime),
+        urlStr: updated.urlStr ?? "",
+        howToPlay: updated.howToPlay ?? "",
+        remarks: updated.remarks ?? "",
         createdAt: updated.createdAt ?? current.createdAt,
         updatedAt: updated.updatedAt ?? current.updatedAt,
       }));
-      setSelectedLocationId(locationId ?? "");
-      showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "画像情報を更新"), "SUCCESS");
+      showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "ボードゲーム情報を更新"), "SUCCESS");
     } catch (error) {
-      console.error("Update picture failed:", error);
-      showSnackbar(getMessage(MessageCodes.ACTION_FAILED, "画像情報の更新"), "ERROR");
+      console.error("Update boardgame failed:", error);
+      showSnackbar(getMessage(MessageCodes.ACTION_FAILED, "ボードゲーム情報の更新"), "ERROR");
     } finally {
       setIsUpdating(false);
     }
-  }, [
-    locationOptions,
-    picture.description,
-    picture.id,
-    picture.locationId,
-    picture.locationName,
-    picture.title,
-    picture.url,
-    selectedLocationId,
-    showSnackbar,
-  ]);
+  }, [boardgame, showSnackbar]);
 
-  const handleBack = useCallback(
-    () => router.push("/pictures"),
-    [router]
+  const handleBack = useCallback(() => router.push("/boardgames"), [router]);
+
+  const fields: DetailField[] = useMemo(
+    () => [
+      { label: "ID", value: boardgame.id === null ? "" : String(boardgame.id) },
+      { label: "作成日時", value: boardgame.createdAt },
+      { label: "更新日時", value: boardgame.updatedAt },
+    ],
+    [boardgame.createdAt, boardgame.id, boardgame.updatedAt]
   );
-
-  const fields: DetailField[] = [
-    { label: "ID", value: picture.id },
-    { label: "作成日時", value: picture.createdAt },
-    { label: "更新日時", value: picture.updatedAt },
-  ];
 
   return (
     <PageContainer>
-      <Box sx={{ width: "100%", gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 32px, 1280px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
         <Box sx={{ width: "100%", gap: 0.5 }}>
-          <Font20>画像詳細</Font20>
-          <Font14 sx={{ color: colors.grayDark }}>一覧で選択した画像情報</Font14>
+          <Font20>ボードゲーム詳細</Font20>
+          <Font14 sx={{ color: colors.grayDark }}>一覧で選択したボードゲーム情報</Font14>
         </Box>
 
         <Box
@@ -241,15 +232,15 @@ const PictureDetailPage: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              タイトル
+              ゲーム名
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
               <TextField
-                name="pictureTitle"
-                value={picture.title}
+                name="boardgameName"
+                value={boardgame.boardgameName}
                 size="small"
                 fullWidth
-                onChange={handleTextChange("title")}
+                onChange={handleTextChange("boardgameName")}
               />
             </Box>
           </Box>
@@ -271,17 +262,111 @@ const PictureDetailPage: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              説明
+              所有者
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
               <TextField
-                name="pictureDescription"
-                value={picture.description}
+                name="ownerName"
+                value={boardgame.ownerName}
                 size="small"
                 fullWidth
-                multiline
-                minRows={3}
-                onChange={handleTextChange("description")}
+                onChange={handleTextChange("ownerName")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              人数最小
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="peopleMin"
+                value={boardgame.peopleMin}
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ min: 1 }}
+                onChange={handleTextChange("peopleMin")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              人数最大
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="peopleMax"
+                value={boardgame.peopleMax}
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ min: 1 }}
+                onChange={handleTextChange("peopleMax")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              目安時間
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="needTime"
+                value={boardgame.needTime}
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ min: 1 }}
+                onChange={handleTextChange("needTime")}
               />
             </Box>
           </Box>
@@ -307,11 +392,11 @@ const PictureDetailPage: React.FC = () => {
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
               <TextField
-                name="pictureUrl"
-                value={picture.url}
+                name="urlStr"
+                value={boardgame.urlStr}
                 size="small"
                 fullWidth
-                onChange={handleTextChange("url")}
+                onChange={handleTextChange("urlStr")}
               />
             </Box>
           </Box>
@@ -333,79 +418,101 @@ const PictureDetailPage: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              場所
+              遊び方
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <AutoComplete
-                name="pictureLocation"
-                id="pictureLocation"
-                options={locationOptions}
-                defaultValue={selectedLocationId || picture.locationName || undefined}
-                disabled={isMasterLocationsLoading || isMasterLocationsError}
-                helperText={
-                  isMasterLocationsError
-                    ? "場所の取得に失敗しました。"
-                    : isMasterLocationsLoading
-                      ? "場所を読み込み中です。"
-                      : undefined
-                }
-                error={isMasterLocationsError}
-                onChange={handleLocationChange}
-                customStyle={{ mt: 0 }}
+              <TextField
+                name="howToPlay"
+                value={boardgame.howToPlay}
+                size="small"
+                fullWidth
+                multiline
+                minRows={3}
+                onChange={handleTextChange("howToPlay")}
               />
             </Box>
           </Box>
 
-          {fields.map((field) => {
-            const value = field.value || "-";
-
-            return (
-              <Box
-                key={field.label}
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
-                  width: "100%",
-                  borderBottom: `1.5px solid ${colors.commonBorderGray}`,
-                  "&:last-child": {
-                    borderBottom: "none",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    width: "100%",
-                    p: 1.5,
-                    bgcolor: colors.commonTableHeader,
-                    color: colors.commonFontColorBlack,
-                    fontWeight: 600,
-                  }}
-                >
-                  {field.label}
-                </Box>
-                <Box
-                  sx={{
-                    width: "100%",
-                    minWidth: 0,
-                    p: 1.5,
-                    color: colors.commonFontColorBlack,
-                    overflowWrap: "anywhere",
-                  }}
-                >
-                  {value}
-                </Box>
-              </Box>
-            );
-          })}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              備考
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="remarks"
+                value={boardgame.remarks}
+                size="small"
+                fullWidth
+                multiline
+                minRows={3}
+                onChange={handleTextChange("remarks")}
+              />
+            </Box>
+          </Box>
         </Box>
+
+        {fields.map((field) => (
+          <Box
+            key={field.label}
+            sx={{
+              width: "100%",
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              border: `1.5px solid ${colors.commonBorderGray}`,
+              borderRadius: 1,
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              {field.label}
+            </Box>
+            <Box
+              sx={{
+                width: "100%",
+                minWidth: 0,
+                p: 1.5,
+                color: colors.commonFontColorBlack,
+                overflowWrap: "anywhere",
+              }}
+            >
+              {field.value || "-"}
+            </Box>
+          </Box>
+        ))}
 
         <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
           <ButtonAction label="戻る" color="secondary" onClick={handleBack} />
-          <ButtonAction label="更新" onClick={handleUpdate} disabled={isUpdating || !picture.id} />
+          <ButtonAction
+            label="更新"
+            onClick={handleUpdate}
+            disabled={isUpdating || boardgame.id === null}
+          />
         </Box>
       </Box>
     </PageContainer>
   );
 };
 
-export default PictureDetailPage;
+export default BoardgameDetailPage;

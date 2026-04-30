@@ -210,7 +210,7 @@ const PictureDetailPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "100%", gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 32px, 1280px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
         <Box sx={{ width: "100%", gap: 0.5 }}>
           <Font20>画像詳細</Font20>
           <Font14 sx={{ color: colors.grayDark }}>一覧で選択した画像情報</Font14>

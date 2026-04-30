@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { Link, TextField } from "@mui/material";
+import { useRouter } from "next/router";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import FormRow from "@/components/base/Input/FormRow";
@@ -215,6 +216,7 @@ const sortBoardgameItems = (
 };
 
 const BoardgamePage: React.FC = () => {
+  const router = useRouter();
   const [searchCondition, setSearchCondition] = useState<BoardgameSearchCondition>(
     INITIAL_SEARCH_CONDITION
   );
@@ -267,13 +269,38 @@ const BoardgamePage: React.FC = () => {
           createCell("id", item.id, item.id, item.id),
           createCell("boardgameName", item.id, item.boardgameName || "-", item.boardgameName),
           createCell("ownerName", item.id, item.ownerName || "-", item.ownerName),
-          createCell("peopleMin", item.id, toPeopleRange(item), item.peopleMin ?? 0),
-          createCell("needTime", item.id, toNeedTimeLabel(item.needTime), item.needTime ?? 0),
+          createCell("peopleMin", item.id, toPeopleRange(item), item.peopleMin ?? ""),
+          createCell("peopleMax", item.id, item.peopleMax ?? "", item.peopleMax ?? ""),
+          createCell("needTime", item.id, toNeedTimeLabel(item.needTime), item.needTime ?? ""),
           createUrlCell(item),
           createCell("createdAt", item.id, item.createdAt || "-", item.createdAt),
         ],
       })),
     [paginatedBoardgames]
+  );
+
+  const handleRowClick = useCallback(
+    (row: RowDefinition) => {
+      const getCellValue = (columnId: string): string => {
+        const value = row.cells.find((cell) => cell.columnId === columnId)?.value;
+        return value === undefined || value === null ? "" : String(value);
+      };
+
+      void router.push({
+        pathname: "/boardgames/detail",
+        query: {
+          id: getCellValue("id"),
+          boardgameName: getCellValue("boardgameName"),
+          ownerName: getCellValue("ownerName"),
+          peopleMin: getCellValue("peopleMin"),
+          peopleMax: getCellValue("peopleMax"),
+          needTime: getCellValue("needTime"),
+          urlStr: getCellValue("urlStr"),
+          createdAt: getCellValue("createdAt"),
+        },
+      });
+    },
+    [router]
   );
 
   const handleSearchChange = useCallback(
@@ -391,6 +418,7 @@ const BoardgamePage: React.FC = () => {
               rowData={rowData}
               totalRowCount={boardgames.length}
               columns={columns}
+              onRowClick={handleRowClick}
               searchOptions={{
                 title: "検索条件",
                 elements: searchElements,

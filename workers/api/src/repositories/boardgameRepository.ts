@@ -102,6 +102,65 @@ export const createBoardgame = async (
   return row ? toBoardgameItem(row) : null;
 };
 
+export const updateBoardgame = async (
+  db: D1Database,
+  id: number,
+  input: BoardgameCreateInput
+): Promise<BoardgameItem | null> => {
+  const updated = await db
+    .prepare(
+      `UPDATE boardgames
+       SET boardgame_name = ?,
+           owner_name = ?,
+           people_min = ?,
+           people_max = ?,
+           need_time = ?,
+           url_str = ?,
+           how_to_play = ?,
+           remarks = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+       RETURNING id`
+    )
+    .bind(
+      input.boardgameName,
+      input.ownerName,
+      input.peopleMin,
+      input.peopleMax,
+      input.needTime,
+      input.urlStr,
+      input.howToPlay,
+      input.remarks,
+      id
+    )
+    .first<{ id: number }>();
+
+  if (!updated) {
+    return null;
+  }
+
+  const row = await db
+    .prepare(
+      `SELECT
+         id,
+         boardgame_name,
+         owner_name,
+         people_min,
+         people_max,
+         need_time,
+         url_str,
+         how_to_play,
+         remarks,
+         created_at,
+         updated_at
+       FROM boardgames
+       WHERE id = ?`
+    )
+    .bind(id)
+    .first<BoardgameRow>();
+
+  return row ? toBoardgameItem(row) : null;
+};
 
 const normalizeSearchText = (value: string | undefined): string | undefined => {
   const trimmed = value?.trim();

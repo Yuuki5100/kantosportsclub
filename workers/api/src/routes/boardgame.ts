@@ -3,7 +3,8 @@ import { getDb, type AppVariables, type Bindings } from "../env";
 import {
   createBoardgame,
   findAllBoardgames,
-  findBoardgames
+  findBoardgames,
+  updateBoardgame
 } from "../repositories/boardgameRepository";
 import type { BoardgameCreateInput } from "../types/boardgame";
 
@@ -118,6 +119,53 @@ boardgameRoutes.post("/boardgames", async (c) => {
   }
 
   return c.json(boardgame, 201);
+});
+
+boardgameRoutes.put("/boardgames/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "Boardgame id must be a positive integer"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const body = await c.req.json().catch(() => null);
+  const input = parseBoardgameCreateInput(body);
+  if (!input) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "Invalid boardgame payload"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const boardgame = await updateBoardgame(getDb(c.env), id, input);
+  if (!boardgame) {
+    return c.json(
+      {
+        error: {
+          code: "NOT_FOUND",
+          message: "Boardgame not found"
+        },
+        requestId: c.get("requestId")
+      },
+      404
+    );
+  }
+
+  return c.json(boardgame);
 });
 
 boardgameRoutes.get("/boardgames/search", async (c) => {
