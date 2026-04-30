@@ -28,6 +28,7 @@ type ListViewProps = {
   columns: ColumnDefinition[];
   sx?: SxProps<Theme>;
   searchOptions?: SearchDefinition;
+  showSearchOptions?: boolean;
   topPaginationHidden?: boolean;
   bottomPaginationHidden?: boolean;
   onRowClick?: (row: RowDefinition, rowIndex: number) => void; // ← 追加
@@ -53,6 +54,7 @@ const ControllableListView: React.FC<ListViewProps> = (props) => {
     sx,
     rowsPerPageOptions,
     searchOptions,
+    showSearchOptions = true,
     topPaginationHidden,
     bottomPaginationHidden,
     onRowClick,
@@ -87,12 +89,14 @@ const ControllableListView: React.FC<ListViewProps> = (props) => {
   return (
     <Box sx={sx}>
       {/* 検索条件アコーディオン */}
-      <CommonAccordion
-        title={searchOptions?.title ?? '検索条件'}
-        sx={searchOptions?.accordionSx}
-      >
-        {searchOptions?.elements}
-      </CommonAccordion>
+      {showSearchOptions && (
+        <CommonAccordion
+          title={searchOptions?.title ?? '検索条件'}
+          sx={searchOptions?.accordionSx}
+        >
+          {searchOptions?.elements}
+        </CommonAccordion>
+      )}
 
       {/* ▲ ページネーション（上） */}
       <ListViewPagination
@@ -122,7 +126,7 @@ const ControllableListView: React.FC<ListViewProps> = (props) => {
             overflowX: 'auto',
           }}
         >
-          <Table>
+          <Table stickyHeader>
             <TableHeaderRow
               columns={computedColumns}
               sortParams={sortParams}

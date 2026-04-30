@@ -6,6 +6,7 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import GroupsIcon from "@mui/icons-material/Settings";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import TimelineIcon from "@mui/icons-material/Timeline";
 import { ReactNode } from "react";
 import { PageLang } from '@/config/PageLang';
 
@@ -145,7 +146,14 @@ const pageConfig: PageConfigType = [
     icon: <AccountTreeIcon />,
     breadcrumb: { id: "basketballOverview", parentId: "top" },
   },
-    {
+  {
+    name: "活動サマリー",
+    resourceKey: "/admin/summary",
+    requiredPermission: 0,
+    icon: <TimelineIcon />,
+    breadcrumb: { id: "summary", parentId: "top" },
+  },
+  {
     name: "ボドゲ一覧",
     resourceKey: "/boardgames",
     requiredPermission: 0,

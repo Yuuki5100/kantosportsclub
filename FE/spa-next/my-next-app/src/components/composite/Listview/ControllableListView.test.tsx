@@ -143,6 +143,30 @@ describe('ControllableListView コンポーネント', () => {
     expect(screen.getByTestId('search-filter')).toBeInTheDocument();
   });
 
+  test('showSearchOptionsがfalseの場合、検索条件アコーディオンが表示されないこと', () => {
+    const searchOptions = {
+      title: 'カスタム検索条件',
+      elements: <div data-testid="search-hidden">検索フォーム</div>
+    };
+
+    render(
+      <ControllableListView
+        page={1}
+        rowsPerPage={10}
+        sortParams={defaultSortParams}
+        rowData={rowData}
+        totalRowCount={3}
+        columns={columns}
+        onTableStateChange={mockOnTableStateChange}
+        searchOptions={searchOptions}
+        showSearchOptions={false}
+      />
+    );
+
+    expect(screen.queryByTestId('search-hidden')).not.toBeInTheDocument();
+    expect(screen.queryByText('カスタム検索条件')).not.toBeInTheDocument();
+  });
+
   test('ソート機能が正しく動作し、onTableStateChangeが呼び出されること', () => {
     render(
       <ControllableListView
