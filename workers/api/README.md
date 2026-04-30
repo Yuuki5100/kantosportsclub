@@ -56,6 +56,7 @@ GET /api/movies
 POST /api/movies
 PUT /api/movies/:id
 GET /api/pictures
+POST /api/pictures
 PUT /api/pictures/:id
 GET /api/master_locations
 ```
@@ -84,7 +85,7 @@ curl -X PUT "http://localhost:8787/api/movies/1" \
 
 `PUT /api/movies/:id` は `updatedAt` を現在日時で更新し、更新後の `MediaItem` を返します。
 
-`PUT /api/pictures/:id` も同じ request body で画像情報を更新し、更新後の `MediaItem` を返します。
+`POST /api/pictures` と `PUT /api/pictures/:id` も同じ request body で画像情報を登録・更新し、更新後の `MediaItem` を返します。
 
 映画を追加する場合:
 

@@ -78,8 +78,15 @@ const AdminMenuPage: React.FC = () => {
                 variant="contained"
                 startIcon={action.icon}
                 onClick={() => {
+                  if (action.label === "写真追加") {
+                    router.push("/pictures/create");
+                  }
                   if (action.label === "動画追加") {
                     router.push("/movies/create");
+                  }
+                  if (action.label === "設定追加") {
+                    alert('開発中です');
+                    // router.push("/settings");
                   }
                 }}
                 sx={{

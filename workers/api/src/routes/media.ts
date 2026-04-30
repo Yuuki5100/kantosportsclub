@@ -36,7 +36,7 @@ const parseMediaCreateInput = (body: unknown): MediaCreateInput | null => {
   }
 
   const { title, description, url, locationId } = body;
-  if (typeof title !== "string" || typeof description !== "string" || typeof url !== "string" || typeof locationId !== "string") {
+  if (typeof title !== "string" || typeof description !== "string" || typeof url !== "string" || (typeof locationId !== "string" && locationId !== null)) {
     return null;
   }
 
@@ -154,6 +154,39 @@ mediaRoutes.get("/pictures", async (c) => {
     description: c.req.query("description")
   });
   return c.json(pictures);
+});
+
+mediaRoutes.post("/pictures", async (c) => {
+  const body = await c.req.json().catch(() => null);
+  const input = parseMediaCreateInput(body);
+  if (!input) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "title, description and url are required"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const picture = await createMedia(getDb(c.env), "pictures", input);
+  if (!picture) {
+    return c.json(
+      {
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create picture"
+        },
+        requestId: c.get("requestId")
+      },
+      500
+    );
+  }
+
+  return c.json(picture, 201);
 });
 
 mediaRoutes.put("/pictures/:id", async (c) => {
