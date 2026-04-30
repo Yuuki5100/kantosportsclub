@@ -56,6 +56,7 @@ GET /api/movies
 POST /api/movies
 PUT /api/movies/:id
 GET /api/pictures
+PUT /api/pictures/:id
 GET /api/master_locations
 ```
 
@@ -73,15 +74,17 @@ title        タイトルの部分一致
 description  説明の部分一致
 ```
 
-映画のタイトル・説明を更新する場合:
+映画の情報を更新する場合:
 
 ```bash
 curl -X PUT "http://localhost:8787/api/movies/1" \
   -H "Content-Type: application/json" \
-  -d '{"title":"更新後タイトル","description":"更新後説明"}'
+  -d '{"title":"更新後タイトル","description":"更新後説明","url":"https://example.com/movie.mp4","locationId":"1"}'
 ```
 
 `PUT /api/movies/:id` は `updatedAt` を現在日時で更新し、更新後の `MediaItem` を返します。
+
+`PUT /api/pictures/:id` も同じ request body で画像情報を更新し、更新後の `MediaItem` を返します。
 
 映画を追加する場合:
 

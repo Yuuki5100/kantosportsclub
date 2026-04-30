@@ -155,3 +155,50 @@ mediaRoutes.get("/pictures", async (c) => {
   });
   return c.json(pictures);
 });
+
+mediaRoutes.put("/pictures/:id", async (c) => {
+  const id = parsePositiveInteger(c.req.param("id"));
+  if (id === null) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "Picture id must be a positive integer"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const body = await c.req.json().catch(() => null);
+  const input = parseMediaUpdateInput(body);
+  if (!input) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "title, description, url and locationId must be string or null"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const picture = await updateMedia(getDb(c.env), "pictures", id, input);
+  if (!picture) {
+    return c.json(
+      {
+        error: {
+          code: "NOT_FOUND",
+          message: "Picture not found"
+        },
+        requestId: c.get("requestId")
+      },
+      404
+    );
+  }
+
+  return c.json(picture);
+});
