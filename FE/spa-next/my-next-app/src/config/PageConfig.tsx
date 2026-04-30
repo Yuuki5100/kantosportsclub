@@ -145,6 +145,13 @@ const pageConfig: PageConfigType = [
     icon: <AccountTreeIcon />,
     breadcrumb: { id: "basketballOverview", parentId: "top" },
   },
+    {
+    name: "ボドゲ一覧",
+    resourceKey: "/boardgames",
+    requiredPermission: 0,
+    icon: <ListIcon />,
+    breadcrumb: { id: "boardgames", parentId: "top" },
+  },
   {
     name: "動画一覧",
     resourceKey: "/movies",

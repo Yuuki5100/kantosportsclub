@@ -52,6 +52,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8787
 
 ```text
 GET /api/health
+GET /api/boardgames
 GET /api/movies
 POST /api/movies
 PUT /api/movies/:id
@@ -114,6 +115,24 @@ type MediaItem = {
   description: string | null;
   url: string | null;
   locationName: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+```
+
+`GET /api/boardgames` は `boardgames` テーブルの内容を配列で直接返します。
+
+```ts
+type BoardgameItem = {
+  id: number;
+  boardgameName: string | null;
+  ownerName: string | null;
+  peopleMin: number | null;
+  peopleMax: number | null;
+  needTime: number | null;
+  urlStr: string | null;
+  howToPlay: string | null;
+  remarks: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
