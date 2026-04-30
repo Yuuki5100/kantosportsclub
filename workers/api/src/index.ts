@@ -4,6 +4,7 @@ import type { AppVariables, Bindings } from "./env";
 import { requestId } from "./middleware/requestId";
 import { healthRoutes } from "./routes/health";
 import { boardgameRoutes } from "./routes/boardgame";
+import { noticeRoutes } from "./routes/notice";
 import { masterLocationRoutes } from "./routes/masterLocation";
 import { mediaRoutes } from "./routes/media";
 
@@ -29,6 +30,7 @@ app.use(
 app.get("/", (c) => c.redirect("/api/health"));
 app.route("/api/health", healthRoutes);
 app.route("/api", boardgameRoutes);
+app.route("/api", noticeRoutes);
 app.route("/api", mediaRoutes);
 app.route("/api", masterLocationRoutes);
 
