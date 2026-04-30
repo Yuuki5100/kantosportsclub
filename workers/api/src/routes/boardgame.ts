@@ -12,7 +12,7 @@ boardgameRoutes.get("/boardgames", async (c) => {
   return c.json(boardgames);
 });
 
-boardgameRoutes.post("/boardgames", async (c) => {
+boardgameRoutes.get("/boardgames/search", async (c) => {
   const result = await findBoardgames(getDb(c.env), {
     boardgameName: c.req.query("boardgameName"),
     people: c.req.query("people"),

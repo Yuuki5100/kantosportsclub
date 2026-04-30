@@ -11,7 +11,7 @@ import { useFetch } from "@/hooks/useApi";
 import colors from "@/styles/colors";
 import type { ApiResponse } from "@/types/api";
 
-const BOARDGAME_LIST_ENDPOINT = "/api/boardgames";
+const BOARDGAME_LIST_ENDPOINT = "/api/boardgames/search";
 
 type BoardgameApiItem = {
   id?: number | string | null;
@@ -129,44 +129,6 @@ const toNeedTimeLabel = (needTime: number | null): string => {
   return `${needTime}分`;
 };
 
-const matchesNeedTime = (item: BoardgameItem, needTimeCondition: string): boolean => {
-  const normalized = needTimeCondition.trim();
-  if (!normalized) {
-    return true;
-  }
-  if (item.needTime === null) {
-    return false;
-  }
-
-  const needTime = Number(normalized);
-  if (Number.isFinite(needTime)) {
-    return item.needTime <= needTime;
-  }
-
-  return toNeedTimeLabel(item.needTime).includes(normalized);
-};
-
-const filterBoardgameItems = (
-  items: BoardgameItem[],
-  condition: BoardgameSearchCondition
-): BoardgameItem[] => {
-  const boardgameName = normalizeSearchText(condition.boardgameName);
-  const ownerName = normalizeSearchText(condition.ownerName);
-
-  return items.filter((item) => {
-    const matchesBoardgameName =
-      !boardgameName || item.boardgameName.toLowerCase().includes(boardgameName);
-    const matchesOwnerName = !ownerName || item.ownerName.toLowerCase().includes(ownerName);
-
-    return (
-      matchesBoardgameName &&
-      matchesPeople(item, condition.people) &&
-      matchesNeedTime(item, condition.needTime) &&
-      matchesOwnerName
-    );
-  });
-};
-
 const toLinkHref = (url: string): string => {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url) || url.startsWith("/")) {
     return url;
@@ -262,23 +224,36 @@ const BoardgamePage: React.FC = () => {
     page: 1,
     rowsPerPage: 10,
     sortParams: {
-      sortColumn: "id",
-      sortOrder: "asc",
+      sortColumn: "",
+      sortOrder: false,
     },
   });
 
+  const searchParams = useMemo(() => {
+    const params: Record<string, string> = {};
+
+    const boardgameName = appliedSearchCondition.boardgameName.trim();
+    const people = appliedSearchCondition.people.trim();
+    const needTime = appliedSearchCondition.needTime.trim();
+    const ownerName = appliedSearchCondition.ownerName.trim();
+
+    if (boardgameName) params.boardgameName = boardgameName;
+    if (people) params.people = people;
+    if (needTime) params.needTime = needTime;
+    if (ownerName) params.ownerName = ownerName;
+
+    return Object.keys(params).length > 0 ? params : undefined;
+  }, [appliedSearchCondition]);
+
+
   const { data, isLoading, isError, error } = useFetch<
     BoardgameApiItem[] | ApiResponse<BoardgameApiItem[]>
-  >("boardgames", BOARDGAME_LIST_ENDPOINT);
+  >("boardgames", BOARDGAME_LIST_ENDPOINT, searchParams);
 
   const boardgames = useMemo(() => extractBoardgameItems(data), [data]);
-  const filteredBoardgames = useMemo(
-    () => filterBoardgameItems(boardgames, appliedSearchCondition),
-    [appliedSearchCondition, boardgames]
-  );
   const sortedBoardgames = useMemo(
-    () => sortBoardgameItems(filteredBoardgames, tableState.sortParams),
-    [filteredBoardgames, tableState.sortParams]
+    () => sortBoardgameItems(boardgames, tableState.sortParams),
+    [boardgames, tableState.sortParams]
   );
   const paginatedBoardgames = useMemo(() => {
     const startIndex = (tableState.page - 1) * tableState.rowsPerPage;
@@ -384,7 +359,7 @@ const BoardgamePage: React.FC = () => {
         <Font14 sx={{ color: colors.grayDark }}>
           {isLoading
             ? "読み込み中です。"
-            : `${filteredBoardgames.length} / ${boardgames.length} 件のデータを表示しています。`}
+            : `${boardgames.length} 件のデータを表示しています。`}
         </Font14>
       </Box>
     </Box>
@@ -414,7 +389,7 @@ const BoardgamePage: React.FC = () => {
               rowsPerPageOptions={[10, 20, 50]}
               topPaginationHidden={false}
               rowData={rowData}
-              totalRowCount={filteredBoardgames.length}
+              totalRowCount={boardgames.length}
               columns={columns}
               searchOptions={{
                 title: "検索条件",

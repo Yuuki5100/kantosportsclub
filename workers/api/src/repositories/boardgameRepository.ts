@@ -85,6 +85,13 @@ export const findBoardgames = async (
 
   const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
+  const orderSql =
+    people !== undefined
+      ? "people_max DESC, people_min DESC, id ASC"
+      : needTime !== undefined
+        ? "need_time DESC, id ASC"
+        : "id ASC";
+
   const statement = db.prepare(
     `SELECT
        id,
@@ -100,7 +107,7 @@ export const findBoardgames = async (
        updated_at
      FROM boardgames
      ${whereSql}
-     ORDER BY boardgame_name ASC, id ASC`
+     ORDER BY ${orderSql}`
   );
 
   const result =
