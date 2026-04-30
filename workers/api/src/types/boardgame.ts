@@ -25,3 +25,10 @@ export type BoardgameRow = {
   created_at: string | null;
   updated_at: string | null;
 };
+
+export type BoardgameSearchFilter = {
+  boardgameName?: string;
+  ownerName?: string;
+  people?: string;
+  needTime?: string;
+};

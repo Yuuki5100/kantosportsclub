@@ -1,4 +1,4 @@
-import type { BoardgameItem, BoardgameRow } from "../types/boardgame";
+import type { BoardgameItem, BoardgameRow, BoardgameSearchFilter } from "../types/boardgame";
 
 const toBoardgameItem = (row: BoardgameRow): BoardgameItem => ({
   id: row.id,
@@ -33,6 +33,80 @@ export const findAllBoardgames = async (db: D1Database): Promise<BoardgameItem[]
        ORDER BY id ASC`
     )
     .all<BoardgameRow>();
+
+  return result.results.map(toBoardgameItem);
+};
+
+
+const normalizeSearchText = (value: string | undefined): string | undefined => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const parsePositiveInteger = (value: string | undefined): number | undefined => {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+
+  const parsed = Number(trimmed);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+};
+
+export const findBoardgames = async (
+  db: D1Database,
+  filter: BoardgameSearchFilter
+): Promise<BoardgameItem[]> => {
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  const boardgameName = normalizeSearchText(filter.boardgameName);
+  const ownerName = normalizeSearchText(filter.ownerName);
+  const people = parsePositiveInteger(filter.people);
+  const needTime = parsePositiveInteger(filter.needTime);
+
+  if (boardgameName) {
+    conditions.push("boardgame_name LIKE ?");
+    params.push(`%${boardgameName}%`);
+  }
+
+  if (ownerName) {
+    conditions.push("owner_name LIKE ?");
+    params.push(`%${ownerName}%`);
+  }
+
+  if (people !== undefined) {
+    conditions.push("? BETWEEN people_min AND people_max");
+    params.push(people);
+  }
+
+  if (needTime !== undefined) {
+    conditions.push("need_time <= ?");
+    params.push(needTime);
+  }
+
+  const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  const statement = db.prepare(
+    `SELECT
+       id,
+       boardgame_name,
+       owner_name,
+       people_min,
+       people_max,
+       need_time,
+       url_str,
+       how_to_play,
+       remarks,
+       created_at,
+       updated_at
+     FROM boardgames
+     ${whereSql}
+     ORDER BY boardgame_name ASC, id ASC`
+  );
+
+  const result =
+    params.length > 0
+      ? await statement.bind(...params).all<BoardgameRow>()
+      : await statement.all<BoardgameRow>();
 
   return result.results.map(toBoardgameItem);
 };

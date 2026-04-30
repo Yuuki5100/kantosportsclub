@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from "react";
-import { Link } from "@mui/material";
+import React, { useCallback, useMemo, useState } from "react";
+import { Link, TextField } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
+import ButtonAction from "@/components/base/Button/ButtonAction";
+import FormRow from "@/components/base/Input/FormRow";
 import PageContainer from "@base/Layout/PageContainer";
 import { ControllableListView } from "@/components/composite";
 import type { TableState } from "@/components/composite/Listview/ControllableListView";
@@ -40,6 +42,20 @@ type BoardgameItem = {
   createdAt: string;
 };
 
+type BoardgameSearchCondition = {
+  boardgameName: string;
+  people: string;
+  needTime: string;
+  ownerName: string;
+};
+
+const INITIAL_SEARCH_CONDITION: BoardgameSearchCondition = {
+  boardgameName: "",
+  people: "",
+  needTime: "",
+  ownerName: "",
+};
+
 const columns: ColumnDefinition[] = [
   { id: "boardgameName", label: "ゲーム名", display: true, sortable: true, align: "left", widthPercent: 24 },
   { id: "peopleMin", label: "人数", display: true, sortable: true, align: "center", widthPercent: 12 },
@@ -58,6 +74,8 @@ const toNumber = (value: number | string | null | undefined): number | null => {
 };
 
 const toText = (value: string | null | undefined): string => value ?? "";
+
+const normalizeSearchText = (value: string): string => value.trim().toLowerCase();
 
 const toBoardgameItem = (item: BoardgameApiItem, index: number): BoardgameItem => ({
   id: toNumber(item.id) ?? index + 1,
@@ -87,11 +105,66 @@ const toPeopleRange = (item: BoardgameItem): string => {
   return `${item.peopleMin ?? item.peopleMax}人`;
 };
 
+const matchesPeople = (item: BoardgameItem, peopleCondition: string): boolean => {
+  const normalized = peopleCondition.trim();
+  if (!normalized) {
+    return true;
+  }
+
+  const people = Number(normalized);
+  if (Number.isFinite(people)) {
+    if (item.peopleMin !== null && item.peopleMax !== null) {
+      return item.peopleMin <= people && people <= item.peopleMax;
+    }
+    return item.peopleMin === people || item.peopleMax === people;
+  }
+
+  return toPeopleRange(item).includes(normalized);
+};
+
 const toNeedTimeLabel = (needTime: number | null): string => {
   if (needTime === null) {
     return "-";
   }
   return `${needTime}分`;
+};
+
+const matchesNeedTime = (item: BoardgameItem, needTimeCondition: string): boolean => {
+  const normalized = needTimeCondition.trim();
+  if (!normalized) {
+    return true;
+  }
+  if (item.needTime === null) {
+    return false;
+  }
+
+  const needTime = Number(normalized);
+  if (Number.isFinite(needTime)) {
+    return item.needTime <= needTime;
+  }
+
+  return toNeedTimeLabel(item.needTime).includes(normalized);
+};
+
+const filterBoardgameItems = (
+  items: BoardgameItem[],
+  condition: BoardgameSearchCondition
+): BoardgameItem[] => {
+  const boardgameName = normalizeSearchText(condition.boardgameName);
+  const ownerName = normalizeSearchText(condition.ownerName);
+
+  return items.filter((item) => {
+    const matchesBoardgameName =
+      !boardgameName || item.boardgameName.toLowerCase().includes(boardgameName);
+    const matchesOwnerName = !ownerName || item.ownerName.toLowerCase().includes(ownerName);
+
+    return (
+      matchesBoardgameName &&
+      matchesPeople(item, condition.people) &&
+      matchesNeedTime(item, condition.needTime) &&
+      matchesOwnerName
+    );
+  });
 };
 
 const toLinkHref = (url: string): string => {
@@ -180,6 +253,11 @@ const sortBoardgameItems = (
 };
 
 const BoardgamePage: React.FC = () => {
+  const [searchCondition, setSearchCondition] = useState<BoardgameSearchCondition>(
+    INITIAL_SEARCH_CONDITION
+  );
+  const [appliedSearchCondition, setAppliedSearchCondition] =
+    useState<BoardgameSearchCondition>(INITIAL_SEARCH_CONDITION);
   const [tableState, setTableState] = useState<TableState>({
     page: 1,
     rowsPerPage: 10,
@@ -194,9 +272,13 @@ const BoardgamePage: React.FC = () => {
   >("boardgames", BOARDGAME_LIST_ENDPOINT);
 
   const boardgames = useMemo(() => extractBoardgameItems(data), [data]);
+  const filteredBoardgames = useMemo(
+    () => filterBoardgameItems(boardgames, appliedSearchCondition),
+    [appliedSearchCondition, boardgames]
+  );
   const sortedBoardgames = useMemo(
-    () => sortBoardgameItems(boardgames, tableState.sortParams),
-    [boardgames, tableState.sortParams]
+    () => sortBoardgameItems(filteredBoardgames, tableState.sortParams),
+    [filteredBoardgames, tableState.sortParams]
   );
   const paginatedBoardgames = useMemo(() => {
     const startIndex = (tableState.page - 1) * tableState.rowsPerPage;
@@ -219,9 +301,92 @@ const BoardgamePage: React.FC = () => {
     [paginatedBoardgames]
   );
 
-  const listInfoElements = (
-    <Box sx={{ p: 2, color: colors.grayDark }}>
-      {isLoading ? "読み込み中です。" : `${boardgames.length} 件のデータを表示しています。`}
+  const handleSearchChange = useCallback(
+    (field: keyof BoardgameSearchCondition) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchCondition((current) => ({
+        ...current,
+        [field]: event.target.value,
+      }));
+    },
+    []
+  );
+
+  const handleSearch = useCallback(() => {
+    setTableState((current) => ({ ...current, page: 1 }));
+    setAppliedSearchCondition(searchCondition);
+  }, [searchCondition]);
+
+  const handleClear = useCallback(() => {
+    setSearchCondition(INITIAL_SEARCH_CONDITION);
+    setAppliedSearchCondition(INITIAL_SEARCH_CONDITION);
+    setTableState((current) => ({ ...current, page: 1 }));
+  }, []);
+
+  const searchElements = (
+    <Box
+      sx={{ p: 2, width: "100%", gap: 1 }}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
+      <FormRow label="ゲーム名" labelAlignment="center" labelMinWidth="120px">
+        <TextField
+          name="boardgameName"
+          value={searchCondition.boardgameName}
+          size="small"
+          fullWidth
+          onChange={handleSearchChange("boardgameName")}
+        />
+      </FormRow>
+
+      <FormRow label="人数" labelAlignment="center" labelMinWidth="120px">
+        <TextField
+          name="boardgamePeople"
+          value={searchCondition.people}
+          size="small"
+          fullWidth
+          inputProps={{ inputMode: "numeric" }}
+          onChange={handleSearchChange("people")}
+        />
+      </FormRow>
+
+      <FormRow label="目安時間" labelAlignment="center" labelMinWidth="120px">
+        <TextField
+          name="boardgameNeedTime"
+          value={searchCondition.needTime}
+          size="small"
+          fullWidth
+          inputProps={{ inputMode: "numeric" }}
+          onChange={handleSearchChange("needTime")}
+        />
+      </FormRow>
+
+      <FormRow label="所有者" labelAlignment="center" labelMinWidth="120px">
+        <TextField
+          name="boardgameOwnerName"
+          value={searchCondition.ownerName}
+          size="small"
+          fullWidth
+          onChange={handleSearchChange("ownerName")}
+        />
+      </FormRow>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 1.5,
+          width: "100%",
+          alignItems: { xs: "stretch", sm: "center" },
+        }}
+      >
+        <ButtonAction label="検索" onClick={handleSearch} />
+        <ButtonAction label="クリア" color="secondary" onClick={handleClear} />
+        <Font14 sx={{ color: colors.grayDark }}>
+          {isLoading
+            ? "読み込み中です。"
+            : `${filteredBoardgames.length} / ${boardgames.length} 件のデータを表示しています。`}
+        </Font14>
+      </Box>
     </Box>
   );
 
@@ -249,11 +414,11 @@ const BoardgamePage: React.FC = () => {
               rowsPerPageOptions={[10, 20, 50]}
               topPaginationHidden={false}
               rowData={rowData}
-              totalRowCount={boardgames.length}
+              totalRowCount={filteredBoardgames.length}
               columns={columns}
               searchOptions={{
-                title: "一覧情報",
-                elements: listInfoElements,
+                title: "検索条件",
+                elements: searchElements,
                 accordionSx: { width: "100%" },
               }}
               sx={{
