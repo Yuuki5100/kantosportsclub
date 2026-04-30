@@ -61,7 +61,7 @@ const columns: ColumnDefinition[] = [
   { id: "peopleMin", label: "人数", display: true, sortable: true, align: "center", widthPercent: 12 },
   { id: "needTime", label: "目安時間", display: true, sortable: true, align: "center", widthPercent: 12 },
   { id: "ownerName", label: "所有者", display: true, sortable: true, align: "center", widthPercent: 12 },
-  { id: "urlStr", label: "URL", display: false, sortable: true, align: "left", widthPercent: 22 },
+  { id: "urlStr", label: "URL", display: true, sortable: false, align: "left", widthPercent: 22 },
 ];
 
 const toNumber = (value: number | string | null | undefined): number | null => {
