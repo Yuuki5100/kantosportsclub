@@ -10,6 +10,8 @@ export type BoardgameItem = {
   remarks: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  imageUrl1: string | null;
+  imageUrl2: string | null;
 };
 
 export type BoardgameRow = {
@@ -24,6 +26,8 @@ export type BoardgameRow = {
   remarks: string | null;
   created_at: string | null;
   updated_at: string | null;
+  image_url1: string | null;
+  image_url2: string | null;
 };
 
 export type BoardgameSearchFilter = {

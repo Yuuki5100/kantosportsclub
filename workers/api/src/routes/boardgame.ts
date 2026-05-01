@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { getDb, type AppVariables, type Bindings } from "../env";
+import { buildR2ImageUrls } from "../function/r2PublicUrl";
 import {
   createBoardgame,
   findAllBoardgames,
@@ -83,9 +84,30 @@ const parseBoardgameCreateInput = (body: unknown): BoardgameCreateInput | null =
   };
 };
 
+const withR2ImageUrls = <T extends { imageUrl1: string | null; imageUrl2: string | null }>(
+  boardgame: T,
+  publicBaseUrl: string | undefined
+): T => {
+  const imageUrls = buildR2ImageUrls(
+    boardgame.imageUrl1,
+    boardgame.imageUrl2,
+    publicBaseUrl
+  );
+
+  return {
+    ...boardgame,
+    imageUrl1: imageUrls.imageUrl1,
+    imageUrl2: imageUrls.imageUrl2
+  };
+};
+
 boardgameRoutes.get("/boardgames", async (c) => {
   const boardgames = await findAllBoardgames(getDb(c.env));
-  return c.json(boardgames);
+  const response = boardgames.map((boardgame) =>
+    withR2ImageUrls(boardgame, c.env.R2_PUBLIC_BASE_URL)
+  );
+
+  return c.json(response);
 });
 
 boardgameRoutes.post("/boardgames", async (c) => {
@@ -175,6 +197,9 @@ boardgameRoutes.get("/boardgames/search", async (c) => {
     needTime: c.req.query("needTime"),
     ownerName: c.req.query("ownerName"),
   });
+  const response = result.map((boardgame) =>
+    withR2ImageUrls(boardgame, c.env.R2_PUBLIC_BASE_URL)
+  );
 
-  return c.json(result);
+  return c.json(response);
 });

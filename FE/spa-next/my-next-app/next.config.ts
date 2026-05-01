@@ -67,6 +67,7 @@ const imgSrc = uniqueSources([
   "data:",
   "blob:",
   "https://www.j-ems.jp",
+  "https://pub-98d15c06f9fc4194a7766aa3e4313e17.r2.dev",
 ]);
 
 const scriptSrc = uniqueSources([
@@ -127,7 +128,10 @@ const nextConfig: NextConfig = {
 
   // ✅ 外部画像ドメイン許可
   images: {
-    domains: ["www.j-ems.jp"],
+    domains: [
+      "www.j-ems.jp",
+      "pub-98d15c06f9fc4194a7aa3e4313e17.r2.dev",
+    ],
     unoptimized: true,
   },
 
@@ -181,15 +185,15 @@ const nextConfig: NextConfig = {
           },
           ...(enableCrossOriginIsolationHeaders
             ? [
-                {
-                  key: "Cross-Origin-Opener-Policy",
-                  value: "same-origin",
-                },
-                {
-                  key: "Cross-Origin-Embedder-Policy",
-                  value: "require-corp",
-                },
-              ]
+              {
+                key: "Cross-Origin-Opener-Policy",
+                value: "same-origin",
+              },
+              {
+                key: "Cross-Origin-Embedder-Policy",
+                value: "require-corp",
+              },
+            ]
             : []),
           {
             key: "Permissions-Policy",
@@ -248,8 +252,8 @@ const nextConfig: NextConfig = {
         ...(Array.isArray(config.externals)
           ? config.externals
           : config.externals
-          ? [config.externals]
-          : []),
+            ? [config.externals]
+            : []),
         additionalExternals,
       ];
     }

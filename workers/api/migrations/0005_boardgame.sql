@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS boardgames (
   how_to_play TEXT,
   remarks TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  image_url1 TEXT,
+  image_url2 TEXT
 );
 
 INSERT OR IGNORE INTO boardgames (
@@ -37,3 +39,6 @@ VALUES
   ('インサイダーゲーム','不明',4,8,15,'https://oinkgames.com/ja/games/analog/insider/','ワード人狼', ''),
   ('スプレンダー','不明',2,4,30,'https://hobbyjapan.games/splendor/','ラウンドの終了時に最も威信ポイントの高いプレイヤーが勝者', ''),
   ('まっぷたツートンソウル2！','不明',3,8,30,'https://yofukashiproject.com/mapputa/','前世の職業が一緒の相方を探すゲーム', '');
+
+ALTER TABLE boardgames ADD COLUMN image_url1 TEXT; ALTER TABLE boardgames ADD COLUMN image_url2 TEXT;
+UPDATE boardgames SET   image_url1 = 'boardgames_img/ito.jpg',   image_url2 = 'boardgames_img/ito2.jpg' WHERE id = 11;

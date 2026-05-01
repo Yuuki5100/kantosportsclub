@@ -16,7 +16,9 @@ const toBoardgameItem = (row: BoardgameRow): BoardgameItem => ({
   howToPlay: row.how_to_play,
   remarks: row.remarks,
   createdAt: row.created_at,
-  updatedAt: row.updated_at
+  updatedAt: row.updated_at,
+  imageUrl1: row.image_url1,
+  imageUrl2: row.image_url2
 });
 
 export const findAllBoardgames = async (db: D1Database): Promise<BoardgameItem[]> => {
@@ -33,7 +35,9 @@ export const findAllBoardgames = async (db: D1Database): Promise<BoardgameItem[]
          how_to_play,
          remarks,
          created_at,
-         updated_at
+         updated_at,
+         image_url1,
+         image_url2
        FROM boardgames
        ORDER BY id ASC`
     )
@@ -92,7 +96,9 @@ export const createBoardgame = async (
          how_to_play,
          remarks,
          created_at,
-         updated_at
+         updated_at,
+         image_url1,
+         image_url2
        FROM boardgames
        WHERE id = ?`
     )
@@ -152,7 +158,9 @@ export const updateBoardgame = async (
          how_to_play,
          remarks,
          created_at,
-         updated_at
+         updated_at,
+         image_url1,
+         image_url2
        FROM boardgames
        WHERE id = ?`
     )
@@ -228,7 +236,9 @@ export const findBoardgames = async (
        how_to_play,
        remarks,
        created_at,
-       updated_at
+       updated_at,
+       image_url1,
+       image_url2
      FROM boardgames
      ${whereSql}
      ORDER BY ${orderSql}`

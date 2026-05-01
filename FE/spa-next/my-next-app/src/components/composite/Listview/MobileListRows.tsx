@@ -41,7 +41,11 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
 }) => {
   const visibleColumns = columns.filter((column) => column.display);
   const sortableColumns = visibleColumns.filter(
-    (column) => column.sortable && column.id !== 'url' && column.id !== 'description'
+    (column) =>
+      column.headerCellDisplay !== false &&
+      column.sortable &&
+      column.id !== 'url' &&
+      column.id !== 'description'
   );
 
   const handleSortClick = (column: ColumnWithComputedWidth) => {
@@ -180,30 +184,33 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
             >
               {visibleColumns.map((column, columnIndex) => {
                 const cell = findCell(row.cells, column.id);
+                const showLabel = column.headerCellDisplay !== false;
 
                 return (
                   <Box
                     key={column.id}
                     sx={{
                       display: 'grid',
-                      gridTemplateColumns: 'minmax(96px, 36%) minmax(0, 1fr)',
+                      gridTemplateColumns: showLabel ? 'minmax(96px, 36%) minmax(0, 1fr)' : 'minmax(0, 1fr)',
                       gap: 1,
                       width: '100%',
                       py: 1,
                       borderTop: columnIndex === 0 ? 'none' : `1px solid ${colors.commonBorderGray}`,
                     }}
                   >
-                    <Box
-                      sx={{
-                        color: colors.grayDark,
-                        fontSize: '0.8125rem',
-                        fontWeight: 600,
-                        minWidth: 0,
-                        overflowWrap: 'anywhere',
-                      }}
-                    >
-                      {column.label}
-                    </Box>
+                    {showLabel ? (
+                      <Box
+                        sx={{
+                          color: colors.grayDark,
+                          fontSize: '0.8125rem',
+                          fontWeight: 600,
+                          minWidth: 0,
+                          overflowWrap: 'anywhere',
+                        }}
+                      >
+                        {column.label}
+                      </Box>
+                    ) : null}
                     <Box
                       sx={{
                         color: colors.commonFontColorBlack,
