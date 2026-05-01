@@ -64,6 +64,7 @@ export type ColumnDefinition = {
   label: ReactNode;
   display: boolean;
   sortable: boolean;
+  headerCellDisplay?: boolean;
   align?: 'left' | 'center' | 'right';
   sortKey?: string;
   widthPercent?: number; // ← ★ 追加：optional

@@ -64,11 +64,14 @@ export const TableHeaderRow: React.FC<TableHeaderRowProps> = (props) => {
     });
   };
 
+  const shouldRenderHeaderContent = (column: ColumnWithComputedWidth): boolean =>
+    column.label !== '';
+
   return (
     <TableHead>
       <TableRow>
         {props.columns
-          .filter((column) => column.display)
+          .filter((column) => column.display && column.headerCellDisplay !== false)
           .map((column) => (
             <TableCell
               key={column.id}
@@ -87,10 +90,12 @@ export const TableHeaderRow: React.FC<TableHeaderRowProps> = (props) => {
                 '&:last-child': { borderRight: 'none' },
               }}
             >
-              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                {column.label}
-                {renderSortIcons(column)}
-              </Box>
+              {shouldRenderHeaderContent(column) ? (
+                <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  {column.label}
+                  {renderSortIcons(column)}
+                </Box>
+              ) : null}
             </TableCell>
           ))}
       </TableRow>

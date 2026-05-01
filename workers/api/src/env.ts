@@ -1,6 +1,7 @@
 export type Bindings = {
   kantosportsclub_db: D1Database;
   CORS_ORIGIN?: string;
+  R2_PUBLIC_BASE_URL?: string;
 };
 
 export type AppVariables = {

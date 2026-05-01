@@ -28,6 +28,10 @@ type BoardgameApiItem = {
   needTime?: number | string | null;
   url_str?: string | null;
   urlStr?: string | null;
+  image_url1?: string | null;
+  imageUrl1?: string | null;
+  image_url2?: string | null;
+  imageUrl2?: string | null;
   created_at?: string | null;
   createdAt?: string | null;
 };
@@ -40,6 +44,8 @@ type BoardgameItem = {
   peopleMax: number | null;
   needTime: number | null;
   urlStr: string;
+  imageUrl1: string;
+  imageUrl2: string;
   createdAt: string;
 };
 
@@ -58,7 +64,8 @@ const INITIAL_SEARCH_CONDITION: BoardgameSearchCondition = {
 };
 
 const columns: ColumnDefinition[] = [
-  { id: "boardgameName", label: "ゲーム名", display: true, sortable: true, align: "left", widthPercent: 24 },
+  { id: "imageUrls", label: "", display: true, headerCellDisplay: false, sortable: false,align: "left" },
+  { id: "boardgameName", label: "ゲーム名", display: true, sortable: true, align: "left", widthPercent: 26 },
   { id: "peopleMin", label: "人数", display: true, sortable: true, align: "center", widthPercent: 12 },
   { id: "needTime", label: "目安時間", display: true, sortable: true, align: "center", widthPercent: 12 },
   { id: "ownerName", label: "所有者", display: true, sortable: true, align: "center", widthPercent: 12 },
@@ -86,6 +93,8 @@ const toBoardgameItem = (item: BoardgameApiItem, index: number): BoardgameItem =
   peopleMax: toNumber(item.peopleMax ?? item.people_max),
   needTime: toNumber(item.needTime ?? item.need_time),
   urlStr: toText(item.urlStr ?? item.url_str),
+  imageUrl1: toText(item.imageUrl1 ?? item.image_url1),
+  imageUrl2: toText(item.imageUrl2 ?? item.image_url2),
   createdAt: toText(item.createdAt ?? item.created_at),
 });
 
@@ -183,6 +192,68 @@ const createUrlCell = (item: BoardgameItem) => {
   );
 };
 
+const createImagePreview = (value: string, label: string, alt: string) => {
+  const trimmed = value.trim();
+
+  return trimmed ? (
+    <img
+      key={label}
+      src={toLinkHref(trimmed)}
+      alt={alt}
+      style={{
+        width: 100,
+        height: 100,
+        objectFit: "cover",
+        border: `1px solid ${colors.commonBorderGray}`,
+        borderRadius: "4px",
+        backgroundColor: colors.commonFontColorWhite,
+      }}
+    />
+  ) : (
+    <Box
+      key={label}
+      component="span"
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 100,
+        height: 100,
+        border: `1px solid ${colors.commonBorderGray}`,
+        borderRadius: "4px",
+        color: colors.grayDark,
+        fontSize: "0.75rem",
+        backgroundColor: colors.commonFontColorWhite,
+      }}
+    >
+      -
+    </Box>
+  );
+};
+
+const createImageCell = (item: BoardgameItem) => {
+  return createCell(
+    "imageUrls",
+    item.id,
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "nowrap",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        minWidth: 0,
+        maxWidth: "100%",
+        gap: 0.75,
+      }}
+    >
+      {createImagePreview(item.imageUrl1, "image_url1", `${item.boardgameName} image 1`)}
+      {createImagePreview(item.imageUrl2, "image_url2", `${item.boardgameName} image 2`)}
+    </Box>,
+    `${item.imageUrl1}|${item.imageUrl2}`
+  );
+};
+
 const getBoardgameSortValue = (item: BoardgameItem, columnId: string): string | number => {
   const value = item[columnId as keyof BoardgameItem];
 
@@ -267,6 +338,7 @@ const BoardgamePage: React.FC = () => {
       paginatedBoardgames.map((item) => ({
         cells: [
           createCell("id", item.id, item.id, item.id),
+          createImageCell(item),
           createCell("boardgameName", item.id, item.boardgameName || "-", item.boardgameName),
           createCell("ownerName", item.id, item.ownerName || "-", item.ownerName),
           createCell("peopleMin", item.id, toPeopleRange(item), item.peopleMin ?? ""),
@@ -440,6 +512,10 @@ const BoardgamePage: React.FC = () => {
                   backgroundColor: colors.commonFontColorWhite,
                   color: colors.commonFontColorBlack,
                   borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+                },
+                "& .MuiTableHead-root .MuiTableCell-root:first-of-type, & .MuiTableBody-root .MuiTableCell-root:first-of-type": {
+                  pl: 0.5,
+                  pr: 0.5,
                 },
               }}
             />
