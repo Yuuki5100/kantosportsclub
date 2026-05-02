@@ -47,3 +47,8 @@ export type BoardgameCreateInput = {
   howToPlay: string | null;
   remarks: string | null;
 };
+
+export type BoardgameUpdateInput = BoardgameCreateInput & {
+  imageUrl1: string | null;
+  imageUrl2: string | null;
+};

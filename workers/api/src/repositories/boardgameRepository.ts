@@ -2,7 +2,8 @@ import type {
   BoardgameCreateInput,
   BoardgameItem,
   BoardgameRow,
-  BoardgameSearchFilter
+  BoardgameSearchFilter,
+  BoardgameUpdateInput
 } from "../types/boardgame";
 
 const toBoardgameItem = (row: BoardgameRow): BoardgameItem => ({
@@ -45,6 +46,36 @@ export const findAllBoardgames = async (db: D1Database): Promise<BoardgameItem[]
 
   return result.results.map(toBoardgameItem);
 };
+
+export const findBoardgameById = async (
+  db: D1Database,
+  id: number
+): Promise<BoardgameItem | null> => {
+  const row = await db
+    .prepare(
+      `SELECT
+         id,
+         boardgame_name,
+         owner_name,
+         people_min,
+         people_max,
+         need_time,
+         url_str,
+         how_to_play,
+         remarks,
+         created_at,
+         updated_at,
+         image_url1,
+         image_url2
+       FROM boardgames
+       WHERE id = ?`
+    )
+    .bind(id)
+    .first<BoardgameRow>();
+
+  return row ? toBoardgameItem(row) : null;
+};
+
 
 export const createBoardgame = async (
   db: D1Database,
@@ -111,7 +142,7 @@ export const createBoardgame = async (
 export const updateBoardgame = async (
   db: D1Database,
   id: number,
-  input: BoardgameCreateInput
+  input: BoardgameUpdateInput
 ): Promise<BoardgameItem | null> => {
   const updated = await db
     .prepare(
@@ -124,6 +155,8 @@ export const updateBoardgame = async (
            url_str = ?,
            how_to_play = ?,
            remarks = ?,
+           image_url1 = ?,
+           image_url2 = ?,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?
        RETURNING id`
@@ -137,6 +170,8 @@ export const updateBoardgame = async (
       input.urlStr,
       input.howToPlay,
       input.remarks,
+      input.imageUrl1,
+      input.imageUrl2,
       id
     )
     .first<{ id: number }>();

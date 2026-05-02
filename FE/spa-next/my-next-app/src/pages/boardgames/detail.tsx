@@ -19,6 +19,8 @@ type BoardgameDetail = {
   peopleMax: string;
   needTime: string;
   urlStr: string;
+  imageUrl1: string;
+  imageUrl2: string;
   howToPlay: string;
   remarks: string;
   createdAt: string;
@@ -30,6 +32,22 @@ type DetailField = {
   value: string;
 };
 
+type BoardgameDetailResponse = {
+  id: number | null;
+  boardgameName: string | null;
+  ownerName: string | null;
+  peopleMin: number | null;
+  peopleMax: number | null;
+  needTime: number | null;
+  urlStr: string | null;
+  imageUrl1: string | null;
+  imageUrl2: string | null;
+  howToPlay: string | null;
+  remarks: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
 type BoardgameUpdateRequest = {
   boardgameName: string | null;
   ownerName: string | null;
@@ -37,6 +55,8 @@ type BoardgameUpdateRequest = {
   peopleMax: number | null;
   needTime: number | null;
   urlStr: string | null;
+  imageUrl1: string | null;
+  imageUrl2: string | null;
   howToPlay: string | null;
   remarks: string | null;
 };
@@ -49,11 +69,25 @@ const EMPTY_BOARDGAME: BoardgameDetail = {
   peopleMax: "",
   needTime: "",
   urlStr: "",
+  imageUrl1: "",
+  imageUrl2: "",
   howToPlay: "",
   remarks: "",
   createdAt: "",
   updatedAt: "",
 };
+
+type EditableBoardgameField =
+  | "boardgameName"
+  | "ownerName"
+  | "peopleMin"
+  | "peopleMax"
+  | "needTime"
+  | "urlStr"
+  | "imageUrl1"
+  | "imageUrl2"
+  | "howToPlay"
+  | "remarks";
 
 const getQueryValue = (value: string | string[] | undefined): string => {
   if (Array.isArray(value)) {
@@ -88,6 +122,26 @@ const isInvalidPositiveIntegerInput = (value: string): boolean => {
   return trimmed !== "" && (!Number.isInteger(parsed) || parsed <= 0);
 };
 
+const mergeBoardgameResponse = (
+  current: BoardgameDetail,
+  response: BoardgameDetailResponse
+): BoardgameDetail => ({
+  ...current,
+  id: response.id ?? current.id,
+  boardgameName: response.boardgameName ?? "",
+  ownerName: response.ownerName ?? "",
+  peopleMin: response.peopleMin === null ? "" : String(response.peopleMin),
+  peopleMax: response.peopleMax === null ? "" : String(response.peopleMax),
+  needTime: response.needTime === null ? "" : String(response.needTime),
+  urlStr: response.urlStr ?? "",
+  imageUrl1: response.imageUrl1 ?? "",
+  imageUrl2: response.imageUrl2 ?? "",
+  howToPlay: response.howToPlay ?? "",
+  remarks: response.remarks ?? "",
+  createdAt: response.createdAt ?? current.createdAt,
+  updatedAt: response.updatedAt ?? current.updatedAt,
+});
+
 const BoardgameDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
@@ -105,26 +159,51 @@ const BoardgameDetailPage: React.FC = () => {
     const peopleMax = getQueryValue(router.query.peopleMax || router.query.people_max);
     const needTime = getQueryValue(router.query.needTime || router.query.need_time);
     const urlStr = getQueryValue(router.query.urlStr || router.query.url_str);
+    const imageUrl1 = getQueryValue(router.query.imageUrl1 || router.query.image_url1);
+    const imageUrl2 = getQueryValue(router.query.imageUrl2 || router.query.image_url2);
     const howToPlay = getQueryValue(router.query.howToPlay || router.query.how_to_play);
     const remarks = getQueryValue(router.query.remarks);
+    const id = getQueryNumber(router.query.id);
 
     setBoardgame({
-      id: getQueryNumber(router.query.id),
+      id,
       boardgameName,
       ownerName,
       peopleMin,
       peopleMax,
       needTime,
       urlStr,
+      imageUrl1,
+      imageUrl2,
       howToPlay,
       remarks,
       createdAt: getQueryValue(router.query.createdAt),
       updatedAt: getQueryValue(router.query.updatedAt),
     });
+
+    if (id === null) {
+      return;
+    }
+
+    let ignore = false;
+    void apiService
+      .get<BoardgameDetailResponse>(`${BOARDGAME_DETAIL_ENDPOINT}/${id}`)
+      .then((latest) => {
+        if (!ignore) {
+          setBoardgame((current) => mergeBoardgameResponse(current, latest));
+        }
+      })
+      .catch((error) => {
+        console.error("Fetch boardgame failed:", error);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [router.isReady, router.query]);
 
   const handleTextChange = useCallback(
-    (field: "boardgameName" | "ownerName" | "peopleMin" | "peopleMax" | "needTime" | "urlStr" | "howToPlay" | "remarks") =>
+    (field: EditableBoardgameField) =>
       (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setBoardgame((current) => ({
           ...current,
@@ -151,7 +230,7 @@ const BoardgameDetailPage: React.FC = () => {
 
     setIsUpdating(true);
     try {
-      const updated = await apiService.put<BoardgameDetail>(
+      const updated = await apiService.put<BoardgameDetailResponse>(
         `${BOARDGAME_DETAIL_ENDPOINT}/${boardgame.id}`,
         {
           boardgameName: boardgame.boardgameName.trim() || null,
@@ -160,25 +239,14 @@ const BoardgameDetailPage: React.FC = () => {
           peopleMax: toNullableNumber(boardgame.peopleMax),
           needTime: toNullableNumber(boardgame.needTime),
           urlStr: boardgame.urlStr.trim() || null,
+          imageUrl1: boardgame.imageUrl1.trim() || null,
+          imageUrl2: boardgame.imageUrl2.trim() || null,
           howToPlay: boardgame.howToPlay.trim() || null,
           remarks: boardgame.remarks.trim() || null,
         } satisfies BoardgameUpdateRequest
       );
 
-      setBoardgame((current) => ({
-        ...current,
-        id: updated.id ?? current.id,
-        boardgameName: updated.boardgameName ?? "",
-        ownerName: updated.ownerName ?? "",
-        peopleMin: updated.peopleMin === null ? "" : String(updated.peopleMin),
-        peopleMax: updated.peopleMax === null ? "" : String(updated.peopleMax),
-        needTime: updated.needTime === null ? "" : String(updated.needTime),
-        urlStr: updated.urlStr ?? "",
-        howToPlay: updated.howToPlay ?? "",
-        remarks: updated.remarks ?? "",
-        createdAt: updated.createdAt ?? current.createdAt,
-        updatedAt: updated.updatedAt ?? current.updatedAt,
-      }));
+      setBoardgame((current) => mergeBoardgameResponse(current, updated));
       showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "ボードゲーム情報を更新"), "SUCCESS");
     } catch (error) {
       console.error("Update boardgame failed:", error);
@@ -397,6 +465,66 @@ const BoardgameDetailPage: React.FC = () => {
                 size="small"
                 fullWidth
                 onChange={handleTextChange("urlStr")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              画像URL1
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="imageUrl1"
+                value={boardgame.imageUrl1}
+                size="small"
+                fullWidth
+                onChange={handleTextChange("imageUrl1")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              画像URL2
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="imageUrl2"
+                value={boardgame.imageUrl2}
+                size="small"
+                fullWidth
+                onChange={handleTextChange("imageUrl2")}
               />
             </Box>
           </Box>

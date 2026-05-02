@@ -4,10 +4,11 @@ import { buildR2ImageUrls } from "../function/r2PublicUrl";
 import {
   createBoardgame,
   findAllBoardgames,
+  findBoardgameById,
   findBoardgames,
   updateBoardgame
 } from "../repositories/boardgameRepository";
-import type { BoardgameCreateInput } from "../types/boardgame";
+import type { BoardgameCreateInput, BoardgameUpdateInput } from "../types/boardgame";
 
 export const boardgameRoutes = new Hono<{
   Bindings: Bindings;
@@ -43,6 +44,17 @@ const parseNullablePositiveInteger = (value: unknown): number | null | undefined
     return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
   }
   return undefined;
+};
+
+const getBodyValue = (
+  body: Record<string, unknown>,
+  camelCaseKey: string,
+  snakeCaseKey: string
+): unknown => {
+  if (camelCaseKey in body) {
+    return body[camelCaseKey];
+  }
+  return body[snakeCaseKey];
 };
 
 const parseBoardgameCreateInput = (body: unknown): BoardgameCreateInput | null => {
@@ -81,6 +93,26 @@ const parseBoardgameCreateInput = (body: unknown): BoardgameCreateInput | null =
     urlStr,
     howToPlay,
     remarks
+  };
+};
+
+const parseBoardgameUpdateInput = (body: unknown): BoardgameUpdateInput | null => {
+  const baseInput = parseBoardgameCreateInput(body);
+  if (!baseInput || !isRecord(body)) {
+    return null;
+  }
+
+  const imageUrl1 = parseNullableString(getBodyValue(body, "imageUrl1", "image_url1"));
+  const imageUrl2 = parseNullableString(getBodyValue(body, "imageUrl2", "image_url2"));
+
+  if (imageUrl1 === undefined || imageUrl2 === undefined) {
+    return null;
+  }
+
+  return {
+    ...baseInput,
+    imageUrl1,
+    imageUrl2
   };
 };
 
@@ -159,7 +191,7 @@ boardgameRoutes.put("/boardgames/:id", async (c) => {
   }
 
   const body = await c.req.json().catch(() => null);
-  const input = parseBoardgameCreateInput(body);
+  const input = parseBoardgameUpdateInput(body);
   if (!input) {
     return c.json(
       {
@@ -202,4 +234,36 @@ boardgameRoutes.get("/boardgames/search", async (c) => {
   );
 
   return c.json(response);
+});
+
+boardgameRoutes.get("/boardgames/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "Boardgame id must be a positive integer"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const boardgame = await findBoardgameById(getDb(c.env), id);
+  if (!boardgame) {
+    return c.json(
+      {
+        error: {
+          code: "NOT_FOUND",
+          message: "Boardgame not found"
+        },
+        requestId: c.get("requestId")
+      },
+      404
+    );
+  }
+
+  return c.json(boardgame);
 });
