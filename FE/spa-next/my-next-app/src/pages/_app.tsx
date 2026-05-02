@@ -15,12 +15,13 @@ import { useAuthError } from '@/hooks/useAuthError';
 import { useLanguage } from '@/hooks/useLanguage';
 import { AuthInitializer } from '@/components/functional';
 import ProtectedRoute from '@components/functional/ProtectedRoute';
+import { isPublicPath, shouldSkipAuthCheck } from '@/config/AuthRouteConfig';
 import { getPageConfig } from '@/config/PageConfig';
 import { pageLang } from '@/config/PageLang';
 import LoadingSpinner from '@/components/composite/LoadingSpinner';
 import { headerLang } from '@/components/composite/Header/header.lang';
 
-import '@/assets/styles/globals.css';
+// import '@/assets/styles/globals.css';
 
 import { initLogger } from "@/utils/logger";
 import GlobalReportJobWatcher from '@/components/functional/GlobalReportJobWatcher';
@@ -58,10 +59,12 @@ function AuthErrorHandler() {
   return null;
 }
 
-// 認証不要のパス（ログイン、コールバック、エラーページなど）
-const publicPaths = ['/login', '/callback', '/403', '/404', '/_error', '/forgot-password', '/reset-password'];
+type AppContentProps = {
+  Component: AppProps['Component'];
+  pageProps: AppProps['pageProps'];
+};
 
-function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'pageProps'>) {
+function AppContent({ Component, pageProps }: AppContentProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -109,8 +112,8 @@ function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'page
   useEffect(() => {
     const handleStart = (url: string) => {
       // ログインページへの遷移やログインページからの遷移はスピナーを表示しない
-      const isToPublicPath = publicPaths.some(path => url.startsWith(path));
-      const isFromPublicPath = publicPaths.some(path => router.pathname.startsWith(path));
+      const isToPublicPath = isPublicPath(url);
+      const isFromPublicPath = isPublicPath(router.pathname);
 
       if (isToPublicPath || isFromPublicPath) {
         return;
@@ -145,12 +148,13 @@ function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'page
     setIsLoading(false);
   }, [router.pathname]);
 
-  const isPublicPath = publicPaths.some(path => router.pathname.startsWith(path));
+  const isCurrentPublicPath = isPublicPath(router.pathname);
+  const shouldRunAuthInitializer = !shouldSkipAuthCheck(router.pathname);
 
   // useMemo にして pathname が変わったときに再評価
   const PageContent = useMemo(() => {
     // 公開ページは認証不要
-    if (isPublicPath) {
+    if (isCurrentPublicPath) {
       return <Component {...pageProps} />;
     }
 
@@ -160,7 +164,7 @@ function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'page
         <Component {...pageProps} />
       </ProtectedRoute>
     );
-  }, [Component, pageProps, isPublicPath]);
+  }, [Component, pageProps, isCurrentPublicPath]);
 
   // グローバルエラーハンドラ登録（console 出力）
   useEffect(() => {
@@ -190,7 +194,7 @@ function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'page
 
   // 公開ページはBasePageレイアウトを使用しない
   const renderContent = () => {
-    if (isPublicPath) {
+    if (isCurrentPublicPath) {
       return (
         <>
           {PageContent}
@@ -214,7 +218,7 @@ function AppContent({ Component, pageProps }: Pick<AppProps, 'Component' | 'page
         <title>{pageTitle}</title>
       </Head>
       <AuthErrorHandler />
-      <AuthInitializer />
+      {shouldRunAuthInitializer && <AuthInitializer />}
       <ErrorBoundary fallback={<ErrorNotification />}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
@@ -240,8 +244,8 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export function reportWebVitals(metric: NextWebVitalsMetric) {
-  reportWebVitalToOtel(metric);
-}
+// export function reportWebVitals(metric: NextWebVitalsMetric) {
+//   reportWebVitalToOtel(metric);
+// }
 
 export default MyApp;

@@ -28,24 +28,24 @@ const apiClient = axios.create({
 // -----------------------------
 // 🕒 リクエスト前：タイムスタンプ付与
 // -----------------------------
-apiClient.interceptors.request.use(
-  (config: CustomAxiosRequestConfig) => {
-    config.metadata = { startTime: performance.now() };
-    if (isTraceparentEnabled()) {
-      const traceparent = buildTraceparentHeader();
-      if (traceparent) {
-        const headers = AxiosHeaders.from(config.headers);
-        headers.set("traceparent", traceparent);
-        config.headers = headers;
-      }
-    }
-    return config;
-  },
-  (error: AxiosError) => {
-    console.error("🚨 Request setup failed:", error.message);
-    return Promise.reject(error);
-  }
-);
+// apiClient.interceptors.request.use(
+//   (config: CustomAxiosRequestConfig) => {
+//     config.metadata = { startTime: performance.now() };
+//     if (isTraceparentEnabled()) {
+//       const traceparent = buildTraceparentHeader();
+//       if (traceparent) {
+//         const headers = AxiosHeaders.from(config.headers);
+//         headers.set("traceparent", traceparent);
+//         config.headers = headers;
+//       }
+//     }
+//     return config;
+//   },
+//   (error: AxiosError) => {
+//     console.error("🚨 Request setup failed:", error.message);
+//     return Promise.reject(error);
+//   }
+// );
 
 // -----------------------------
 // 🎯 Axios レスポンスインターセプター
