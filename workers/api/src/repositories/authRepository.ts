@@ -1,4 +1,4 @@
-import type { AuthStatusResponse, EndpointPermission } from "../auth/types";
+import type { AuthStatusResponse, EndpointPermission } from "../types/types";
 
 export const findAuthStatus = async (): Promise<AuthStatusResponse | null> => {
   return null;

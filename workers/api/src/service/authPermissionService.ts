@@ -1,4 +1,4 @@
-import type { EndpointPermission } from "./types";
+import type { EndpointPermission } from "../types/types";
 
 export const isAllowedByRequiredLevel = (
   userLevel: number | null | undefined,
