@@ -177,7 +177,7 @@ const pageConfig: PageConfigType = [
   {
     name: "管理者ページ",
     resourceKey: "/admin/menu",
-    requiredPermission: 0,
+    requiredPermission: 3,
     icon: <AdminPanelSettingsIcon />,
     breadcrumb: { id: "adminMenu", parentId: "top" },
   },

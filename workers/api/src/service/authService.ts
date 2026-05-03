@@ -208,7 +208,13 @@ export const logout = async (refreshToken: string): Promise<void> => {
 };
 
 export const status = async (accessToken?: string): Promise<AuthStatusResponse> => {
+  console.log("[authService] status start", {
+    hasAccessToken: Boolean(accessToken),
+    accessTokenPrefix: accessToken ? accessToken.slice(0, 24) : null,
+  });
+
   if (!accessToken) {
+    console.log("[authService] status no access token");
     return {
       authenticated: false,
       user: null,
@@ -219,6 +225,7 @@ export const status = async (accessToken?: string): Promise<AuthStatusResponse> 
   const claims = await verifyAccessToken(accessToken);
 
   if (!claims) {
+    console.log("[authService] status claims invalid");
     return {
       authenticated: false,
       user: null,
@@ -229,6 +236,11 @@ export const status = async (accessToken?: string): Promise<AuthStatusResponse> 
   const user = await findUserById(claims.sub) as AuthUserRow | null;
 
   if (!user || !isActiveUser(user) || isFuture(user.lockedUntil)) {
+    console.log("[authService] status user invalid", {
+      found: Boolean(user),
+      active: user ? isActiveUser(user) : false,
+      lockedUntil: user?.lockedUntil ?? null,
+    });
     return {
       authenticated: false,
       user: null,
@@ -238,6 +250,12 @@ export const status = async (accessToken?: string): Promise<AuthStatusResponse> 
 
   const permissions: UserPermission[] =
     user.roleId == null ? [] : await findRolePermissions(user.roleId);
+
+  console.log("[authService] status success", {
+    userId: user.userId,
+    roleId: user.roleId,
+    permissionCount: permissions.length,
+  });
 
   return {
     authenticated: true,

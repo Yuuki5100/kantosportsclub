@@ -126,7 +126,8 @@ INSERT INTO master_menu_function (id, name) VALUES
 (103, '設定変更'),
 (201, '写真一覧'),
 (202, '動画一覧'),
-(203, 'ボドゲ一覧');
+(203, 'ボドゲ一覧'),
+(204, 'お知らせ');
 
 -- ============================
 -- DML: endpoint authority mapping
@@ -143,23 +144,31 @@ VALUES
 (2, '/api/example2', 'POST', 102, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, '/api/example3', 'DELETE', 103, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
+(4, '/api/health', 'GET', 101, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, '/api/auth/*', 'GET', 101, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, '/api/auth/*', 'POST', 101, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, '/api/notices/current', 'GET', 101, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+
 (10, '/api/picture', 'GET', 201, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (11, '/api/picture', 'POST', 201, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (12, '/api/picture/*', 'GET', 201, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (13, '/api/picture/*', 'PUT', 201, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (14, '/api/picture/*', 'DELETE', 201, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
-(20, '/api/media', 'GET', 202, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(21, '/api/media', 'POST', 202, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(22, '/api/media/*', 'GET', 202, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(23, '/api/media/*', 'PUT', 202, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(24, '/api/media/*', 'DELETE', 202, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(20, '/api/movies', 'GET', 202, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(21, '/api/movies', 'POST', 202, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(22, '/api/movies/*', 'GET', 202, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(23, '/api/movies/*', 'PUT', 202, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(24, '/api/movies/*', 'DELETE', 202, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 (30, '/api/boardgames', 'GET', 203, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (31, '/api/boardgames', 'POST', 203, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (32, '/api/boardgames/*', 'GET', 203, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (33, '/api/boardgames/*', 'PUT', 203, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(34, '/api/boardgames/*', 'DELETE', 203, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(34, '/api/boardgames/*', 'DELETE', 203, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(35, '/api/notices/current', 'GET', 204, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+
 
 -- ============================
 -- DML: テストユーザー

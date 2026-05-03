@@ -99,17 +99,18 @@ apiClient.interceptors.response.use(
         url.includes("/forgot-password") ||
         url.includes("/reset-password");
 
-      if (status === 401 && !isAuthEndpoint) {
-        console.warn("⚠️ 401 Unauthorized → /login へリダイレクト");
-        window.location.href = "/login";
-        return Promise.reject(error);
-      }
+      // if (status === 401 && !isAuthEndpoint) {
+      //   console.warn("⚠️ 401 Unauthorized → /login へリダイレクト");
+      //   window.location.href = "/login";
+      //   return Promise.reject(error);
+      // }
 
-      if (status === 403 && !isAuthEndpoint) {
-        console.warn("⚠️ 403 Forbidden → /403 へリダイレクト");
-        window.location.href = "/403";
-        return Promise.reject(error);
-      }
+      // 403 は開発中の調査をしやすくするため、画面遷移は止める。
+      // if (status === 403 && !isAuthEndpoint) {
+      //   console.warn("⚠️ 403 Forbidden → /403 へリダイレクト");
+      //   window.location.href = "/403";
+      //   return Promise.reject(error);
+      // }
     }
 
     // ------------------------------------------------------

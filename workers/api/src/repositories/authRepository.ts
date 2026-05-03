@@ -162,6 +162,7 @@ export const findUserByLoginId = async (
 export const findUserById = async (
   userId: string,
 ): Promise<AuthUserRow | null> => {
+  console.log("[authRepository] findUserById start", { userId });
   const row = await getDb()
     .prepare(
       `
@@ -181,6 +182,14 @@ export const findUserById = async (
     )
     .bind(userId)
     .first<DbUserRow>();
+
+  console.log("[authRepository] findUserById result", {
+    userId,
+    found: Boolean(row),
+    rowUserId: row?.userId ?? null,
+    username: row?.username ?? null,
+    roleId: row?.roleId ?? null,
+  });
 
   return normalizeUserRow(row ?? null);
 };

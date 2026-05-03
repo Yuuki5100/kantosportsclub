@@ -4,6 +4,7 @@ import { getDb, type AppVariables, type Bindings } from '../env';
 import * as AuthService from '../service/authService';
 import { setAuthRepositoryDb } from '../repositories/authRepository';
 import type { UserPermission } from '../types/auth';
+import { readAccessToken, readCookieValue } from '../service/authCookie';
 
 const auth = new Hono<{
   Bindings: Bindings;
@@ -11,6 +12,8 @@ const auth = new Hono<{
 }>();
 
 const refreshCookieName = 'refresh_token';
+const accessCookieName = 'ACCESS_TOKEN';
+const accessTokenMaxAge = 60 * 15;
 const refreshTokenMaxAge = 60 * 60 * 24 * 30;
 
 type LoginResponseData = {
@@ -33,8 +36,8 @@ type StatusResponseData = {
   } | null;
 };
 
-function isProductionCookie(c: { env: Bindings }) {
-  return c.env.COOKIE_SECURE === 'true';
+function isProductionCookie(c: { env: Bindings; req: { url: string } }) {
+  return c.env.COOKIE_SECURE === 'true' && new URL(c.req.url).protocol === 'https:';
 }
 
 const splitDisplayName = (
@@ -125,6 +128,13 @@ auth.post('/login', async (c) => {
     path: '/api/auth',
     maxAge: refreshTokenMaxAge,
   });
+  setCookie(c, accessCookieName, result.accessToken, {
+    httpOnly: true,
+    secure: isProductionCookie(c),
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: accessTokenMaxAge,
+  });
 
   return c.json({
     success: true,
@@ -162,6 +172,13 @@ auth.post('/refresh', async (c) => {
     path: '/api/auth',
     maxAge: refreshTokenMaxAge,
   });
+  setCookie(c, accessCookieName, result.accessToken, {
+    httpOnly: true,
+    secure: isProductionCookie(c),
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: accessTokenMaxAge,
+  });
 
   return c.json({
     success: true,
@@ -178,6 +195,9 @@ auth.post('/logout', async (c) => {
     await AuthService.logout(refreshToken);
   }
 
+  deleteCookie(c, accessCookieName, {
+    path: '/',
+  });
   deleteCookie(c, refreshCookieName, {
     path: '/api/auth',
   });
@@ -189,9 +209,22 @@ auth.get('/status', async (c) => {
   setAuthRepositoryDb(getDb(c.env));
 
   const authorization = c.req.header('Authorization');
-  const accessToken = authorization?.replace(/^Bearer\s+/i, '');
+  const accessToken =
+    authorization?.replace(/^Bearer\s+/i, '') ||
+    readAccessToken(c.req.header('Cookie')) ||
+    readCookieValue(c.req.header('Cookie'), 'access_token') ||
+    '';
 
   const result = await AuthService.status(accessToken);
+
+  if (!result.authenticated) {
+    return c.json(
+      {
+        success: true,
+        data: toStatusResponseData(result),
+      },
+    );
+  }
 
   return c.json({
     success: true,

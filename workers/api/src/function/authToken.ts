@@ -128,9 +128,15 @@ export const hashToken = async (token: string): Promise<string> => {
 };
 
 export const verifyAccessToken = async (token: string): Promise<AuthClaims | null> => {
+  console.log("[authToken] verifyAccessToken start", {
+    tokenPrefix: token.slice(0, 24),
+    tokenLength: token.length,
+  });
+
   const parts = token.split(".");
 
   if (parts.length !== 3) {
+    console.log("[authToken] verifyAccessToken invalid format", { parts: parts.length });
     return null;
   }
 
@@ -139,6 +145,10 @@ export const verifyAccessToken = async (token: string): Promise<AuthClaims | nul
   const expectedSignature = await sign(unsignedToken);
 
   if (!constantTimeEqual(signature, expectedSignature)) {
+    console.log("[authToken] verifyAccessToken signature mismatch", {
+      providedSignaturePrefix: signature.slice(0, 12),
+      expectedSignaturePrefix: expectedSignature.slice(0, 12),
+    });
     return null;
   }
 
@@ -146,16 +156,30 @@ export const verifyAccessToken = async (token: string): Promise<AuthClaims | nul
     const payloadText = decoder.decode(base64UrlDecode(encodedPayload));
     const claims = JSON.parse(payloadText) as AuthClaims;
 
+    console.log("[authToken] verifyAccessToken payload", {
+      sub: claims.sub ?? null,
+      roleId: claims.roleId ?? null,
+      name: claims.name ?? null,
+      exp: claims.exp ?? null,
+      now: Math.floor(Date.now() / 1000),
+    });
+
     if (!claims.sub) {
+      console.log("[authToken] verifyAccessToken missing sub");
       return null;
     }
 
     if (claims.exp && claims.exp <= Math.floor(Date.now() / 1000)) {
+      console.log("[authToken] verifyAccessToken expired", {
+        exp: claims.exp,
+        now: Math.floor(Date.now() / 1000),
+      });
       return null;
     }
 
     return claims;
   } catch {
+    console.log("[authToken] verifyAccessToken decode failed");
     return null;
   }
 };

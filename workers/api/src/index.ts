@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { AppVariables, Bindings } from "./env";
 import { requestId } from "./middleware/requestId";
+import { authRequired } from "./middleware/authRequired";
+import { permissionRequired } from "./middleware/permissionRequired";
 import { healthRoutes } from "./routes/health";
 import { boardgameRoutes } from "./routes/boardgame";
 import { noticeRoutes } from "./routes/notice";
@@ -14,7 +16,21 @@ const app = new Hono<{
   Variables: AppVariables;
 }>();
 
+console.log('WORKER BOOTED');
+
+app.use('*', async (c, next) => {
+  console.log('REQUEST:', c.req.method, c.req.path);
+  await next();
+});
+
 app.use("*", requestId);
+app.use("*", async (c, next) => {
+  console.log("[index] request", {
+    method: c.req.method,
+    path: c.req.path,
+  });
+  await next();
+});
 app.use(
   "*",
   cors({
@@ -27,6 +43,8 @@ app.use(
     credentials: true
   })
 );
+app.use("/api/*", authRequired);
+app.use("/api/*", permissionRequired);
 
 app.get("/", (c) => c.redirect("/api/health"));
 app.route("/api/health", healthRoutes);
