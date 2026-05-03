@@ -34,3 +34,5 @@ VALUES
 ALTER TABLE master_locations ADD COLUMN image_url1 TEXT; ALTER TABLE master_locations ADD COLUMN image_url2 TEXT;
 UPDATE master_locations SET image_url1 = 'location_img/神奈川県立スポーツ会館.jpg', image_url2 = 'location_img/神奈川県立スポーツ会館2.jpg' WHERE location_id = 1;
 UPDATE master_locations SET image_url1 = 'location_img/88コート.jpg', image_url2 = 'location_img/88コート2.jpg' WHERE location_id = 2;
+UPDATE master_locations SET image_url1 = 'location_img/横浜市東山田スポーツ会館.jpg', image_url2 = 'location_img/横浜市東山田スポーツ会館2.jpg' WHERE location_id = 10;
+UPDATE master_locations SET image_url1 = 'location_img/横浜市北山田地区会館.jpg', image_url2 = 'location_img/横浜市北山田地区会館2.jpg' WHERE location_id = 11;
