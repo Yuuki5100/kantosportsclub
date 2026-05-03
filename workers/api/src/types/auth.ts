@@ -1,9 +1,30 @@
-export type AuthMode = "internal" | "gbiz";
+export type AuthMode = "internal" | "external" | "mock" | "gbiz";
+
+export type LoginInput = {
+  userId?: string;
+  username?: string;
+  password: string;
+  userAgent?: string | null;
+  ipAddress?: string | null;
+};
+
+export type ExternalLoginInput = {
+  redirectUri?: string;
+  clientId?: string;
+  clientSecret?: string;
+};
 
 export type AuthUser = {
   userId: string;
   roleId: number | null;
   displayName: string | null;
+};
+
+export type UserPermission = {
+  permissionId?: string;
+  permissionName?: string;
+  statusLevelId: number;
+  menuFunctionId?: string | null;
 };
 
 export type AuthSession = {
@@ -15,21 +36,9 @@ export type AuthSession = {
 export type AuthStatusResponse = {
   authenticated: boolean;
   user?: AuthUser | null;
+  permissions?: UserPermission[];
   rolePermissions?: Record<string, number> | null;
-  userPermissions?: Array<{
-    permissionName: string;
-    statusLevelId: number;
-  }>;
-};
-
-export type LoginInput = {
-  userId: string;
-  password: string;
-};
-
-export type ExternalLoginInput = {
-  clientId: string;
-  clientSecret: string;
+  userPermissions?: UserPermission[];
 };
 
 export type EndpointPermission = {
@@ -38,14 +47,14 @@ export type EndpointPermission = {
   requiredLevel: number;
 };
 
-export type AuthGlobal = typeof globalThis & {
-  AUTH_SECRET?: string;
-  JWT_SECRET?: string;
+export type AuthClaims = {
+  sub: string;
+  roleId: number | null;
+  name: string | null;
+  iat?: number;
+  exp?: number;
 };
 
-export type UserPermission = {
-  permissionId: string;
-  statusLevelId: number;
-  menuFunctionId?: string | null;
+export type TokenOptions = {
+  expiresInSeconds: number;
 };
-

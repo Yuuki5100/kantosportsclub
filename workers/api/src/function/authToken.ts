@@ -1,25 +1,19 @@
-import type { AuthSession, AuthUser } from "../types/auth.ts";
+import type { AuthClaims, AuthSession, AuthUser, TokenOptions } from "../type/auth";
 
-export type AuthClaims = {
-  sub: string;
-  roleId: number | null;
-  name: string | null;
-  iat?: number;
-  exp?: number;
+type AuthGlobal = typeof globalThis & {
+  AUTH_SECRET?: string;
+  JWT_SECRET?: string;
 };
-
-type TokenOptions = {
-  expiresInSeconds: number;
-};
-
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 
 const authGlobal = globalThis as AuthGlobal;
 
 const AUTH_SECRET =
   authGlobal.AUTH_SECRET ??
   authGlobal.JWT_SECRET ??
+  "change-me-in-production";
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 const base64UrlEncode = (input: ArrayBuffer | Uint8Array | string): string => {
   const bytes =
@@ -65,12 +59,7 @@ const getSigningKey = async (): Promise<CryptoKey> => {
 
 const sign = async (data: string): Promise<string> => {
   const key = await getSigningKey();
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    encoder.encode(data),
-  );
-
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
   return base64UrlEncode(signature);
 };
 
@@ -105,7 +94,7 @@ export const createAccessToken = async (
   claims: AuthClaims,
   options: TokenOptions,
 ): Promise<string> => {
-  const now = Math.floor(Date.now() / 1000);
+  const issuedAt = Math.floor(Date.now() / 1000);
 
   const header = {
     alg: "HS256",
@@ -114,8 +103,8 @@ export const createAccessToken = async (
 
   const payload: AuthClaims = {
     ...claims,
-    iat: now,
-    exp: now + options.expiresInSeconds,
+    iat: issuedAt,
+    exp: issuedAt + options.expiresInSeconds,
   };
 
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
@@ -171,9 +160,5 @@ export const verifyAccessToken = async (token: string): Promise<AuthClaims | nul
 };
 
 export const verifyRefreshToken = (_token: string): AuthClaims | null => {
-  /*
-   * refresh token は JWT ではなく opaque token として扱う。
-   * 正当性は auth_refresh_token.token_hash を D1 で照合して判定する。
-   */
   return null;
 };

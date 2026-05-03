@@ -6,7 +6,7 @@ import type {
   LoginInput,
   AuthUser,
   UserPermission,
-} from "../type/auth";
+} from "../types/auth";
 import {
   createAccessToken,
   createAuthSession,
