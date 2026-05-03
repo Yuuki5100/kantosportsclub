@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { getDb, type AppVariables, type Bindings } from "../env";
+import { buildR2ImageUrls } from "../function/r2PublicUrl";
 import { createMedia, findAllMedia, updateMedia } from "../repositories/mediaRepository";
-import type { MediaCreateInput, MediaUpdateInput } from "../types/media";
+import type { MediaCreateInput, MediaItem, MediaUpdateInput } from "../types/media";
 
 export const mediaRoutes = new Hono<{
   Bindings: Bindings;
@@ -15,6 +16,23 @@ const parsePositiveInteger = (value: string | undefined): number | null => {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+const withR2LocationImageUrls = (
+  media: MediaItem,
+  publicBaseUrl: string | undefined
+): MediaItem => {
+  const imageUrls = buildR2ImageUrls(
+    media.locationImageUrl1,
+    media.locationImageUrl2,
+    publicBaseUrl
+  );
+
+  return {
+    ...media,
+    locationImageUrl1: imageUrls.imageUrl1,
+    locationImageUrl2: imageUrls.imageUrl2
+  };
+};
 
 const parseMediaUpdateInput = (body: unknown): MediaUpdateInput | null => {
   if (!isRecord(body)) {
@@ -65,7 +83,7 @@ mediaRoutes.get("/movies", async (c) => {
     },
     { order: "createdAtDesc" }
   );
-  return c.json(movies);
+  return c.json(movies.map((movie) => withR2LocationImageUrls(movie, c.env.R2_PUBLIC_BASE_URL)));
 });
 
 mediaRoutes.put("/movies/:id", async (c) => {
@@ -112,7 +130,7 @@ mediaRoutes.put("/movies/:id", async (c) => {
     );
   }
 
-  return c.json(movie);
+  return c.json(withR2LocationImageUrls(movie, c.env.R2_PUBLIC_BASE_URL));
 });
 
 mediaRoutes.post("/movies", async (c) => {
@@ -145,7 +163,7 @@ mediaRoutes.post("/movies", async (c) => {
     );
   }
 
-  return c.json(movie, 201);
+  return c.json(withR2LocationImageUrls(movie, c.env.R2_PUBLIC_BASE_URL), 201);
 });
 
 mediaRoutes.get("/pictures", async (c) => {
@@ -153,7 +171,9 @@ mediaRoutes.get("/pictures", async (c) => {
     title: c.req.query("title"),
     description: c.req.query("description")
   });
-  return c.json(pictures);
+  return c.json(
+    pictures.map((picture) => withR2LocationImageUrls(picture, c.env.R2_PUBLIC_BASE_URL))
+  );
 });
 
 mediaRoutes.post("/pictures", async (c) => {
@@ -186,7 +206,7 @@ mediaRoutes.post("/pictures", async (c) => {
     );
   }
 
-  return c.json(picture, 201);
+  return c.json(withR2LocationImageUrls(picture, c.env.R2_PUBLIC_BASE_URL), 201);
 });
 
 mediaRoutes.put("/pictures/:id", async (c) => {
@@ -233,5 +253,5 @@ mediaRoutes.put("/pictures/:id", async (c) => {
     );
   }
 
-  return c.json(picture);
+  return c.json(withR2LocationImageUrls(picture, c.env.R2_PUBLIC_BASE_URL));
 });

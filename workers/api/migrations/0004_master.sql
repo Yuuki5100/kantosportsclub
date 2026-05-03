@@ -32,3 +32,5 @@ VALUES
   (14, 'ロッツ横浜', '室内', 'バスケ');
 
 ALTER TABLE master_locations ADD COLUMN image_url1 TEXT; ALTER TABLE master_locations ADD COLUMN image_url2 TEXT;
+UPDATE master_locations SET image_url1 = 'location_img/神奈川県立スポーツ会館.jpg', image_url2 = 'location_img/神奈川県立スポーツ会館2.jpg' WHERE location_id = 1;
+UPDATE master_locations SET image_url1 = 'location_img/88コート.jpg', image_url2 = 'location_img/88コート2.jpg' WHERE location_id = 2;
