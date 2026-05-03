@@ -1,7 +1,7 @@
 export const loginLang = {
   ja: {
     title: "ログインページ",
-    systemName: "共通基盤テンプレート",
+    systemName: "関東スポクラ管理システム",
     description: "ログイン画面の説明です。",
     userId: "ユーザID",
     password: "パスワード",
@@ -22,7 +22,7 @@ export const loginLang = {
   },
   en: {
     title: "Login Page",
-    systemName: "Common Architecture Template",
+    systemName: "Kanto Sports Club System",
     description: "Description of the login screen.",
     userId: "User ID",
     password: "Password",
