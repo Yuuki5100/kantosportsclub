@@ -18,33 +18,33 @@ const app = new Hono<{
 
 console.log('WORKER BOOTED');
 
-app.use('*', async (c, next) => {
-  console.log('REQUEST:', c.req.method, c.req.path);
-  await next();
-});
+// app.use('*', async (c, next) => {
+//   console.log('REQUEST:', c.req.method, c.req.path);
+//   await next();
+// });
 
-app.use("*", requestId);
-app.use("*", async (c, next) => {
-  console.log("[index] request", {
-    method: c.req.method,
-    path: c.req.path,
-  });
-  await next();
-});
-app.use(
-  "*",
-  cors({
-    origin: (origin, c) => {
-      const allowedOrigin = c.env.CORS_ORIGIN ?? "http://localhost:3000";
-      return origin === allowedOrigin ? origin : allowedOrigin;
-    },
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "traceparent"],
-    credentials: true
-  })
-);
-app.use("/api/*", authRequired);
-app.use("/api/*", permissionRequired);
+// app.use("*", requestId);
+// app.use("*", async (c, next) => {
+//   console.log("[index] request", {
+//     method: c.req.method,
+//     path: c.req.path,
+//   });
+//   await next();
+// });
+// app.use(
+//   "*",
+//   cors({
+//     origin: (origin, c) => {
+//       const allowedOrigin = c.env.CORS_ORIGIN ?? "http://localhost:3000";
+//       return origin === allowedOrigin ? origin : allowedOrigin;
+//     },
+//     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowHeaders: ["Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "traceparent"],
+//     credentials: true
+//   })
+// );
+// app.use("/api/*", authRequired);
+// app.use("/api/*", permissionRequired);
 
 app.get("/", (c) => c.redirect("/api/health"));
 app.route("/api/health", healthRoutes);
