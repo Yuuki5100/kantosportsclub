@@ -37,3 +37,15 @@ export type EndpointPermission = {
   path: string;
   requiredLevel: number;
 };
+
+export type AuthGlobal = typeof globalThis & {
+  AUTH_SECRET?: string;
+  JWT_SECRET?: string;
+};
+
+export type UserPermission = {
+  permissionId: string;
+  statusLevelId: number;
+  menuFunctionId?: string | null;
+};
+

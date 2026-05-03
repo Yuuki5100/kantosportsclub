@@ -4,7 +4,9 @@ import type {
   AuthStatusResponse,
   ExternalLoginInput,
   LoginInput,
-} from "../types/types";
+  AuthUser,
+  UserPermission,
+} from "../type/auth";
 import {
   createAccessToken,
   createAuthSession,
@@ -25,6 +27,30 @@ import {
 
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 60 * 15;
 const REFRESH_TOKEN_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 30;
+
+type AuthUserRow = {
+  userId: string;
+  username: string;
+  passwordHash: string | null;
+  displayName: string | null;
+  roleId: number | null;
+  status?: string | null;
+  lockedUntil?: string | null;
+};
+
+type RefreshTokenRow = {
+  userId: string;
+  expiresAt: string;
+  revokedAt?: string | null;
+  userAgent?: string | null;
+  ipAddress?: string | null;
+};
+
+type BuildSessionInput = {
+  user: AuthUserRow;
+  userAgent?: string | null;
+  ipAddress?: string | null;
+};
 
 export const getAuthMode = (): AuthMode => {
   return "internal";
@@ -49,20 +75,21 @@ const isActiveUser = (user: { status?: string | null }): boolean => {
   return !user.status || user.status === "ACTIVE";
 };
 
-const buildSession = async (input: {
-  user: {
-    userId: string;
-    username: string;
-    roleId: number | null;
-    displayName: string | null;
-  };
-  userAgent?: string | null;
-  ipAddress?: string | null;
-}): Promise<AuthSession> => {
+const toAuthUser = (user: AuthUserRow): AuthUser => ({
+  userId: user.userId,
+  roleId: user.roleId,
+  displayName: user.displayName,
+});
+
+const buildSession = async ({
+  user,
+  userAgent,
+  ipAddress,
+}: BuildSessionInput): Promise<AuthSession> => {
   const claims = {
-    sub: input.user.userId,
-    roleId: input.user.roleId,
-    name: input.user.displayName,
+    sub: user.userId,
+    roleId: user.roleId,
+    name: user.displayName,
   };
 
   const accessToken = await createAccessToken(claims, {
@@ -70,16 +97,15 @@ const buildSession = async (input: {
   });
 
   const refreshToken = createRefreshToken();
-  const refreshTokenHash = await hashToken(refreshToken);
-  const issuedAt = now();
-  const expiresAt = addSeconds(issuedAt, REFRESH_TOKEN_EXPIRES_IN_SECONDS);
+  const tokenHash = await hashToken(refreshToken);
+  const expiresAt = addSeconds(now(), REFRESH_TOKEN_EXPIRES_IN_SECONDS);
 
   await insertRefreshToken({
-    userId: input.user.userId,
-    tokenHash: refreshTokenHash,
+    userId: user.userId,
+    tokenHash,
     expiresAt: toIsoString(expiresAt),
-    userAgent: input.userAgent ?? null,
-    ipAddress: input.ipAddress ?? null,
+    userAgent: userAgent ?? null,
+    ipAddress: ipAddress ?? null,
   });
 
   return createAuthSession(accessToken, refreshToken, claims);
@@ -97,7 +123,7 @@ export const login = async (input: LoginInput): Promise<AuthSession | null> => {
     return null;
   }
 
-  const user = await findUserByUsername(username);
+  const user = await findUserByUsername(username) as AuthUserRow | null;
 
   if (!user) {
     return null;
@@ -120,12 +146,7 @@ export const login = async (input: LoginInput): Promise<AuthSession | null> => {
   await updateLastLoginAt(user.userId);
 
   return buildSession({
-    user: {
-      userId: user.userId,
-      username: user.username,
-      roleId: user.roleId,
-      displayName: user.displayName,
-    },
+    user,
     userAgent: input.userAgent ?? null,
     ipAddress: input.ipAddress ?? null,
   });
@@ -137,7 +158,7 @@ export const refresh = async (refreshToken: string): Promise<AuthSession | null>
   }
 
   const tokenHash = await hashToken(refreshToken);
-  const tokenRow = await findRefreshTokenByHash(tokenHash);
+  const tokenRow = await findRefreshTokenByHash(tokenHash) as RefreshTokenRow | null;
 
   if (!tokenRow) {
     return null;
@@ -151,7 +172,7 @@ export const refresh = async (refreshToken: string): Promise<AuthSession | null>
     return null;
   }
 
-  const user = await findUserById(tokenRow.userId);
+  const user = await findUserById(tokenRow.userId) as AuthUserRow | null;
 
   if (!user) {
     return null;
@@ -165,19 +186,11 @@ export const refresh = async (refreshToken: string): Promise<AuthSession | null>
     return null;
   }
 
-  /*
-   * Refresh token rotation を採用する場合は、古い refresh token を失効させたうえで
-   * 新しい refresh token を発行する。
-   */
+  // refresh token rotation
   await revokeRefreshToken(tokenHash);
 
   return buildSession({
-    user: {
-      userId: user.userId,
-      username: user.username,
-      roleId: user.roleId,
-      displayName: user.displayName,
-    },
+    user,
     userAgent: tokenRow.userAgent ?? null,
     ipAddress: tokenRow.ipAddress ?? null,
   });
@@ -211,7 +224,7 @@ export const status = async (accessToken?: string): Promise<AuthStatusResponse> 
     };
   }
 
-  const user = await findUserById(claims.sub);
+  const user = await findUserById(claims.sub) as AuthUserRow | null;
 
   if (!user || !isActiveUser(user) || isFuture(user.lockedUntil)) {
     return {
@@ -221,17 +234,12 @@ export const status = async (accessToken?: string): Promise<AuthStatusResponse> 
     };
   }
 
-  const permissions = user.roleId == null
-    ? []
-    : await findRolePermissions(user.roleId);
+  const permissions: UserPermission[] =
+    user.roleId == null ? [] : await findRolePermissions(user.roleId);
 
   return {
     authenticated: true,
-    user: {
-      userId: user.userId,
-      roleId: user.roleId,
-      displayName: user.displayName,
-    },
+    user: toAuthUser(user),
     permissions,
   };
 };

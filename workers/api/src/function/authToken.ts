@@ -1,4 +1,4 @@
-import type { AuthSession, AuthUser } from "../types/types";
+import type { AuthSession, AuthUser } from "../types/auth.ts";
 
 export type AuthClaims = {
   sub: string;
@@ -15,10 +15,11 @@ type TokenOptions = {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
+const authGlobal = globalThis as AuthGlobal;
+
 const AUTH_SECRET =
-  globalThis.AUTH_SECRET ??
-  globalThis.JWT_SECRET ??
-  "change-me-in-production";
+  authGlobal.AUTH_SECRET ??
+  authGlobal.JWT_SECRET ??
 
 const base64UrlEncode = (input: ArrayBuffer | Uint8Array | string): string => {
   const bytes =
