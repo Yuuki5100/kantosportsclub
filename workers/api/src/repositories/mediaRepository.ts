@@ -25,6 +25,8 @@ const mediaSelect = `
     m.description,
     m.url,
     ml.location_name AS location_name,
+    ml.image_url1 AS location_image_url1,
+    ml.image_url2 AS location_image_url2,
     m.created_at,
     m.updated_at
 `;
@@ -35,6 +37,8 @@ const toMediaItem = (row: MediaRow): MediaItem => ({
   description: row.description,
   url: row.url,
   locationName: row.location_name,
+  locationImageUrl1: row.location_image_url1,
+  locationImageUrl2: row.location_image_url2,
   createdAt: row.created_at,
   updatedAt: row.updated_at
 });

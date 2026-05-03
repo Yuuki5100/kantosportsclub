@@ -17,6 +17,8 @@ export type MediaItem = {
   description: string | null;
   url: string | null;
   locationName: string | null;
+  locationImageUrl1: string | null;
+  locationImageUrl2: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -52,6 +54,7 @@ const extractMediaItems = (
 };
 
 const columns: ColumnDefinition[] = [
+  { id: "imageUrls", label: "", display: true, headerCellDisplay: false, sortable: false, align: "left" },
   { id: "createdAt", label: "開催日時", display: true, sortable: true, align: "center", widthPercent: 10 },
   { id: "locationName", label: "場所", display: true, sortable: true, align: "center", widthPercent: 10 },
   { id: "title", label: "タイトル", display: true, sortable: true, align: "left", widthPercent: 16 },
@@ -73,6 +76,18 @@ const createCell = (
     overflowWrap: "anywhere", // 推奨（モダン）
     wordBreak: "break-word",  // 保険
   }
+});
+
+const createRenderableCell = (
+  columnId: string,
+  rowId: number,
+  cell: React.ReactNode,
+  value: string | number | boolean | undefined
+) => ({
+  id: `${columnId}-${rowId}`,
+  columnId,
+  cell,
+  value: value ?? "",
 });
 
 const toLinkHref = (url: string): string => {
@@ -115,6 +130,67 @@ const createUrlCell = (rowId: number, url: string | null | undefined) => {
     value: value ?? "",
   };
 };
+
+const createImagePreview = (value: string, label: string, alt: string) => {
+  const trimmed = value.trim();
+
+  return trimmed ? (
+    <img
+      key={label}
+      src={toLinkHref(trimmed)}
+      alt={alt}
+      style={{
+        width: 100,
+        height: 100,
+        objectFit: "cover",
+        border: `1px solid ${colors.commonBorderGray}`,
+        borderRadius: "4px",
+        backgroundColor: colors.commonFontColorWhite,
+      }}
+    />
+  ) : (
+    <Box
+      key={label}
+      component="span"
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 100,
+        height: 100,
+        border: `1px solid ${colors.commonBorderGray}`,
+        borderRadius: "4px",
+        color: colors.grayDark,
+        fontSize: "0.75rem",
+        backgroundColor: colors.commonFontColorWhite,
+      }}
+    >
+      -
+    </Box>
+  );
+};
+
+const createImageCell = (item: MediaItem) =>
+  createRenderableCell(
+    "imageUrls",
+    item.id,
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "nowrap",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        minWidth: 0,
+        maxWidth: "100%",
+        gap: 0.75,
+      }}
+    >
+      {createImagePreview(item.locationImageUrl1 ?? "", "location_image_url1", `${item.title ?? "media"} image 1`)}
+      {createImagePreview(item.locationImageUrl2 ?? "", "location_image_url2", `${item.title ?? "media"} image 2`)}
+    </Box>,
+    `${item.locationImageUrl1 ?? ""}|${item.locationImageUrl2 ?? ""}`
+  );
 
 const getMediaSortValue = (item: MediaItem, columnId: string): string | number => {
   const value = item[columnId as keyof MediaItem];
@@ -206,6 +282,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
         rowSx: onItemClick ? { cursor: "pointer" } : undefined,
         cells: [
           createCell("id", item.id, item.id),
+          createImageCell(item),
           createCell("title", item.id, item.title ?? undefined),
           createCell("description", item.id, item.description ?? undefined),
           createUrlCell(item.id, item.url),

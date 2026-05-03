@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS master_locations (
   location_outinside TEXT,
   location_division TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  image_url1 TEXT,
+  image_url2 TEXT
 );
 
 INSERT OR IGNORE INTO master_locations (
@@ -28,3 +30,5 @@ VALUES
   (12, 'ラウンドワン 高津店', '室内', 'ボーリング'),
   (13, 'てくのかわさき', '室内', 'ボドゲ'),
   (14, 'ロッツ横浜', '室内', 'バスケ');
+
+ALTER TABLE master_locations ADD COLUMN image_url1 TEXT; ALTER TABLE master_locations ADD COLUMN image_url2 TEXT;

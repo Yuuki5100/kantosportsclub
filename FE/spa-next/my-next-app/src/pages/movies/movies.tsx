@@ -16,6 +16,8 @@ const MoviesPage: React.FC = () => {
           description: movie.description ?? "",
           url: movie.url ?? "",
           locationName: movie.locationName ?? "",
+          locationImageUrl1: movie.locationImageUrl1 ?? "",
+          locationImageUrl2: movie.locationImageUrl2 ?? "",
           createdAt: movie.createdAt ?? "",
           updatedAt: movie.updatedAt ?? "",
         },
