@@ -1,7 +1,7 @@
+// routes/auth.ts
 import { Hono } from 'hono';
-import type { Context } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
-import { AuthService } from './authService';
+import * as AuthService from '../service/authService';
 
 type Env = {
   Bindings: {
@@ -15,22 +15,12 @@ type Env = {
 const auth = new Hono<Env>();
 
 const refreshCookieName = 'refresh_token';
+const refreshTokenMaxAge = 60 * 60 * 24 * 30;
 
-function getAuthService(c: Context<Env>) {
-  return new AuthService({
-    db: c.env.DB,
-    authType: c.env.AUTH_TYPE ?? 'password',
-    jwtSecret: c.env.JWT_SECRET,
-  });
-}
-
-function isProductionCookie(c: Context<Env>) {
+function isProductionCookie(c: { env: Env['Bindings'] }) {
   return c.env.COOKIE_SECURE === 'true';
 }
 
-/**
- * POST /api/auth/login
- */
 auth.post('/login', async (c) => {
   const body = await c.req.json().catch(() => null);
 
@@ -39,42 +29,40 @@ auth.post('/login', async (c) => {
 
   if (typeof username !== 'string' || typeof password !== 'string') {
     return c.json(
-      {
-        success: false,
-        message: 'username and password are required',
-      },
+      { success: false, message: 'username and password are required' },
       400,
     );
   }
 
-  const service = getAuthService(c);
-
-  const result = await service.login({
+  const result = await AuthService.login({
     username,
     password,
     userAgent: c.req.header('User-Agent') ?? null,
     ipAddress: c.req.header('CF-Connecting-IP') ?? null,
   });
 
+  if (!result) {
+    return c.json(
+      { success: false, message: 'login failed' },
+      401,
+    );
+  }
+
   setCookie(c, refreshCookieName, result.refreshToken, {
     httpOnly: true,
     secure: isProductionCookie(c),
     sameSite: 'Lax',
     path: '/api/auth',
-    maxAge: result.refreshTokenExpiresIn,
+    maxAge: refreshTokenMaxAge,
   });
 
   return c.json({
     success: true,
     accessToken: result.accessToken,
     user: result.user,
-    permissions: result.permissions,
   });
 });
 
-/**
- * POST /api/auth/refresh
- */
 auth.post('/refresh', async (c) => {
   const refreshToken =
     getCookie(c, refreshCookieName) ??
@@ -82,106 +70,95 @@ auth.post('/refresh', async (c) => {
 
   if (!refreshToken) {
     return c.json(
-      {
-        success: false,
-        message: 'refresh token is required',
-      },
+      { success: false, message: 'refresh token is required' },
       401,
     );
   }
 
-  const service = getAuthService(c);
-  const result = await service.refresh(refreshToken);
+  const result = await AuthService.refresh(refreshToken);
+
+  if (!result) {
+    return c.json(
+      { success: false, message: 'refresh failed' },
+      401,
+    );
+  }
+
+  setCookie(c, refreshCookieName, result.refreshToken, {
+    httpOnly: true,
+    secure: isProductionCookie(c),
+    sameSite: 'Lax',
+    path: '/api/auth',
+    maxAge: refreshTokenMaxAge,
+  });
 
   return c.json({
     success: true,
     accessToken: result.accessToken,
     user: result.user,
-    permissions: result.permissions,
   });
 });
 
-/**
- * POST /api/auth/logout
- */
 auth.post('/logout', async (c) => {
   const refreshToken = getCookie(c, refreshCookieName);
 
   if (refreshToken) {
-    const service = getAuthService(c);
-    await service.logout(refreshToken);
+    await AuthService.logout(refreshToken);
   }
 
   deleteCookie(c, refreshCookieName, {
     path: '/api/auth',
   });
 
-  return c.json({
-    success: true,
-  });
+  return c.json({ success: true });
 });
 
-/**
- * GET /api/auth/status
- */
 auth.get('/status', async (c) => {
   const authorization = c.req.header('Authorization');
   const accessToken = authorization?.replace(/^Bearer\s+/i, '');
 
-  if (!accessToken) {
-    return c.json({
-      authenticated: false,
-      user: null,
-      permissions: [],
-    });
-  }
-
-  const service = getAuthService(c);
-  const result = await service.status(accessToken);
-
-  return c.json({
-    authenticated: result.authenticated,
-    user: result.user,
-    permissions: result.permissions,
-  });
-});
-
-/**
- * GET /api/auth/external-login
- */
-auth.get('/external-login', async (c) => {
-  const service = getAuthService(c);
-  const result = await service.externalLogin();
+  const result = await AuthService.status(accessToken);
 
   return c.json(result);
 });
 
-/**
- * GET /api/auth/callback
- */
-auth.get('/callback', async (c) => {
-  const service = getAuthService(c);
-
-  const result = await service.callback({
-    code: c.req.query('code') ?? null,
-    state: c.req.query('state') ?? null,
-  });
-
-  if (result.refreshToken) {
-    setCookie(c, refreshCookieName, result.refreshToken, {
-      httpOnly: true,
-      secure: isProductionCookie(c),
-      sameSite: 'Lax',
-      path: '/api/auth',
-      maxAge: result.refreshTokenExpiresIn,
-    });
+auth.get('/external-login', async (c) => {
+  try {
+    const result = await AuthService.externalLogin();
+    return c.json(result);
+  } catch {
+    return c.json(
+      { success: false, message: 'external login is not implemented' },
+      501,
+    );
   }
+});
+
+auth.get('/callback', async (c) => {
+  const code = c.req.query('code') ?? '';
+  const state = c.req.query('state') ?? '';
+
+  const result = await AuthService.callback(code, state);
+
+  if (!result) {
+    return c.json(
+      { success: false, message: 'callback failed' },
+      401,
+    );
+  }
+
+  setCookie(c, refreshCookieName, result.refreshToken, {
+    httpOnly: true,
+    secure: isProductionCookie(c),
+    sameSite: 'Lax',
+    path: '/api/auth',
+    maxAge: refreshTokenMaxAge,
+  });
 
   return c.json({
     success: true,
     accessToken: result.accessToken,
     user: result.user,
-    permissions: result.permissions,
   });
 });
 
