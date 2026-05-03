@@ -15,7 +15,7 @@ import {
   verifyAccessToken,
 } from "../function/authToken";
 import {
-  findUserByUsername,
+  findUserByLoginId,
   findUserById,
   findRolePermissions,
   insertRefreshToken,
@@ -33,6 +33,7 @@ type AuthUserRow = {
   username: string;
   passwordHash: string | null;
   displayName: string | null;
+  email: string | null;
   roleId: number | null;
   status?: string | null;
   lockedUntil?: string | null;
@@ -79,6 +80,7 @@ const toAuthUser = (user: AuthUserRow): AuthUser => ({
   userId: user.userId,
   roleId: user.roleId,
   displayName: user.displayName,
+  email: user.email,
 });
 
 const buildSession = async ({
@@ -116,14 +118,14 @@ export const login = async (input: LoginInput): Promise<AuthSession | null> => {
     throw new Error("Unsupported auth mode");
   }
 
-  const username = input.username?.trim();
+  const username = input.username?.trim() || input.userId?.trim();
   const password = input.password ?? "";
 
   if (!username || !password) {
     return null;
   }
 
-  const user = await findUserByUsername(username) as AuthUserRow | null;
+  const user = await findUserByLoginId(username) as AuthUserRow | null;
 
   if (!user) {
     return null;

@@ -18,6 +18,7 @@ export type AuthUser = {
   userId: string;
   roleId: number | null;
   displayName: string | null;
+  email: string | null;
 };
 
 export type UserPermission = {

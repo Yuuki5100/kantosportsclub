@@ -277,3 +277,38 @@ INSERT INTO notify_queue
 VALUES
 (1, 'LOGIN', 1, 0, 0, CURRENT_TIMESTAMP, NULL),
 (2, 'REPORT_CREATED', 1, 0, 0, CURRENT_TIMESTAMP, NULL);
+
+
+-- password = 'pasword' の bcrypt hash に更新
+-- 対象: admin / user / viewer
+
+UPDATE users
+SET password = char(36) || '2b' || char(36) || '12' || char(36) || '/01HtG3h4wRQfrtMBh6K6.l6y53mWX8wjDxkuTt8C0qbDMdEHeVq2'
+WHERE username = 'admin';
+
+UPDATE users
+SET password = char(36) || '2b' || char(36) || '12' || char(36) || '/01HtG3h4wRQfrtMBh6K6.l6y53mWX8wjDxkuTt8C0qbDMdEHeVq2'
+WHERE username = 'user';
+
+UPDATE users
+SET password = char(36) || '2b' || char(36) || '12' || char(36) || '/01HtG3h4wRQfrtMBh6K6.l6y53mWX8wjDxkuTt8C0qbDMdEHeVq2'
+WHERE username = 'viewer';
+
+CREATE TABLE IF NOT EXISTS auth_refresh_token (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  revoked_at TEXT,
+  user_agent TEXT,
+  ip_address TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_refresh_token_user_id
+ON auth_refresh_token (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_auth_refresh_token_expires_at
+ON auth_refresh_token (expires_at);

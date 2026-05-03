@@ -70,14 +70,16 @@ export const login = createAsyncThunk<
     const loginRes = await authService.loginApi({ user_id, password });
     console.log("✅ login: loginApi result", loginRes);
 
-    if (!loginRes.success || !loginRes.data.authenticated) {
+    const loginData = loginRes?.data;
+
+    if (!loginRes?.success || !loginData?.authenticated) {
       return rejectWithValue("ログイン失敗");
     }
 
     // ② ログイン成功後、権限情報を即時取得
     dispatch(checkAuth());
 
-    return loginRes.data;
+    return loginData as LoginData;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "ログイン失敗";
     console.error("❌ login: failed", message);

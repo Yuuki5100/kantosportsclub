@@ -1,4 +1,4 @@
-import type { AuthClaims, AuthSession, AuthUser, TokenOptions } from "../type/auth";
+import type { AuthClaims, AuthSession, AuthUser, TokenOptions } from "../types/auth";
 
 type AuthGlobal = typeof globalThis & {
   AUTH_SECRET?: string;
@@ -78,6 +78,7 @@ export const createAuthUser = (claims: AuthClaims): AuthUser => ({
   userId: claims.sub,
   roleId: claims.roleId,
   displayName: claims.name,
+  email: null,
 });
 
 export const createAuthSession = (

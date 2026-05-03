@@ -16,6 +16,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply kantosportsclub-db --remote"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "hono": "^4.12.8"
   },
   "devDependencies": {

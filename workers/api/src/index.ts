@@ -7,6 +7,7 @@ import { boardgameRoutes } from "./routes/boardgame";
 import { noticeRoutes } from "./routes/notice";
 import { masterLocationRoutes } from "./routes/masterLocation";
 import { mediaRoutes } from "./routes/media";
+import auth from "./routes/auth";
 
 const app = new Hono<{
   Bindings: Bindings;
@@ -33,6 +34,7 @@ app.route("/api", boardgameRoutes);
 app.route("/api", noticeRoutes);
 app.route("/api", mediaRoutes);
 app.route("/api", masterLocationRoutes);
+app.route('/api/auth', auth);
 
 app.notFound((c) =>
   c.json(
