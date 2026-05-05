@@ -201,7 +201,7 @@ const createImagePreview = (value: string, label: string, alt: string) => {
       src={toLinkHref(trimmed)}
       alt={alt}
       style={{
-        width: 100,
+        width: 200,
         height: 100,
         objectFit: "cover",
         border: `1px solid ${colors.commonBorderGray}`,
@@ -217,7 +217,7 @@ const createImagePreview = (value: string, label: string, alt: string) => {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 100,
+        width: 200,
         height: 100,
         border: `1px solid ${colors.commonBorderGray}`,
         borderRadius: "4px",
