@@ -173,11 +173,13 @@ const createUrlCell = (item: BoardgameItem) => {
         onClick={(event) => event.stopPropagation()}
         sx={{
           display: "block",
+          minWidth: 0,
           maxWidth: "100%",
           color: colors.primary,
           textDecoration: "underline",
-          overflowWrap: "anywhere",
-          wordBreak: "break-all",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
           "&:hover": {
             textDecoration: "none",
           },

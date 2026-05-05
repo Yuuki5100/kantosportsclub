@@ -113,12 +113,13 @@ const createUrlCell = (rowId: number, url: string | null | undefined) => {
         onClick={(event) => event.stopPropagation()}
         sx={{
           display: "block",
+          minWidth: 0,
           maxWidth: "100%",
           color: colors.primary,
           textDecoration: "underline",
-          whiteSpace: "normal",
-          overflowWrap: "anywhere",
-          wordBreak: "break-all",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
           "&:hover": {
             textDecoration: "none",
           },
