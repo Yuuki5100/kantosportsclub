@@ -4,7 +4,12 @@ import { getDb, type AppVariables, type Bindings } from '../env';
 import * as AuthService from '../service/authService';
 import { setAuthRepositoryDb } from '../repositories/authRepository';
 import type { UserPermission } from '../types/auth';
-import { readAccessToken, readCookieValue } from '../service/authCookie';
+import {
+  buildAuthCookieOptions,
+  buildClearAuthCookieOptions,
+  readAccessToken,
+  readCookieValue,
+} from '../service/authCookie';
 
 const auth = new Hono<{
   Bindings: Bindings;
@@ -35,10 +40,6 @@ type StatusResponseData = {
     userId: string;
   } | null;
 };
-
-function isProductionCookie(c: { env: Bindings; req: { url: string } }) {
-  return c.env.COOKIE_SECURE === 'true' && new URL(c.req.url).protocol === 'https:';
-}
 
 const splitDisplayName = (
   displayName: string | null | undefined,
@@ -122,18 +123,11 @@ auth.post('/login', async (c) => {
   }
 
   setCookie(c, refreshCookieName, result.refreshToken, {
-    httpOnly: true,
-    secure: isProductionCookie(c),
-    sameSite: 'Lax',
+    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', refreshTokenMaxAge),
     path: '/api/auth',
-    maxAge: refreshTokenMaxAge,
   });
   setCookie(c, accessCookieName, result.accessToken, {
-    httpOnly: true,
-    secure: isProductionCookie(c),
-    sameSite: 'Lax',
-    path: '/',
-    maxAge: accessTokenMaxAge,
+    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', accessTokenMaxAge),
   });
 
   return c.json({
@@ -166,18 +160,11 @@ auth.post('/refresh', async (c) => {
   }
 
   setCookie(c, refreshCookieName, result.refreshToken, {
-    httpOnly: true,
-    secure: isProductionCookie(c),
-    sameSite: 'Lax',
+    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', refreshTokenMaxAge),
     path: '/api/auth',
-    maxAge: refreshTokenMaxAge,
   });
   setCookie(c, accessCookieName, result.accessToken, {
-    httpOnly: true,
-    secure: isProductionCookie(c),
-    sameSite: 'Lax',
-    path: '/',
-    maxAge: accessTokenMaxAge,
+    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', accessTokenMaxAge),
   });
 
   return c.json({
@@ -196,9 +183,10 @@ auth.post('/logout', async (c) => {
   }
 
   deleteCookie(c, accessCookieName, {
-    path: '/',
+    ...buildClearAuthCookieOptions(c.env.COOKIE_SECURE === 'true'),
   });
   deleteCookie(c, refreshCookieName, {
+    ...buildClearAuthCookieOptions(c.env.COOKIE_SECURE === 'true'),
     path: '/api/auth',
   });
 
@@ -262,11 +250,8 @@ auth.get('/callback', async (c) => {
   }
 
   setCookie(c, refreshCookieName, result.refreshToken, {
-    httpOnly: true,
-    secure: isProductionCookie(c),
-    sameSite: 'Lax',
+    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', refreshTokenMaxAge),
     path: '/api/auth',
-    maxAge: refreshTokenMaxAge,
   });
 
   return c.json({

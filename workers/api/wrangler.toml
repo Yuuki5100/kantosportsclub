@@ -10,6 +10,9 @@ R2_PUBLIC_BASE_URL = "https://pub-98d15c06f9fc4194a7766aa3e4313e17.r2.dev/"
 # CORS_ORIGIN = "http://localhost:3000"
 CORS_ORIGIN = "https://kantosportsclub.pages.dev"
 
+[env.local.vars]
+COOKIE_SECURE = true
+
 [[d1_databases]]
 binding = "kantosportsclub_db"
 database_name = "kantosportsclub-db"

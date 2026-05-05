@@ -1,6 +1,22 @@
 const ACCESS_TOKEN_COOKIE = "ACCESS_TOKEN";
 const REFRESH_TOKEN_COOKIE = "REFRESH_TOKEN";
 
+export const buildAuthCookieOptions = (isSecure: boolean, maxAgeSeconds: number) => ({
+  httpOnly: true,
+  secure: isSecure,
+  sameSite: isSecure ? ('None' as const) : ('Lax' as const),
+  path: '/',
+  maxAge: maxAgeSeconds,
+});
+
+export const buildClearAuthCookieOptions = (isSecure: boolean) => ({
+  httpOnly: true,
+  secure: isSecure,
+  sameSite: isSecure ? ('None' as const) : ('Lax' as const),
+  path: '/',
+  maxAge: 0,
+});
+
 const buildCookie = (name: string, value: string, maxAgeSeconds: number): string =>
   `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}`;
 

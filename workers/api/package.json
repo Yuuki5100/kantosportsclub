@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "wrangler dev --local",
+    "dev": "wrangler dev --local --env local",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types worker-configuration.d.ts",
