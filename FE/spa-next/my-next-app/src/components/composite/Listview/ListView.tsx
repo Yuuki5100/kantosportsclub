@@ -220,12 +220,14 @@ const ListView: React.FC<ListViewProps> = (props) => {
 
       <Box sx={{ mb: 2 }} />
 
-      {/* テーブル全体（呼び出し元から渡される） */}
       <TableContainer
         sx={{
+          width: '100%',
+          maxWidth: '100%',
           maxHeight: '400px', // 必要に応じて親から override 可能
           overflowY: 'auto',
           overflowX: 'auto', // 横スクロールを有効化
+          WebkitOverflowScrolling: 'touch',
           border: `1.5px solid ${colors.commonBorderGray}`,
         }}
       >

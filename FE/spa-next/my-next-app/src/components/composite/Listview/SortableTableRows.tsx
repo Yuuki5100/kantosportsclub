@@ -35,6 +35,7 @@ export const SortableTableRows: React.FC<SortableTableRowsProps> = (props) => {
               sx={{
                 width: column.computedWidth,
                 maxWidth: column.computedWidth,
+                fontSize: '14px',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',

@@ -3,10 +3,10 @@ import PeopleIcon from "@mui/icons-material/People";
 import ListIcon from "@mui/icons-material/List";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
-import GroupsIcon from "@mui/icons-material/Settings";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import TimelineIcon from "@mui/icons-material/Timeline";
+import GroupsIcon from "@mui/icons-material/Settings";
 import { ReactNode } from "react";
 import { PageLang } from '@/config/PageLang';
 
@@ -152,6 +152,13 @@ const pageConfig: PageConfigType = [
     requiredPermission: 0,
     icon: <TimelineIcon />,
     breadcrumb: { id: "summary", parentId: "top" },
+  },
+  {
+    name: "チームロスター",
+    resourceKey: "/roster ",
+    requiredPermission: 0,
+    icon: <GroupsIcon />,
+    breadcrumb: { id: "roster", parentId: "top" },
   },
   {
     name: "ボドゲ一覧",

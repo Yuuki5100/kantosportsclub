@@ -82,17 +82,39 @@ export const TableHeaderRow: React.FC<TableHeaderRowProps> = (props) => {
                 cursor: column.sortable ? 'pointer' : 'default',
                 width: column.computedWidth,       // ✅ 幅指定
                 maxWidth: column.computedWidth,    // ✅ 最大幅
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                fontSize: '14px',
+                whiteSpace: 'normal',
+                overflow: 'visible',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
                 borderRight: `1.5px solid ${colors.commonBorderGray}`,
                 borderBottom: `1.5px solid ${colors.commonBorderGray}`,
                 '&:last-child': { borderRight: 'none' },
               }}
             >
               {shouldRenderHeaderContent(column) ? (
-                <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                  {column.label}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: 0,
+                  }}
+                >
+                  <Box
+                    component="span"
+                    sx={{
+                      display: 'block',
+                      minWidth: 0,
+                      whiteSpace: 'normal',
+                      overflowWrap: 'anywhere',
+                      wordBreak: 'break-word',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {column.label}
+                  </Box>
                   {renderSortIcons(column)}
                 </Box>
               ) : null}
