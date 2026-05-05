@@ -224,7 +224,7 @@ const ListView: React.FC<ListViewProps> = (props) => {
         sx={{
           width: '100%',
           maxWidth: '100%',
-          maxHeight: '400px', // 必要に応じて親から override 可能
+          maxHeight: '650px', // 必要に応じて親から override 可能
           overflowY: 'auto',
           overflowX: 'auto', // 横スクロールを有効化
           WebkitOverflowScrolling: 'touch',

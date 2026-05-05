@@ -3,6 +3,7 @@ import { AccordionSummary, Box } from "@mui/material";
 import Font20 from "@/components/base/Font/Font20";
 import Font16 from "@/components/base/Font/Font16";
 import colors from "@/styles/colors";
+import Font14 from "../Font/Font14";
 
 type CommonAccordionSummaryProps = {
   title: string;
@@ -40,7 +41,7 @@ export const CommonAccordionSummary: FC<CommonAccordionSummaryProps> = ({
             gap: 1,
             border: '1px solid' + fontColor,
             borderRadius: '40px',
-            padding: '15px',
+            padding: '10px',
           }}
         >
           <Box
@@ -51,16 +52,16 @@ export const CommonAccordionSummary: FC<CommonAccordionSummaryProps> = ({
               transform: expanded ? "rotate(-180deg)" : "rotate(0deg)",
               transition: "transform 0.25s ease",
               userSelect: "none",
-              fontSize: "20px",
+              fontSize: '14px',
             }}
             onClick={toggleExpanded}
           >
-            <Font20 sx={{ color: fontColor }}>
+            <Font14 sx={{ color: fontColor }}>
               ▼
-            </Font20>
+            </Font14>
           </Box>
 
-          <Font16
+          <Font14
             sx={{
               textAlign: 'center',
               width: '100%',
@@ -69,7 +70,7 @@ export const CommonAccordionSummary: FC<CommonAccordionSummaryProps> = ({
               marginRight: '35px',
               marginLeft: '35px',
             }}>{title}
-          </Font16>
+          </Font14>
 
           <Box
             component="span"
@@ -79,13 +80,13 @@ export const CommonAccordionSummary: FC<CommonAccordionSummaryProps> = ({
               transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform 0.25s ease",
               userSelect: "none",
-              fontSize: "20px",
+              fontSize: "14px",
             }}
             onClick={toggleExpanded}
           >
-            <Font20 sx={{ color: fontColor }}>
+            <Font14 sx={{ color: fontColor }}>
               ▼
-            </Font20>
+            </Font14>
           </Box>
         </Box>
 
