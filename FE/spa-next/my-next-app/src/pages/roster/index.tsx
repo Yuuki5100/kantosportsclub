@@ -21,26 +21,26 @@ type UniformItem = {
 const uniformData: UniformItem[] = [
   { name: 'ゲスト用①', uniformName: 'GUEST', number: 0, size: 'L', types: [] },
   { name: 'ゲスト用②', uniformName: 'GUEST', number: 1, size: 'L', types: [] },
-  { name: 'ゆう', uniformName: 'YU', number: 8, size: 'XO', types: ['C'] },
-  { name: '総理', uniformName: 'KOIZUMI', number: 11, size: 'L', types: ['G'] },
-  { name: '織田くん', uniformName: 'O.D.', number: 13, size: 'L', types: ['G'] },
-  { name: '和田くん', uniformName: 'WS', number: 22, size: 'L', types: ['F', 'G'] },
-  { name: 'かった', uniformName: 'Y.GOTO', number: 33, size: 'L', types: ['F', 'C'] },
-  { name: '大澤くん', uniformName: 'OSAWA', number: 34, size: 'O', types: ['C'] },
+  { name: '成田', uniformName: 'YU', number: 8, size: 'XO', types: ['C'] },
+  { name: '小泉', uniformName: 'KOIZUMI', number: 11, size: 'L', types: ['G'] },
+  { name: '織田', uniformName: 'O.D.', number: 13, size: 'L', types: ['G'] },
+  { name: '和田', uniformName: 'WS', number: 22, size: 'L', types: ['F', 'G'] },
+  { name: '後藤', uniformName: 'Y.GOTO', number: 33, size: 'L', types: ['F', 'C'] },
+  { name: '大澤', uniformName: 'OSAWA', number: 34, size: 'O', types: ['C'] },
   { name: '圭太', uniformName: 'KEITA', number: 44, size: 'L', types: ['C'] },
   { name: '太一', uniformName: 'TAICHI', number: 62, size: 'L', types: ['F', 'G'] },
-  { name: '高村くん', uniformName: 'T.K.', number: 66, size: 'L', types: ['C'] },
-  { name: 'たかふみ', uniformName: 'TAKAFUMI', number: 77, size: 'L', types: ['F'] },
-  { name: 'あべちゃん', uniformName: 'ABE', number: 84, size: 'L', types: ['G'] },
-  { name: 'せいや', uniformName: 'KAWAHARA', number: 99, size: 'O', types: ['F'] },
+  { name: '高村', uniformName: 'T.K.', number: 66, size: 'L', types: ['C'] },
+  { name: '孝文', uniformName: 'TAKAFUMI', number: 77, size: 'L', types: ['F'] },
+  { name: '阿部', uniformName: 'ABE', number: 84, size: 'L', types: ['G'] },
+  { name: '川原', uniformName: 'KAWAHARA', number: 99, size: 'O', types: ['F'] },
 ];
 
 const columns: ColumnDefinition[] = [
-  { id: 'name', label: '名前', display: true, sortable: true, align: 'center', widthPercent: 24 },
-  { id: 'uniformName', label: 'ユニフォーム名', display: true, sortable: true, align: 'center', widthPercent: 28 },
-  { id: 'number', label: '背番号', display: true, sortable: true, align: 'center', widthPercent: 14 },
-  { id: 'size', label: 'サイズ', display: true, sortable: true, align: 'center', widthPercent: 14 },
-  { id: 'type', label: 'タイプ', display: true, sortable: true, align: 'center', widthPercent: 20 },
+  { id: 'name', label: 'name', display: true, sortable: true, align: 'center', widthPercent: 24 },
+  { id: 'uniformName', label: 'uniform', display: true, sortable: true, align: 'center', widthPercent: 28 },
+  { id: 'number', label: 'number', display: true, sortable: true, align: 'center', widthPercent: 14 },
+  { id: 'size', label: 'size', display: true, sortable: true, align: 'center', widthPercent: 14 },
+  { id: 'type', label: 'type', display: true, sortable: true, align: 'center', widthPercent: 20 },
 ];
 
 const getTypeColor = (type: UniformType): string => {

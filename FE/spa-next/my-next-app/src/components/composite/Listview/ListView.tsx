@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { Box, Table, TableContainer } from '@/components/base';
 import type { SelectChangeEvent, SortDirection, SxProps, Theme } from '@/components/base';
+import { useMediaQuery, useTheme } from '@mui/material';
 import ListViewPagination from './ListViewPagination';
 import { TableHeaderRow } from '@/components/composite/Listview/TableHeaderRow';
 import { SortableTableRows } from '@/components/composite/Listview/SortableTableRows';
@@ -117,6 +118,8 @@ export type SearchDefinition = {
  * @return {*}
  */
 const ListView: React.FC<ListViewProps> = (props) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(50);
 
@@ -224,8 +227,8 @@ const ListView: React.FC<ListViewProps> = (props) => {
         sx={{
           width: '100%',
           maxWidth: '100%',
-          maxHeight: '650px', // 必要に応じて親から override 可能
-          overflowY: 'auto',
+          maxHeight: isMobile ? 'none' : '650px', // 必要に応じて親から override 可能
+          overflowY: isMobile ? 'visible' : 'auto',
           overflowX: 'auto', // 横スクロールを有効化
           WebkitOverflowScrolling: 'touch',
           border: `1.5px solid ${colors.commonBorderGray}`,
