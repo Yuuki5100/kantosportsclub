@@ -112,6 +112,7 @@ const createUrlCell = (rowId: number, url: string | null | undefined) => {
         title={value}
         onClick={(event) => event.stopPropagation()}
         sx={{
+          fontSize: "14px",
           display: "block",
           minWidth: 0,
           maxWidth: "100%",

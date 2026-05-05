@@ -32,6 +32,19 @@ const isInteractiveElement = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement &&
   Boolean(target.closest('button, a, input, textarea, select, [role="button"]'));
 
+const mobileListCardSx = {
+  width: '100%',
+  minWidth: 0,
+  maxWidth: '100%',
+  boxSizing: 'border-box',
+  p: 0,
+  borderTop: `2px solid ${colors.commonBorderGray}`,
+  borderBottom: `2px solid ${colors.commonBorderGray}`,
+  borderLeft: 'none',
+  borderRight: 'none',
+  borderRadius: 0,
+} as const;
+
 const MobileListRows: React.FC<MobileListRowsProps> = ({
   columns,
   rowData,
@@ -143,16 +156,17 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
         <Paper
           variant="outlined"
           sx={{
-            width: '100%',
-            p: 2,
+            ...mobileListCardSx,
+            width: 'calc(100% + 14px)',
+            mx: -1,
+            borderBottom: `2px solid ${colors.commonBorderGray}`,
             color: colors.grayDark,
-            borderColor: colors.commonBorderGray,
           }}
         >
           データなし
         </Paper>
       ) : (
-        <Box sx={{ width: '100%', gap: 1.5 }}>
+        <Box sx={{ width: 'calc(100% + 14px)', mx: -1, gap: 0 }}>
           {rowData.map((row, rowIndex) => (
             <Paper
               key={row.cells.map((cell) => cell.id).join('-') || `mobile-row-${rowIndex}`}
@@ -171,18 +185,15 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
               }}
               sx={[
                 {
-                  width: '100%',
-                  minWidth: 0,
-                  maxWidth: '100%',
-                  boxSizing: 'border-box',
-                  p: 1.5,
-                  borderColor: colors.commonBorderGray,
+                  ...mobileListCardSx,
+                  borderBottom:
+                    rowIndex === rowData.length - 1 ? `1px solid ${colors.commonBorderGray}` : 'none',
                   cursor: onRowClick ? 'pointer' : 'default',
                 },
                 ...(Array.isArray(row.rowSx) ? row.rowSx : row.rowSx ? [row.rowSx] : []),
               ]}
             >
-              {visibleColumns.map((column, columnIndex) => {
+              {visibleColumns.map((column) => {
                 const cell = findCell(row.cells, column.id);
                 const showLabel = column.headerCellDisplay !== false;
 
@@ -195,7 +206,6 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
                       gap: 1,
                       width: '100%',
                       py: 1,
-                      borderTop: columnIndex === 0 ? 'none' : `1px solid ${colors.commonBorderGray}`,
                     }}
                   >
                     {showLabel ? (
@@ -214,6 +224,7 @@ const MobileListRows: React.FC<MobileListRowsProps> = ({
                     <Box
                       sx={{
                         color: colors.commonFontColorBlack,
+                        fontSize: '14px',
                         minWidth: 0,
                         maxWidth: '100%',
                         whiteSpace: 'normal',
