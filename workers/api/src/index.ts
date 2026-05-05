@@ -43,8 +43,11 @@ app.use(
     credentials: true
   })
 );
-// app.use("/api/*", authRequired);
-// app.use("/api/*", permissionRequired);
+
+// 認証・認可・権限==========================
+app.use("/api/*", authRequired);
+app.use("/api/*", permissionRequired);
+// =========================================
 
 app.get("/", (c) => c.redirect("/api/health"));
 app.route("/api/health", healthRoutes);

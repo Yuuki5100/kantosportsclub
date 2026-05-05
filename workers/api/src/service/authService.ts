@@ -22,8 +22,13 @@ import {
   findRefreshTokenByHash,
   revokeRefreshToken,
   updateLastLoginAt,
+  updateUserPasswordHash,
   verifyPassword,
 } from "../repositories/authRepository";
+import {
+  hashPassword,
+  isPasswordHashUpgradeRequired,
+} from "../auth/passwordHash";
 
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 60 * 15;
 const REFRESH_TOKEN_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 30;
@@ -143,6 +148,10 @@ export const login = async (input: LoginInput): Promise<AuthSession | null> => {
 
   if (!passwordOk) {
     return null;
+  }
+
+  if (isPasswordHashUpgradeRequired(user.passwordHash)) {
+    await updateUserPasswordHash(user.userId, await hashPassword(password));
   }
 
   await updateLastLoginAt(user.userId);

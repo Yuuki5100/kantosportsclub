@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import { verifyPasswordHash } from '../auth/passwordHash';
 import type { UserPermission } from '../types/auth';
 
 /**
@@ -316,17 +316,25 @@ export const updateLastLoginAt = async (
   void userId;
 };
 
+export const updateUserPasswordHash = async (
+  userId: string,
+  passwordHash: string,
+): Promise<void> => {
+  await getDb()
+    .prepare(
+      `
+      UPDATE users
+      SET password = ?
+      WHERE CAST(id AS TEXT) = ?
+      `,
+    )
+    .bind(passwordHash, userId)
+    .run();
+};
+
 export const verifyPassword = async (
   plainPassword: string,
   passwordHash: string | null,
 ): Promise<boolean> => {
-  if (!passwordHash) {
-    return false;
-  }
-
-  try {
-    return await bcrypt.compare(plainPassword, passwordHash);
-  } catch {
-    return false;
-  }
+  return verifyPasswordHash(plainPassword, passwordHash);
 };
