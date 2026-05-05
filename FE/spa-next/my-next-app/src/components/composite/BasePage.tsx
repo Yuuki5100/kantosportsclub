@@ -14,7 +14,6 @@ import { Breadcrumb } from '@/components/composite/Breadcrumb';
 import { getPageConfig } from '@/config/PageConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { pageLang } from '@/config/PageLang';
-import { SnackbarListener } from '@/components/composite/SnackbarListener';
 import { useTheme, useMediaQuery } from '@mui/material';
 // import { useGlobalWebSocket } from '@/hooks/useGlobalWebSocket';
 
@@ -120,7 +119,6 @@ const BasePage = ({ children }: BasePageProps) => {
       </Box>
 
       <ErrorNotification />
-      <SnackbarListener />
     </Box>
   );
 };

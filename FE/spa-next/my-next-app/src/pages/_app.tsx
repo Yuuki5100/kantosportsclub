@@ -29,7 +29,6 @@ import { resolvePageTitle } from '@/utils/pageTitle';
 
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from '@/theme/theme'; // ★ 追加
-import { WebSocketProvider } from '@/components/providers/WebSocketProvider';
 import { SessionTimeoutWrapper } from '@/utils/SessionTimeoutWrapper';
 import { reportWebVitalToOtel } from '@/utils/otelBrowser';
 
@@ -235,12 +234,10 @@ function MyApp({ Component, pageProps }: AppProps) {
     <ReduxProvider store={store}>
       <QueryClientProvider client={queryClient}>
         <SessionTimeoutWrapper>
-          <WebSocketProvider>
-            <AppContent Component={Component} pageProps={pageProps} />
-          </WebSocketProvider>
+          <AppContent Component={Component} pageProps={pageProps} />
         </SessionTimeoutWrapper>
-      </QueryClientProvider >
-    </ReduxProvider >
+      </QueryClientProvider>
+    </ReduxProvider>
   );
 }
 
