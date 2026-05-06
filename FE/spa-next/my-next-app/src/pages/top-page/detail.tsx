@@ -284,28 +284,26 @@ const NoticeDetailPage: React.FC = () => {
   const fields: DetailField[] = useMemo(
     () => [
       { label: "タイトル", value: notice.noticeTitle ?? "" },
+      { label: "場所", value: notice.locationName ?? "" },
       { label: "開始時刻", value: notice.startHour ?? "" },
       { label: "終了時刻", value: notice.endHour ?? "" },
       { label: "最寄り駅", value: notice.station ?? "" },
-      { label: "場所", value: notice.locationName ?? "" },
-      { label: "金額", value: notice.money === null || notice.money === undefined ? "" : String(notice.money) },
+      {
+        label: "金額",
+        value: notice.money === null || notice.money === undefined ? "" : String(notice.money),
+      },
       { label: "人数", value: notice.people === null || notice.people === undefined ? "" : String(notice.people) },
       { label: "参加者", value: notice.peopleName ?? "" },
       { label: "備考", value: notice.remarks ?? "" },
       { label: "公開日時", value: notice.publicAt ?? "" },
       { label: "終了日時", value: notice.closedAt ?? "" },
-
-      {
-        label: "金額",
-        value: notice.money === null || notice.money === undefined ? "" : String(notice.money),
-      },
     ],
     [notice]
   );
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 32px, 1280px)", maxWidth: "100%", mx: "auto", py: 2, gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 24px, 1200px)", maxWidth: "100%", mx: "auto", py: 2, gap: 2 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 2 }}>
           <Font20>お知らせ詳細</Font20>
           <Font14 sx={{ color: colors.grayDark }}>
@@ -378,7 +376,7 @@ const NoticeDetailPage: React.FC = () => {
                     value={
                       {
                         タイトル: editState.title,
-                        駅: editState.station,
+                        最寄り駅: editState.station,
                         場所: editState.locationName,
                         人数: editState.people,
                         参加者: editState.peopleName,
@@ -393,7 +391,7 @@ const NoticeDetailPage: React.FC = () => {
                     onChange={handleChange(
                       {
                         タイトル: "title",
-                        駅: "station",
+                        最寄り駅: "station",
                         場所: "locationName",
                         人数: "people",
                         参加者: "peopleName",
