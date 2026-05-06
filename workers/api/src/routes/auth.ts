@@ -128,6 +128,7 @@ auth.post('/login', async (c) => {
   });
   setCookie(c, accessCookieName, result.accessToken, {
     ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', accessTokenMaxAge),
+    path: '/',
   });
 
   return c.json({
@@ -165,6 +166,7 @@ auth.post('/refresh', async (c) => {
   });
   setCookie(c, accessCookieName, result.accessToken, {
     ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', accessTokenMaxAge),
+    path: '/',
   });
 
   return c.json({
@@ -252,6 +254,10 @@ auth.get('/callback', async (c) => {
   setCookie(c, refreshCookieName, result.refreshToken, {
     ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', refreshTokenMaxAge),
     path: '/api/auth',
+  });
+  setCookie(c, accessCookieName, result.accessToken, {
+    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', accessTokenMaxAge),
+    path: '/',
   });
 
   return c.json({
