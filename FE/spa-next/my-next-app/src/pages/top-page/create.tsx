@@ -140,15 +140,15 @@ const NoticeCreatePage: React.FC = () => {
 
   const fields: Array<{ label: string; field: keyof NoticeCreateState; multiline?: boolean }> = [
     { label: "タイトル", field: "title" },
-    { label: "駅", field: "station" },
+    { label: "開始時刻", field: "startHour" },
+    { label: "終了時刻", field: "endHour" },
+    { label: "最寄り駅", field: "station" },
+    { label: "金額", field: "money" },
     { label: "人数", field: "people" },
     { label: "参加者", field: "peopleName" },
     { label: "備考", field: "remarks", multiline: true },
     { label: "公開日時", field: "publicAt" },
     { label: "終了日時", field: "closedAt" },
-    { label: "開始時刻", field: "startHour" },
-    { label: "終了時刻", field: "endHour" },
-    { label: "金額", field: "money" },
   ];
 
   return (

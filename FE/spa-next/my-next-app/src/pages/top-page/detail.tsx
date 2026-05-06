@@ -283,17 +283,18 @@ const NoticeDetailPage: React.FC = () => {
 
   const fields: DetailField[] = useMemo(
     () => [
-      { label: "ID", value: String(notice.noticeId || "") },
       { label: "タイトル", value: notice.noticeTitle ?? "" },
-      { label: "駅", value: notice.station ?? "" },
+      { label: "開始時刻", value: notice.startHour ?? "" },
+      { label: "終了時刻", value: notice.endHour ?? "" },
+      { label: "最寄り駅", value: notice.station ?? "" },
       { label: "場所", value: notice.locationName ?? "" },
+      { label: "金額", value: notice.money === null || notice.money === undefined ? "" : String(notice.money) },
       { label: "人数", value: notice.people === null || notice.people === undefined ? "" : String(notice.people) },
       { label: "参加者", value: notice.peopleName ?? "" },
       { label: "備考", value: notice.remarks ?? "" },
       { label: "公開日時", value: notice.publicAt ?? "" },
       { label: "終了日時", value: notice.closedAt ?? "" },
-      { label: "開始時刻", value: notice.startHour ?? "" },
-      { label: "終了時刻", value: notice.endHour ?? "" },
+
       {
         label: "金額",
         value: notice.money === null || notice.money === undefined ? "" : String(notice.money),
