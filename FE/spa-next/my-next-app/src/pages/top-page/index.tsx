@@ -190,7 +190,7 @@ const TopPageSimple: React.FC = () => {
               {isLoading ? "読み込み中です。" : `${notices.length} 件`}
             </Font14>
           </Box>
-          <ButtonAction
+          {/* <ButtonAction
             label="お知らせ追加"
             size="medium"
             onClick={() => void router.push("/top-page/create")}
@@ -204,7 +204,7 @@ const TopPageSimple: React.FC = () => {
                 backgroundColor: "commonTableHeader",
               },
             }}
-          />
+          /> */}
         </FlexBox>
 
         <ControllableListView
