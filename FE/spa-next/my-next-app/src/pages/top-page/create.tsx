@@ -144,10 +144,11 @@ const NoticeCreatePage: React.FC = () => {
 
   const fields: Array<{ label: string; field: keyof NoticeCreateState; multiline?: boolean }> = [
     { label: "タイトル", field: "title" },
-    { label: "最寄り駅", field: "station" },
+    { label: "場所", field: "locationName" },
     { label: "開催日", field: "dateandtime" },
     { label: "開始時刻", field: "startHour" },
     { label: "終了時刻", field: "endHour" },
+    { label: "最寄り駅", field: "station" },
     { label: "金額", field: "money" },
     { label: "人数", field: "people" },
     { label: "参加者", field: "peopleName" },
@@ -174,46 +175,6 @@ const NoticeCreatePage: React.FC = () => {
             overflow: "hidden",
           }}
         >
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
-              width: "100%",
-              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
-            }}
-          >
-            <Box
-              sx={{
-                width: "100%",
-                p: 1.5,
-                bgcolor: colors.commonTableHeader,
-                color: colors.commonFontColorBlack,
-                fontWeight: 600,
-              }}
-            >
-              場所
-            </Box>
-            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <AutoComplete
-                name="noticeCreateLocation"
-                id="noticeCreateLocation"
-                options={locationOptions}
-                defaultValue={selectedLocationId || form.locationName || undefined}
-                disabled={isMasterLocationsLoading || isMasterLocationsError}
-                helperText={
-                  isMasterLocationsError
-                    ? "場所の取得に失敗しました。"
-                    : isMasterLocationsLoading
-                      ? "場所を読み込み中です。"
-                      : undefined
-                }
-                error={isMasterLocationsError}
-                onChange={handleLocationChange}
-                customStyle={{ mt: 0 }}
-              />
-            </Box>
-          </Box>
-
           {fields.map((field, index) => (
             <Box
               key={field.label}
@@ -236,15 +197,35 @@ const NoticeCreatePage: React.FC = () => {
                 {field.label}
               </Box>
               <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-                <TextField
-                  name={`noticeCreate${field.field}`}
-                  value={form[field.field]}
-                  size="small"
-                  fullWidth
-                  multiline={field.multiline}
-                  minRows={field.multiline ? 3 : undefined}
-                  onChange={handleChange(field.field)}
-                />
+                {field.field === "locationName" ? (
+                  <AutoComplete
+                    name="noticeCreateLocation"
+                    id="noticeCreateLocation"
+                    options={locationOptions}
+                    defaultValue={selectedLocationId || form.locationName || undefined}
+                    disabled={isMasterLocationsLoading || isMasterLocationsError}
+                    helperText={
+                      isMasterLocationsError
+                        ? "場所の取得に失敗しました。"
+                        : isMasterLocationsLoading
+                          ? "場所を読み込み中です。"
+                          : undefined
+                    }
+                    error={isMasterLocationsError}
+                    onChange={handleLocationChange}
+                    customStyle={{ mt: 0 }}
+                  />
+                ) : (
+                  <TextField
+                    name={`noticeCreate${field.field}`}
+                    value={form[field.field]}
+                    size="small"
+                    fullWidth
+                    multiline={field.multiline}
+                    minRows={field.multiline ? 3 : undefined}
+                    onChange={handleChange(field.field)}
+                  />
+                )}
               </Box>
             </Box>
           ))}
