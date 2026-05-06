@@ -17,6 +17,11 @@ type AdminAction = {
 
 const adminActions: AdminAction[] = [
   {
+    label: "お知らせ追加",
+    description: "お知らせを追加するための入口です。",
+    icon: <ExtensionIcon />,
+  },
+  {
     label: "写真追加",
     description: "写真データを追加するための入口です。",
     icon: <AddPhotoAlternateIcon />,
@@ -84,6 +89,9 @@ const AdminMenuPage: React.FC = () => {
                 variant="contained"
                 startIcon={action.icon}
                 onClick={() => {
+                  if (action.label === "お知らせ追加") {
+                    router.push("/top-page/create");
+                  }
                   if (action.label === "写真追加") {
                     router.push("/pictures/create");
                   }

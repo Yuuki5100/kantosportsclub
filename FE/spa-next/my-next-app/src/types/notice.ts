@@ -38,6 +38,17 @@ export interface NoticeListResponse {
 export interface NoticeDetailResponse {
   noticeId: number;
   noticeTitle: string;
+  station?: string;
+  locationId?: number | null;
+  locationName?: string;
+  people?: number | null;
+  peopleName?: string;
+  remarks?: string;
+  publicAt?: string;
+  closedAt?: string;
+  startHour?: string;
+  endHour?: string;
+  money?: string | number | null;
   startDate: string;
   endDate: string;
   contents: string;
@@ -58,6 +69,20 @@ export interface NoticeUpdateRequest {
   endDate: string;
   contents?: string;
   docIds?: string[];
+}
+
+export interface NoticeDetailEditRequest {
+  title: string;
+  station: string | null;
+  locationId: number | null;
+  people: number | null;
+  peopleName: string | null;
+  remarks: string | null;
+  publicAt: string | null;
+  closedAt: string | null;
+  startHour: string | null;
+  endHour: string | null;
+  money: string | number | null;
 }
 
 /**

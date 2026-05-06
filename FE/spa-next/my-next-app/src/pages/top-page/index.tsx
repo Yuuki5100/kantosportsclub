@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import apiClient from "@/api/apiClient";
-import { Box, Font14, Font20 } from "@/components/base";
+import ButtonAction from "@/components/base/Button/ButtonAction";
+import { Box, Font14, Font20, FlexBox } from "@/components/base";
 import PageContainer from "@base/Layout/PageContainer";
 import { ControllableListView } from "@/components/composite";
 import type { TableState } from "@/components/composite/Listview/ControllableListView";
@@ -61,6 +63,7 @@ const sortNotices = (items: CurrentNoticeItem[], sortParams: TableState["sortPar
 };
 
 const TopPageSimple: React.FC = () => {
+  const router = useRouter();
   const { showSnackbar } = useSnackbar();
   const [notices, setNotices] = useState<CurrentNoticeItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,9 +98,22 @@ const TopPageSimple: React.FC = () => {
     [notices, tableState.sortParams]
   );
 
+  const handleRowClick = useCallback(
+    (notice: CurrentNoticeItem) => {
+      void router.push({
+        pathname: "/top-page/detail",
+        query: {
+          id: String(notice.id),
+        },
+      });
+    },
+    [router]
+  );
+
   const rowData: RowDefinition[] = useMemo(
     () =>
       sortedNotices.map((notice) => ({
+        rowSx: { cursor: "pointer" },
         cells: [
           {
             id: `title-${notice.id}`,
@@ -164,15 +180,32 @@ const TopPageSimple: React.FC = () => {
   return (
     <PageContainer>
       <Box sx={{ width: "min(100vw - 32px, 1152px)", maxWidth: "95%", py: 2 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 2 }}>
-          <Font20>お知らせ一覧</Font20>
-          <Font14 sx={{ color: colors.grayDark }}>
-            公開中のお知らせを表示しています。
-          </Font14>
-          <Font14 sx={{ color: colors.grayDark }}>
-            {isLoading ? "読み込み中です。" : `${notices.length} 件`}
-          </Font14>
-        </Box>
+        <FlexBox justifyContent="space-between" width="100%" sx={{ mb: 2, gap: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Font20>お知らせ一覧</Font20>
+            <Font14 sx={{ color: colors.grayDark }}>
+              公開中のお知らせを表示しています。
+            </Font14>
+            <Font14 sx={{ color: colors.grayDark }}>
+              {isLoading ? "読み込み中です。" : `${notices.length} 件`}
+            </Font14>
+          </Box>
+          <ButtonAction
+            label="お知らせ追加"
+            size="medium"
+            onClick={() => void router.push("/top-page/create")}
+            width={140}
+            sx={{
+              backgroundColor: "commonTableHeader",
+              color: "#ffffff",
+              borderRadius: 2,
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              "&:hover": {
+                backgroundColor: "commonTableHeader",
+              },
+            }}
+          />
+        </FlexBox>
 
         <ControllableListView
           page={tableState.page}
@@ -185,6 +218,12 @@ const TopPageSimple: React.FC = () => {
           columns={columns}
           searchOptions={searchOptions}
           showSearchOptions={false}
+          onRowClick={(_, rowIndex) => {
+            const notice = sortedNotices[rowIndex];
+            if (notice) {
+              handleRowClick(notice);
+            }
+          }}
           topPaginationHidden
           bottomPaginationHidden
           sx={{

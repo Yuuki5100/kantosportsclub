@@ -1,0 +1,425 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { TextField } from "@mui/material";
+import apiClient from "@/api/apiClient";
+import { apiService } from "@/api/apiService";
+import { API_ENDPOINTS } from "@/api/apiEndpoints";
+import { Box, Font14, Font20 } from "@/components/base";
+import ButtonAction from "@/components/base/Button/ButtonAction";
+import AutoComplete from "@/components/base/Input/AutoComplete";
+import PageContainer from "@base/Layout/PageContainer";
+import colors from "@/styles/colors";
+import { useFetch } from "@/hooks/useApi";
+import { useSnackbar } from "@/hooks/useSnackbar";
+import { getMessage, MessageCodes } from "@/message";
+import type { NoticeDetailEditRequest, NoticeDetailResponse } from "@/types/notice";
+
+type DetailField = {
+  label: string;
+  value: string;
+};
+
+type NoticeApiResponse = {
+  id: number;
+  title: string | null;
+  station: string | null;
+  locationId: number | null;
+  locationName: string | null;
+  people: number | null;
+  peopleName: string | null;
+  remarks: string | null;
+  publicAt: string | null;
+  closedAt: string | null;
+  startHour: string | null;
+  endHour: string | null;
+  money: string | null;
+};
+
+const EMPTY_NOTICE: NoticeDetailResponse = {
+  noticeId: 0,
+  noticeTitle: "",
+  startDate: "",
+  endDate: "",
+  contents: "",
+  docIds: [],
+  creatorUserName: "",
+  createdAt: "",
+  editorUserName: "",
+  updatedAt: "",
+};
+
+type NoticeEditState = {
+  title: string;
+  station: string;
+  locationId: string;
+  locationName: string;
+  people: string;
+  peopleName: string;
+  remarks: string;
+  publicAt: string;
+  closedAt: string;
+  startHour: string;
+  endHour: string;
+  money: string;
+};
+
+const getQueryValue = (value: string | string[] | undefined): string => {
+  if (Array.isArray(value)) {
+    return value[0] ?? "";
+  }
+  return value ?? "";
+};
+
+const normalizeNoticeResponse = (response: NoticeApiResponse): NoticeDetailResponse => ({
+  noticeId: response.id,
+  noticeTitle: response.title ?? "",
+  station: response.station ?? "",
+  locationId: response.locationId,
+  locationName: response.locationName ?? "",
+  people: response.people,
+  peopleName: response.peopleName ?? "",
+  remarks: response.remarks ?? "",
+  publicAt: response.publicAt ?? "",
+  closedAt: response.closedAt ?? "",
+  startHour: response.startHour ?? "",
+  endHour: response.endHour ?? "",
+  money: response.money,
+  startDate: "",
+  endDate: "",
+  contents: "",
+  docIds: [],
+  creatorUserName: "",
+  createdAt: "",
+  editorUserName: "",
+  updatedAt: "",
+});
+
+const NoticeDetailPage: React.FC = () => {
+  const router = useRouter();
+  const { showSnackbar } = useSnackbar();
+  const [notice, setNotice] = useState<NoticeDetailResponse>(EMPTY_NOTICE);
+  const [editState, setEditState] = useState<NoticeEditState>({
+    title: "",
+    station: "",
+    locationId: "",
+    locationName: "",
+    people: "",
+    peopleName: "",
+    remarks: "",
+    publicAt: "",
+    closedAt: "",
+    startHour: "",
+    endHour: "",
+    money: "",
+  });
+  const [selectedLocationId, setSelectedLocationId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const {
+    data: masterLocations,
+    isLoading: isMasterLocationsLoading,
+    isError: isMasterLocationsError,
+  } = useFetch<{ locationId: number; locationName: string | null }[]>(
+    "masterLocations",
+    API_ENDPOINTS.MASTER_LOCATION.LIST,
+    undefined,
+    { useCache: true }
+  );
+
+  const locationOptions = useMemo(
+    () =>
+      (masterLocations ?? []).map((location) => ({
+        label: location.locationName ?? "",
+        value: String(location.locationId),
+      })),
+    [masterLocations]
+  );
+
+  useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
+    const noticeId = getQueryValue(router.query.id);
+    if (!noticeId) {
+      showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
+      void router.replace("/top-page");
+      return;
+    }
+
+    const fetchNotice = async () => {
+      setIsLoading(true);
+      try {
+        const response = await apiClient.get<NoticeApiResponse>(API_ENDPOINTS.NOTICE.DETAIL, {
+          params: { notice_id: noticeId },
+        });
+        const normalized = normalizeNoticeResponse(response.data);
+        setNotice(normalized);
+        const locationId =
+          normalized.locationId === null || normalized.locationId === undefined
+            ? ""
+            : String(normalized.locationId);
+        setEditState({
+          title: normalized.noticeTitle ?? "",
+          station: normalized.station ?? "",
+          locationId,
+          locationName: normalized.locationName ?? "",
+          people:
+            normalized.people === null || normalized.people === undefined
+              ? ""
+              : String(normalized.people),
+          peopleName: normalized.peopleName ?? "",
+          remarks: normalized.remarks ?? "",
+          publicAt: normalized.publicAt ?? "",
+          closedAt: normalized.closedAt ?? "",
+          startHour: normalized.startHour ?? "",
+          endHour: normalized.endHour ?? "",
+          money:
+            normalized.money === null || normalized.money === undefined
+              ? ""
+              : String(normalized.money),
+        });
+        setSelectedLocationId(locationId);
+      } catch (error) {
+        console.error("Failed to fetch notice detail:", error);
+        showSnackbar(getMessage(MessageCodes.FETCH_FAILED, "お知らせ詳細"), "ERROR");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchNotice();
+  }, [router, showSnackbar]);
+
+  const handleBack = useCallback(() => {
+    void router.push("/top-page");
+  }, [router]);
+
+  const handleChange = useCallback(
+    (field: keyof NoticeEditState) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setEditState((current) => ({
+        ...current,
+        [field]: event.target.value,
+      }));
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (selectedLocationId || !notice.locationName) {
+      return;
+    }
+
+    const currentLocation = locationOptions.find((option) => option.label === notice.locationName);
+    if (currentLocation) {
+      setSelectedLocationId(currentLocation.value);
+      setEditState((current) => ({
+        ...current,
+        locationId: currentLocation.value,
+        locationName: currentLocation.label,
+      }));
+    }
+  }, [locationOptions, notice.locationName, selectedLocationId]);
+
+  const handleLocationChange = useCallback((option: { label: string; value: string } | null) => {
+    setSelectedLocationId(option?.value ?? "");
+    setEditState((current) => ({
+      ...current,
+      locationId: option?.value ?? "",
+      locationName: option?.label ?? "",
+    }));
+  }, []);
+
+  const handleUpdate = useCallback(async () => {
+    if (!notice.noticeId) {
+      showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const payload: NoticeDetailEditRequest = {
+        title: editState.title,
+        station: editState.station.trim() ? editState.station : null,
+        locationId: editState.locationId.trim() ? Number(editState.locationId) : null,
+        people: editState.people.trim() ? Number(editState.people) : null,
+        peopleName: editState.peopleName.trim() ? editState.peopleName : null,
+        remarks: editState.remarks.trim() ? editState.remarks : null,
+        publicAt: editState.publicAt.trim() ? editState.publicAt : null,
+        closedAt: editState.closedAt.trim() ? editState.closedAt : null,
+        startHour: editState.startHour.trim() ? editState.startHour : null,
+        endHour: editState.endHour.trim() ? editState.endHour : null,
+        money: editState.money.trim() ? editState.money : null,
+      };
+
+      const updated = await apiService.put<NoticeApiResponse>(
+        `${API_ENDPOINTS.NOTICE.DETAIL}?notice_id=${notice.noticeId}`,
+        payload
+      );
+      const normalized = normalizeNoticeResponse(updated);
+      setNotice(normalized);
+      setEditState({
+        title: normalized.noticeTitle ?? "",
+        station: normalized.station ?? "",
+        locationId: normalized.locationId === null || normalized.locationId === undefined ? "" : String(normalized.locationId),
+        locationName: normalized.locationName ?? "",
+        people: normalized.people === null || normalized.people === undefined ? "" : String(normalized.people),
+        peopleName: normalized.peopleName ?? "",
+        remarks: normalized.remarks ?? "",
+        publicAt: normalized.publicAt ?? "",
+        closedAt: normalized.closedAt ?? "",
+        startHour: normalized.startHour ?? "",
+        endHour: normalized.endHour ?? "",
+        money: normalized.money === null || normalized.money === undefined ? "" : String(normalized.money),
+      });
+      showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "お知らせを更新"), "SUCCESS");
+    } catch (error) {
+      console.error("Failed to update notice detail:", error);
+      showSnackbar(getMessage(MessageCodes.ACTION_FAILED, "お知らせの更新"), "ERROR");
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [editState, notice.noticeId, showSnackbar]);
+
+  const fields: DetailField[] = useMemo(
+    () => [
+      { label: "ID", value: String(notice.noticeId || "") },
+      { label: "タイトル", value: notice.noticeTitle ?? "" },
+      { label: "駅", value: notice.station ?? "" },
+      { label: "場所", value: notice.locationName ?? "" },
+      { label: "人数", value: notice.people === null || notice.people === undefined ? "" : String(notice.people) },
+      { label: "参加者", value: notice.peopleName ?? "" },
+      { label: "備考", value: notice.remarks ?? "" },
+      { label: "公開日時", value: notice.publicAt ?? "" },
+      { label: "終了日時", value: notice.closedAt ?? "" },
+      { label: "開始時刻", value: notice.startHour ?? "" },
+      { label: "終了時刻", value: notice.endHour ?? "" },
+      {
+        label: "金額",
+        value: notice.money === null || notice.money === undefined ? "" : String(notice.money),
+      },
+    ],
+    [notice]
+  );
+
+  return (
+    <PageContainer>
+      <Box sx={{ width: "min(100vw - 32px, 1280px)", maxWidth: "100%", mx: "auto", py: 2, gap: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 2 }}>
+          <Font20>お知らせ詳細</Font20>
+          <Font14 sx={{ color: colors.grayDark }}>
+            {isLoading ? "読み込み中です。" : "一覧から選択したお知らせの詳細"}
+          </Font14>
+        </Box>
+
+        <Box
+          sx={{
+            width: "100%",
+            border: `1.5px solid ${colors.commonBorderGray}`,
+            borderRadius: 1,
+            overflow: "hidden",
+          }}
+        >
+          {fields.map((field, index) => (
+            <Box
+              key={field.label}
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+                width: "100%",
+                borderBottom:
+                  index === fields.length - 1 ? "none" : `1.5px solid ${colors.commonBorderGray}`,
+              }}
+            >
+              <Box
+                sx={{
+                  width: "100%",
+                  p: 1.5,
+                  bgcolor: colors.commonTableHeader,
+                  color: colors.commonFontColorBlack,
+                  fontWeight: 600,
+                }}
+              >
+                {field.label}
+              </Box>
+              <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+                {field.label === "ID" ? (
+                  field.value || "-"
+                ) : field.label === "場所" ? (
+                  <AutoComplete
+                    name="noticeLocation"
+                    id="noticeLocation"
+                    options={locationOptions}
+                    defaultValue={selectedLocationId || editState.locationName || undefined}
+                    disabled={isMasterLocationsLoading || isMasterLocationsError}
+                    helperText={
+                      isMasterLocationsError
+                        ? "場所の取得に失敗しました。"
+                        : isMasterLocationsLoading
+                          ? "場所を読み込み中です。"
+                          : undefined
+                    }
+                    error={isMasterLocationsError}
+                    onChange={handleLocationChange}
+                    customStyle={{ mt: 0 }}
+                  />
+                ) : field.label === "備考" ? (
+                  <TextField
+                    value={editState.remarks}
+                    onChange={handleChange("remarks")}
+                    size="small"
+                    fullWidth
+                    multiline
+                    minRows={3}
+                  />
+                ) : (
+                  <TextField
+                    value={
+                      {
+                        タイトル: editState.title,
+                        駅: editState.station,
+                        場所: editState.locationName,
+                        人数: editState.people,
+                        参加者: editState.peopleName,
+                        備考: editState.remarks,
+                        公開日時: editState.publicAt,
+                        終了日時: editState.closedAt,
+                        開始時刻: editState.startHour,
+                        終了時刻: editState.endHour,
+                        金額: editState.money,
+                      }[field.label] ?? ""
+                    }
+                    onChange={handleChange(
+                      {
+                        タイトル: "title",
+                        駅: "station",
+                        場所: "locationName",
+                        人数: "people",
+                        参加者: "peopleName",
+                        備考: "remarks",
+                        公開日時: "publicAt",
+                        終了日時: "closedAt",
+                        開始時刻: "startHour",
+                        終了時刻: "endHour",
+                        金額: "money",
+                      }[field.label] as keyof NoticeEditState
+                    )}
+                    size="small"
+                    fullWidth
+                  />
+                )}
+              </Box>
+            </Box>
+          ))}
+        </Box>
+
+        <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
+          <ButtonAction label="戻る" color="secondary" onClick={handleBack} />
+          <ButtonAction label={isUpdating ? "更新中..." : "更新"} onClick={handleUpdate} disabled={isUpdating || !notice.noticeId} />
+        </Box>
+      </Box>
+    </PageContainer>
+  );
+};
+
+export default NoticeDetailPage;

@@ -166,7 +166,10 @@ VALUES
 (32, '/api/boardgames/*', 'GET', 203, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (33, '/api/boardgames/*', 'PUT', 203, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (34, '/api/boardgames/*', 'DELETE', 203, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(35, '/api/notices/current', 'GET', 204, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(35, '/api/notices/current', 'GET', 204, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(39, '/api/notice/notice_id', 'GET', 204, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(40, '/api/notice/create', 'POST', 204, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(41, '/api/notice/notice_id', 'PUT', 204, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 
 
