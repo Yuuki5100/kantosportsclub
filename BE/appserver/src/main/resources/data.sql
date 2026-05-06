@@ -287,3 +287,9 @@ SELECT '/user/user', 'GET', 30043, 0
 WHERE NOT EXISTS (
   SELECT 1 FROM endpoint_authority_mapping WHERE method = 'GET' AND url = '/user/user'
 );
+
+INSERT INTO endpoint_authority_mapping (url, method, menu_function_id, required_level)
+SELECT '/api/master_locations', 'GET', 30044, 0
+WHERE NOT EXISTS (
+  SELECT 1 FROM endpoint_authority_mapping WHERE method = 'GET' AND url = '/api/master_locations'
+);
