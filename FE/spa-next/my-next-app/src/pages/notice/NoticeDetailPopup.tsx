@@ -8,10 +8,11 @@ import DatePicker from '@/components/base/Input/DatePicker';
 import FileUploader from '@/components/composite/FileUpload/FileUploader';
 import { FlexBox, Font14 } from '@/components/base';
 import ButtonAction from '@/components/base/Button/ButtonAction';
-import { UploadedFile, FileUploaderEndpoints, UploadedFileResponse } from '@hooks/useFileUploader';
+import { UploadedFile, FileUploaderEndpoints} from '@hooks/useFileUploader';
 import { downloadNoticeFileApi, uploadNoticeFilesApi } from '@/api/services/v1/noticeService';
 import { usePermission } from '@/hooks/usePermission';
 import { getMessage, MessageCodes } from '@/message';
+import { UploadedFileResponse } from '@/api/services/v1';
 
 export type NoticeDetail = {
   id: number;
