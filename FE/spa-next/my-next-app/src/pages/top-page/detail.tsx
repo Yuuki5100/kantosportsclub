@@ -379,6 +379,13 @@ const NoticeDetailPage: React.FC = () => {
                     multiline
                     minRows={3}
                   />
+                ) : field.label === "開催日" ? (
+                  <TextField
+                    value={editState.dateandtime}
+                    onChange={handleChange("dateandtime")}
+                    size="small"
+                    fullWidth
+                  />
                 ) : (
                   <TextField
                     value={
