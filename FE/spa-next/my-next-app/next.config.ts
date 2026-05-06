@@ -101,11 +101,13 @@ if (!isDevelopment) {
 
 const contentSecurityPolicy = cspDirectives.join("; ");
 
+const apiProxyTarget = process.env.NEXT_PUBLIC_API_PROXY_TARGET ?? "http://localhost:8787";
+
 /**
  * ✅ この設定の目的
- * - Next.js(3000) と Spring Boot(8081) 間で Cookie/JSESSIONID を共有
- * - 同一オリジン扱いにして CORS / SameSite 問題を回避
- * - ローカル開発中でもクロスドメインセッションを維持できるように
+ * - Next.js(3000) から Worker(API) を同一オリジン経由で叩く
+ * - Cookie を localhost:3000 上で扱うことで SameSite=Lax を成立させる
+ * - ローカル開発中のクロスオリジン Cookie 問題を避ける
  */
 const nextConfig: NextConfig = {
   // Disable Next.js signature header to reduce information disclosure.
@@ -145,15 +147,15 @@ const nextConfig: NextConfig = {
       return [];
     }
     return [
-      // Spring Boot 側の /auth エンドポイントをNext経由で叩けるようにする
+      // Worker 側の auth エンドポイントを Next 経由で叩けるようにする
       {
         source: "/auth/:path*",
-        destination: "http://localhost:8888/auth/:path*",
+        destination: `${apiProxyTarget}/auth/:path*`,
       },
-      // 必要に応じて他APIも追加
+      // Worker 側の API を Next 経由で叩けるようにする
       {
         source: "/api/:path*",
-        destination: "http://localhost:8888/:path*",
+        destination: `${apiProxyTarget}/api/:path*`,
       },
     ];
   },

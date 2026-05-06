@@ -1,6 +1,7 @@
 import apiClient from "@/api/apiClient";
 import { API_ENDPOINTS } from "@/api/apiEndpoints";
 import { handleApiError } from "@/utils/errorHandler";
+import { clearStoredAuthTokens, getStoredRefreshToken, setStoredAuthTokens } from "@/utils/authTokenStorage";
 import type { ApiResponse } from "@/types/api";
 import type { AuthStatusResponse, LoginRequest, LoginData } from "@/types/auth";
 import { notifySessionTimeout } from "@/utils/SessionTimeoutProvider";
@@ -54,6 +55,10 @@ export const resetPasswordApi = async (token: string, password: string): Promise
 export const loginApi = async (data: LoginRequest): Promise<ApiResponse<LoginData>> => {
   try {
     const response = await apiClient.post<ApiResponse<LoginData>>(API_ENDPOINTS.AUTH.LOGIN, data);
+    const loginData = response.data?.data;
+    if (loginData?.accessToken && loginData?.refreshToken) {
+      setStoredAuthTokens(loginData.accessToken, loginData.refreshToken);
+    }
     return response.data;
   } catch (error: unknown) {
     handleApiError(error, getMessage(MessageCodes.ACTION_FAILED, "ログイン"));
@@ -63,7 +68,9 @@ export const loginApi = async (data: LoginRequest): Promise<ApiResponse<LoginDat
 
 export const logoutApi = async (): Promise<void> => {
   try {
-    await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
+    const refreshToken = getStoredRefreshToken();
+    await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, { refreshToken });
+    clearStoredAuthTokens();
   } catch (error: unknown) {
     handleApiError(error, getMessage(MessageCodes.ACTION_FAILED, "ログアウト"));
     throw error;
@@ -72,7 +79,14 @@ export const logoutApi = async (): Promise<void> => {
 
 export const refreshAuthApi = async (): Promise<void> => {
   try {
-    await apiClient.post(API_ENDPOINTS.AUTH.REFRESH);
+    const refreshToken = getStoredRefreshToken();
+    const response = await apiClient.post<ApiResponse<LoginData>>(API_ENDPOINTS.AUTH.REFRESH, {
+      refreshToken,
+    });
+    const refreshData = response.data?.data;
+    if (refreshData?.accessToken && refreshData?.refreshToken) {
+      setStoredAuthTokens(refreshData.accessToken, refreshData.refreshToken);
+    }
   } catch (error: unknown) {
     handleApiError(error, getMessage(MessageCodes.ACTION_FAILED, "セッション更新"));
     throw error;
@@ -100,8 +114,17 @@ export const checkAuthApi = async (): Promise<AuthStatusResponse> => {
     } catch (error: unknown) {
       // 401 = 未認証（ログイン前 or セッション切れ）→ 正常系として扱う
       if (getResponseStatus(error) === 401) {
-        console.log("authService: 未認証状態（401）");
-        return { authenticated: false } as AuthStatusResponse;
+        try {
+          await refreshAuthApi();
+          const { data } = await apiClient.get<ApiResponse<AuthStatusResponse>>(
+            API_ENDPOINTS.AUTH.STATUS,
+            { timeout: 10_000 }
+          );
+          return data.data;
+        } catch {
+          console.log("authService: 未認証状態（401）");
+          return { authenticated: false } as AuthStatusResponse;
+        }
       }
       // それ以外のエラーはセッションタイムアウトとして通知
       console.log("authServiceでセッションが切れました");

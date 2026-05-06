@@ -53,6 +53,7 @@ type RefreshTokenRow = {
 };
 
 type BuildSessionInput = {
+  db: D1Database;
   user: AuthUserRow;
   userAgent?: string | null;
   ipAddress?: string | null;
@@ -89,6 +90,7 @@ const toAuthUser = (user: AuthUserRow): AuthUser => ({
 });
 
 const buildSession = async ({
+  db,
   user,
   userAgent,
   ipAddress,
@@ -108,6 +110,7 @@ const buildSession = async ({
   const expiresAt = addSeconds(now(), REFRESH_TOKEN_EXPIRES_IN_SECONDS);
 
   await insertRefreshToken({
+    db,
     userId: user.userId,
     tokenHash,
     expiresAt: toIsoString(expiresAt),
@@ -118,7 +121,7 @@ const buildSession = async ({
   return createAuthSession(accessToken, refreshToken, claims);
 };
 
-export const login = async (input: LoginInput): Promise<AuthSession | null> => {
+export const login = async (db: D1Database, input: LoginInput): Promise<AuthSession | null> => {
   if (getAuthMode() !== "internal") {
     throw new Error("Unsupported auth mode");
   }
@@ -130,7 +133,7 @@ export const login = async (input: LoginInput): Promise<AuthSession | null> => {
     return null;
   }
 
-  const user = await findUserByLoginId(username) as AuthUserRow | null;
+  const user = await findUserByLoginId(db, username) as AuthUserRow | null;
 
   if (!user) {
     return null;
@@ -151,25 +154,26 @@ export const login = async (input: LoginInput): Promise<AuthSession | null> => {
   }
 
   if (isPasswordHashUpgradeRequired(user.passwordHash)) {
-    await updateUserPasswordHash(user.userId, await hashPassword(password));
+    await updateUserPasswordHash(db, user.userId, await hashPassword(password));
   }
 
   await updateLastLoginAt(user.userId);
 
   return buildSession({
+    db,
     user,
     userAgent: input.userAgent ?? null,
     ipAddress: input.ipAddress ?? null,
   });
 };
 
-export const refresh = async (refreshToken: string): Promise<AuthSession | null> => {
+export const refresh = async (db: D1Database, refreshToken: string): Promise<AuthSession | null> => {
   if (!refreshToken) {
     return null;
   }
 
   const tokenHash = await hashToken(refreshToken);
-  const tokenRow = await findRefreshTokenByHash(tokenHash) as RefreshTokenRow | null;
+  const tokenRow = await findRefreshTokenByHash(db, tokenHash) as RefreshTokenRow | null;
 
   if (!tokenRow) {
     return null;
@@ -183,7 +187,7 @@ export const refresh = async (refreshToken: string): Promise<AuthSession | null>
     return null;
   }
 
-  const user = await findUserById(tokenRow.userId) as AuthUserRow | null;
+  const user = await findUserById(db, tokenRow.userId) as AuthUserRow | null;
 
   if (!user) {
     return null;
@@ -198,25 +202,26 @@ export const refresh = async (refreshToken: string): Promise<AuthSession | null>
   }
 
   // refresh token rotation
-  await revokeRefreshToken(tokenHash);
+  await revokeRefreshToken(db, tokenHash);
 
   return buildSession({
+    db,
     user,
     userAgent: tokenRow.userAgent ?? null,
     ipAddress: tokenRow.ipAddress ?? null,
   });
 };
 
-export const logout = async (refreshToken: string): Promise<void> => {
+export const logout = async (db: D1Database, refreshToken: string): Promise<void> => {
   if (!refreshToken) {
     return;
   }
 
   const tokenHash = await hashToken(refreshToken);
-  await revokeRefreshToken(tokenHash);
+  await revokeRefreshToken(db, tokenHash);
 };
 
-export const status = async (accessToken?: string): Promise<AuthStatusResponse> => {
+export const status = async (db: D1Database, accessToken?: string): Promise<AuthStatusResponse> => {
   console.log("[authService] status start", {
     hasAccessToken: Boolean(accessToken),
     accessTokenPrefix: accessToken ? accessToken.slice(0, 24) : null,
@@ -242,7 +247,7 @@ export const status = async (accessToken?: string): Promise<AuthStatusResponse> 
     };
   }
 
-  const user = await findUserById(claims.sub) as AuthUserRow | null;
+  const user = await findUserById(db, claims.sub) as AuthUserRow | null;
 
   if (!user || !isActiveUser(user) || isFuture(user.lockedUntil)) {
     console.log("[authService] status user invalid", {
@@ -258,7 +263,7 @@ export const status = async (accessToken?: string): Promise<AuthStatusResponse> 
   }
 
   const permissions: UserPermission[] =
-    user.roleId == null ? [] : await findRolePermissions(user.roleId);
+    user.roleId == null ? [] : await findRolePermissions(db, user.roleId);
 
   console.log("[authService] status success", {
     userId: user.userId,

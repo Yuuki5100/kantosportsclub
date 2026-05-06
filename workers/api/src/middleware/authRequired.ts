@@ -1,6 +1,5 @@
 import { createMiddleware } from "hono/factory";
 import { readAccessToken, readCookieValue } from "../service/authCookie";
-import { setAuthRepositoryDb } from "../repositories/authRepository";
 import { getDb, type AppVariables, type Bindings } from "../env";
 import * as AuthService from "../service/authService";
 import {
@@ -101,9 +100,7 @@ export const authRequired = createMiddleware<{
     );
   }
 
-  setAuthRepositoryDb(getDb(c.env));
-
-  const result = await AuthService.status(accessToken);
+  const result = await AuthService.status(db, accessToken);
   console.log("[authRequired] status", {
     method: c.req.method,
     path,

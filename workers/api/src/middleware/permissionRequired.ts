@@ -11,6 +11,12 @@ export const permissionRequired = createMiddleware<{
   Variables: AppVariables;
 }>(async (c, next) => {
   const path = c.req.path;
+
+  if (path.startsWith("/api/auth")) {
+    await next();
+    return;
+  }
+
   const db = getDb(c.env);
   let endpointPermission = await findEndpointPermission(db, c.req.method, path);
   console.log("[permissionRequired] endpointPermission", {

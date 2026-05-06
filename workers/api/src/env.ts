@@ -1,6 +1,7 @@
 import type { AuthStatusResponse, UserPermission } from "./types/auth";
 
 export type Bindings = {
+  DB?: D1Database;
   kantosportsclub_db: D1Database;
   CORS_ORIGIN?: string;
   R2_PUBLIC_BASE_URL?: string;
@@ -21,4 +22,4 @@ export type AppVariables = {
   auth?: AuthContext | null;
 };
 
-export const getDb = (env: Bindings): D1Database => env.kantosportsclub_db;
+export const getDb = (env: Bindings): D1Database => env.DB ?? env.kantosportsclub_db;

@@ -9,6 +9,8 @@ export interface LoginData {
   givenName: string;
   surname: string;
   email: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 

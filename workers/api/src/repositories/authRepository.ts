@@ -1,26 +1,6 @@
 import { verifyPasswordHash } from '../auth/passwordHash';
 import type { UserPermission } from '../types/auth';
 
-/**
- * D1Database を repository に渡すための簡易 holder。
- *
- * 現在の authService.ts が関数 export 形式のため、route 側で request ごとに
- * setAuthRepositoryDb(c.env.DB) を呼んでから service を呼ぶ想定。
- */
-let db: D1Database | null = null;
-
-export const setAuthRepositoryDb = (database: D1Database): void => {
-  db = database;
-};
-
-const getDb = (): D1Database => {
-  if (!db) {
-    throw new Error('D1 database is not initialized. Call setAuthRepositoryDb(c.env.DB) before auth repository access.');
-  }
-
-  return db;
-};
-
 export type AuthUserRow = {
   userId: string;
   username: string;
@@ -121,9 +101,10 @@ const normalizeRefreshTokenRow = (
  * 無い可能性があるため、存在しない列は固定値/代替値で返す。
  */
 export const findUserByUsername = async (
+  db: D1Database,
   username: string,
 ): Promise<AuthUserRow | null> => {
-  const row = await getDb()
+  const row = await db
     .prepare(
       `
       SELECT
@@ -151,19 +132,21 @@ export const findUserByUsername = async (
  * authService.ts 側が findUserByLoginId を参照している場合はこちらを使う。
  */
 export const findUserByLoginId = async (
+  db: D1Database,
   loginId: string,
 ): Promise<AuthUserRow | null> => {
-  return findUserByUsername(loginId);
+  return findUserByUsername(db, loginId);
 };
 
 /**
  * access token claims.sub / refresh token の userId からユーザーを取得する。
  */
 export const findUserById = async (
+  db: D1Database,
   userId: string,
 ): Promise<AuthUserRow | null> => {
   console.log("[authRepository] findUserById start", { userId });
-  const row = await getDb()
+  const row = await db
     .prepare(
       `
       SELECT
@@ -201,9 +184,10 @@ export const findUserById = async (
  * resource には menu_function_id 相当の値が入っている前提。
  */
 export const findRolePermissions = async (
+  db: D1Database,
   roleId: number,
 ): Promise<UserPermission[]> => {
-  const result = await getDb()
+  const result = await db
     .prepare(
       `
       SELECT
@@ -234,13 +218,14 @@ export const findRolePermissions = async (
  * READMEの追加DDLを実行してください。
  */
 export const insertRefreshToken = async (input: {
+  db: D1Database;
   userId: string;
   tokenHash: string;
   expiresAt: string;
   userAgent: string | null;
   ipAddress: string | null;
 }): Promise<void> => {
-  await getDb()
+  await input.db
     .prepare(
       `
       INSERT INTO auth_refresh_token (
@@ -267,9 +252,10 @@ export const insertRefreshToken = async (input: {
 };
 
 export const findRefreshTokenByHash = async (
+  db: D1Database,
   tokenHash: string,
 ): Promise<AuthRefreshTokenRow | null> => {
-  const row = await getDb()
+  const row = await db
     .prepare(
       `
       SELECT
@@ -291,9 +277,10 @@ export const findRefreshTokenByHash = async (
 };
 
 export const revokeRefreshToken = async (
+  db: D1Database,
   tokenHash: string,
 ): Promise<void> => {
-  await getDb()
+  await db
     .prepare(
       `
       UPDATE auth_refresh_token
@@ -317,10 +304,11 @@ export const updateLastLoginAt = async (
 };
 
 export const updateUserPasswordHash = async (
+  db: D1Database,
   userId: string,
   passwordHash: string,
 ): Promise<void> => {
-  await getDb()
+  await db
     .prepare(
       `
       UPDATE users

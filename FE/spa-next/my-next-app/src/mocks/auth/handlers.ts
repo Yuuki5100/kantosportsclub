@@ -5,6 +5,8 @@ import { defaultMockUser, mockUsers, MockAuthUser } from "./data";
 import { getMessage, MessageCodes } from "@/message";
 
 const SESSION_KEY = "mockAuthUser";
+const ACCESS_TOKEN_KEY = "mockAccessToken";
+const REFRESH_TOKEN_KEY = "mockRefreshToken";
 let memoryUser: MockAuthUser | null = null;
 
 const canUseStorage = (): boolean => typeof window !== "undefined";
@@ -14,6 +16,8 @@ const setSessionUser = (user: MockAuthUser) => {
   if (!canUseStorage()) return;
   try {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+    localStorage.setItem(ACCESS_TOKEN_KEY, `mock-access-${user.userId}`);
+    localStorage.setItem(REFRESH_TOKEN_KEY, `mock-refresh-${user.userId}`);
   } catch {
     /* ignore */
   }
@@ -24,6 +28,8 @@ const clearSessionUser = () => {
   if (!canUseStorage()) return;
   try {
     sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   } catch {
     /* ignore */
   }
@@ -67,6 +73,8 @@ export const mockLogin = async (userId?: string): Promise<ApiResponse<LoginData>
       givenName: user.givenName,
       surname: user.surname,
       email: user.email,
+      accessToken: `mock-access-${user.userId}`,
+      refreshToken: `mock-refresh-${user.userId}`,
     },
   };
 };

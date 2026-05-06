@@ -4,6 +4,7 @@ import { handleApiError } from "@/utils/errorHandler";
 import Sentry from "@/utils/sentry";
 import { buildTraceparentHeader, isTraceparentEnabled } from "@/utils/otelBrowser";
 import { CustomAxiosRequestConfig } from "@/types/api";
+import { getStoredAccessToken } from "@/utils/authTokenStorage";
 
 // -----------------------------
 // 🔧 環境変数設定
@@ -122,5 +123,15 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+apiClient.interceptors.request.use((config) => {
+  const accessToken = getStoredAccessToken();
+  if (accessToken) {
+    const headers = AxiosHeaders.from(config.headers);
+    headers.set("Authorization", `Bearer ${accessToken}`);
+    config.headers = headers;
+  }
+  return config;
+});
 
 export default apiClient;

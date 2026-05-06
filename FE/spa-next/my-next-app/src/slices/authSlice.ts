@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import * as authService from '../api/services/v1/authService';
 import { AuthStatusResponse, LoginData, UserPermission } from '@/types/auth';
+import { clearStoredAuthTokens } from '@/utils/authTokenStorage';
 
 interface AuthState {
   isAuthenticated: boolean | null;
@@ -144,6 +145,7 @@ const authSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload as string;
         clearSessionState();
+        clearStoredAuthTokens();
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         const { authenticated, userPermissions, rolePermissions, user } = action.payload;
@@ -162,6 +164,7 @@ const authSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload as string;
         clearSessionState();
+        clearStoredAuthTokens();
       })
       .addCase(logout.fulfilled, (state) => {
         state.isAuthenticated = false;
@@ -170,6 +173,7 @@ const authSlice = createSlice({
         state.name = null;
         state.status = 'idle';
         clearSessionState();
+        clearStoredAuthTokens();
       });
   },
 });

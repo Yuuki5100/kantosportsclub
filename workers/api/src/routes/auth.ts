@@ -1,25 +1,13 @@
 import { Hono } from 'hono';
-import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { getDb, type AppVariables, type Bindings } from '../env';
 import * as AuthService from '../service/authService';
-import { setAuthRepositoryDb } from '../repositories/authRepository';
 import type { UserPermission } from '../types/auth';
-import {
-  buildAuthCookieOptions,
-  buildClearAuthCookieOptions,
-  readAccessToken,
-  readCookieValue,
-} from '../service/authCookie';
+import { readAccessToken, readCookieValue } from '../service/authCookie';
 
 const auth = new Hono<{
   Bindings: Bindings;
   Variables: AppVariables;
 }>();
-
-const refreshCookieName = 'refresh_token';
-const accessCookieName = 'ACCESS_TOKEN';
-const accessTokenMaxAge = 60 * 15;
-const refreshTokenMaxAge = 60 * 60 * 24 * 30;
 
 type LoginResponseData = {
   authenticated: boolean;
@@ -27,6 +15,8 @@ type LoginResponseData = {
   givenName: string;
   surname: string;
   email: string;
+  accessToken: string;
+  refreshToken: string;
 };
 
 type StatusResponseData = {
@@ -59,7 +49,7 @@ const splitDisplayName = (
 const toLoginResponseData = (user: {
   displayName: string | null;
   email: string | null;
-} | null): LoginResponseData => {
+}, session: { accessToken: string; refreshToken: string } | null): LoginResponseData => {
   const { givenName, surname } = splitDisplayName(user?.displayName);
   return {
     authenticated: true,
@@ -67,6 +57,8 @@ const toLoginResponseData = (user: {
     givenName,
     surname,
     email: user?.email ?? '',
+    accessToken: session?.accessToken ?? '',
+    refreshToken: session?.refreshToken ?? '',
   };
 };
 
@@ -88,144 +80,132 @@ const toStatusResponseData = (result: Awaited<ReturnType<typeof AuthService.stat
 };
 
 auth.post('/login', async (c) => {
-  setAuthRepositoryDb(getDb(c.env));
+  try {
+    const db = getDb(c.env);
 
-  const body = await c.req.json().catch(() => null);
+    const body = await c.req.json().catch(() => null);
 
-  const username =
-    typeof body?.username === 'string'
-      ? body.username
-      : typeof body?.user_id === 'string'
-        ? body.user_id
-        : null;
-  const password = body?.password;
+    const username =
+      typeof body?.username === 'string'
+        ? body.username
+        : typeof body?.user_id === 'string'
+          ? body.user_id
+          : null;
+    const password = body?.password;
 
-  if (typeof username !== 'string' || typeof password !== 'string') {
-    return c.json(
-      { success: false, message: 'username and password are required' },
-      400,
-    );
+    if (typeof username !== 'string' || typeof password !== 'string') {
+      return c.json(
+        { success: false, message: 'username and password are required' },
+        400,
+      );
+    }
+
+    const result = await AuthService.login(db, {
+      username,
+      userId: username,
+      password,
+      userAgent: c.req.header('User-Agent') ?? null,
+      ipAddress: c.req.header('CF-Connecting-IP') ?? null,
+    });
+
+    if (!result) {
+      return c.json(
+        { success: false, message: 'login failed' },
+        401,
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: toLoginResponseData(result.user, result),
+    });
+  } catch (error) {
+    console.error("[auth] login failed", error);
+    throw error;
   }
-
-  const result = await AuthService.login({
-    username,
-    userId: username,
-    password,
-    userAgent: c.req.header('User-Agent') ?? null,
-    ipAddress: c.req.header('CF-Connecting-IP') ?? null,
-  });
-
-  if (!result) {
-    return c.json(
-      { success: false, message: 'login failed' },
-      401,
-    );
-  }
-
-  setCookie(c, refreshCookieName, result.refreshToken, {
-    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', refreshTokenMaxAge),
-    path: '/api/auth',
-  });
-  setCookie(c, accessCookieName, result.accessToken, {
-    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', accessTokenMaxAge),
-    path: '/',
-  });
-
-  return c.json({
-    success: true,
-    data: toLoginResponseData(result.user),
-  });
 });
 
 auth.post('/refresh', async (c) => {
-  setAuthRepositoryDb(getDb(c.env));
+  try {
+    const db = getDb(c.env);
 
-  const refreshToken =
-    getCookie(c, refreshCookieName) ??
-    c.req.header('Authorization')?.replace(/^Bearer\s+/i, '');
+    const body = await c.req.json().catch(() => null);
+    const refreshToken =
+      (typeof body?.refreshToken === 'string' ? body.refreshToken : null) ??
+      c.req.header('Authorization')?.replace(/^Bearer\s+/i, '');
 
-  if (!refreshToken) {
-    return c.json(
-      { success: false, message: 'refresh token is required' },
-      401,
-    );
+    if (!refreshToken) {
+      return c.json(
+        { success: false, message: 'refresh token is required' },
+        401,
+      );
+    }
+
+    const result = await AuthService.refresh(db, refreshToken);
+
+    if (!result) {
+      return c.json(
+        { success: false, message: 'refresh failed' },
+        401,
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: toLoginResponseData(result.user, result),
+    });
+  } catch (error) {
+    console.error("[auth] refresh failed", error);
+    throw error;
   }
-
-  const result = await AuthService.refresh(refreshToken);
-
-  if (!result) {
-    return c.json(
-      { success: false, message: 'refresh failed' },
-      401,
-    );
-  }
-
-  setCookie(c, refreshCookieName, result.refreshToken, {
-    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', refreshTokenMaxAge),
-    path: '/api/auth',
-  });
-  setCookie(c, accessCookieName, result.accessToken, {
-    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', accessTokenMaxAge),
-    path: '/',
-  });
-
-  return c.json({
-    success: true,
-    data: toLoginResponseData(result.user),
-  });
 });
 
 auth.post('/logout', async (c) => {
-  setAuthRepositoryDb(getDb(c.env));
+  try {
+    const db = getDb(c.env);
 
-  const refreshToken = getCookie(c, refreshCookieName);
+    const body = await c.req.json().catch(() => null);
+    const refreshToken =
+      (typeof body?.refreshToken === 'string' ? body.refreshToken : null) ??
+      c.req.header('Authorization')?.replace(/^Bearer\s+/i, '');
 
-  if (refreshToken) {
-    await AuthService.logout(refreshToken);
+    if (refreshToken) {
+      await AuthService.logout(db, refreshToken);
+    }
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error("[auth] logout failed", error);
+    throw error;
   }
-
-  deleteCookie(c, accessCookieName, {
-    ...buildClearAuthCookieOptions(c.env.COOKIE_SECURE === 'true'),
-  });
-  deleteCookie(c, refreshCookieName, {
-    ...buildClearAuthCookieOptions(c.env.COOKIE_SECURE === 'true'),
-    path: '/api/auth',
-  });
-
-  return c.json({ success: true });
 });
 
 auth.get('/status', async (c) => {
-  setAuthRepositoryDb(getDb(c.env));
+  try {
+    const db = getDb(c.env);
 
-  const authorization = c.req.header('Authorization');
-  const accessToken =
-    authorization?.replace(/^Bearer\s+/i, '') ||
-    readAccessToken(c.req.header('Cookie')) ||
-    readCookieValue(c.req.header('Cookie'), 'access_token') ||
-    '';
+    const authorization = c.req.header('Authorization');
+    const accessToken =
+      authorization?.replace(/^Bearer\s+/i, '') ||
+      readAccessToken(c.req.header('Cookie')) ||
+      readCookieValue(c.req.header('Cookie'), 'access_token') ||
+      '';
 
-  const result = await AuthService.status(accessToken);
+    const result = await AuthService.status(db, accessToken);
 
-  if (!result.authenticated) {
-    return c.json(
-      {
-        success: true,
-        data: toStatusResponseData(result),
-      },
-    );
+    return c.json({
+      success: true,
+      data: toStatusResponseData(result),
+    });
+  } catch (error) {
+    console.error("[auth] status failed", error);
+    throw error;
   }
-
-  return c.json({
-    success: true,
-    data: toStatusResponseData(result),
-  });
 });
 
 auth.get('/external-login', async (c) => {
-  setAuthRepositoryDb(getDb(c.env));
-
   try {
+    getDb(c.env);
     const result = await AuthService.externalLogin();
     return c.json(result);
   } catch {
@@ -237,33 +217,29 @@ auth.get('/external-login', async (c) => {
 });
 
 auth.get('/callback', async (c) => {
-  setAuthRepositoryDb(getDb(c.env));
+  try {
+    const db = getDb(c.env);
 
-  const code = c.req.query('code') ?? '';
-  const state = c.req.query('state') ?? '';
+    const code = c.req.query('code') ?? '';
+    const state = c.req.query('state') ?? '';
 
-  const result = await AuthService.callback(code, state);
+    const result = await AuthService.callback(code, state);
 
-  if (!result) {
-    return c.json(
-      { success: false, message: 'callback failed' },
-      401,
-    );
+    if (!result) {
+      return c.json(
+        { success: false, message: 'callback failed' },
+        401,
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: toLoginResponseData(result.user, result),
+    });
+  } catch (error) {
+    console.error("[auth] callback failed", error);
+    throw error;
   }
-
-  setCookie(c, refreshCookieName, result.refreshToken, {
-    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', refreshTokenMaxAge),
-    path: '/api/auth',
-  });
-  setCookie(c, accessCookieName, result.accessToken, {
-    ...buildAuthCookieOptions(c.env.COOKIE_SECURE === 'true', accessTokenMaxAge),
-    path: '/',
-  });
-
-  return c.json({
-    success: true,
-    data: toLoginResponseData(result.user),
-  });
 });
 
 export default auth;
