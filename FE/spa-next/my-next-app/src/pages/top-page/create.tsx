@@ -16,6 +16,7 @@ type NoticeCreateRequest = {
   title: string;
   station: string | null;
   locationId: number | null;
+  dateandtime: string | null;
   people: number | null;
   peopleName: string | null;
   remarks: string | null;
@@ -31,6 +32,7 @@ type NoticeCreateState = {
   station: string;
   locationId: string;
   locationName: string;
+  dateandtime: string;
   people: string;
   peopleName: string;
   remarks: string;
@@ -46,6 +48,7 @@ const INITIAL_STATE: NoticeCreateState = {
   station: "",
   locationId: "",
   locationName: "",
+  dateandtime: "",
   people: "",
   peopleName: "",
   remarks: "",
@@ -114,6 +117,7 @@ const NoticeCreatePage: React.FC = () => {
         title,
         station: form.station.trim() ? form.station : null,
         locationId: form.locationId.trim() ? Number(form.locationId) : null,
+        dateandtime: form.dateandtime.trim() ? form.dateandtime : null,
         people: form.people.trim() ? Number(form.people) : null,
         peopleName: form.peopleName.trim() ? form.peopleName : null,
         remarks: form.remarks.trim() ? form.remarks : null,
@@ -140,9 +144,10 @@ const NoticeCreatePage: React.FC = () => {
 
   const fields: Array<{ label: string; field: keyof NoticeCreateState; multiline?: boolean }> = [
     { label: "タイトル", field: "title" },
+    { label: "最寄り駅", field: "station" },
+    { label: "開催日", field: "dateandtime" },
     { label: "開始時刻", field: "startHour" },
     { label: "終了時刻", field: "endHour" },
-    { label: "最寄り駅", field: "station" },
     { label: "金額", field: "money" },
     { label: "人数", field: "people" },
     { label: "参加者", field: "peopleName" },
@@ -205,6 +210,66 @@ const NoticeCreatePage: React.FC = () => {
                 error={isMasterLocationsError}
                 onChange={handleLocationChange}
                 customStyle={{ mt: 0 }}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              dateandtime
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="noticeCreatedateandtime"
+                value={form.dateandtime}
+                size="small"
+                fullWidth
+                onChange={handleChange("dateandtime")}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+              width: "100%",
+              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                p: 1.5,
+                bgcolor: colors.commonTableHeader,
+                color: colors.commonFontColorBlack,
+                fontWeight: 600,
+              }}
+            >
+              dateandtime
+            </Box>
+            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <TextField
+                name="noticeCreatedateandtime"
+                value={form.dateandtime}
+                size="small"
+                fullWidth
+                onChange={handleChange("dateandtime")}
               />
             </Box>
           </Box>

@@ -58,6 +58,7 @@ const parseNoticeUpdateInput = (body: unknown): NoticeUpdateInput | null => {
   const title = parseNullableString(record.title);
   const station = parseNullableString(record.station);
   const locationId = parseNullableNumber(record.locationId);
+  const dateandtime = parseNullableString(record.dateandtime);
   const people = parseNullableNumber(record.people);
   const peopleName = parseNullableString(record.peopleName);
   const remarks = parseNullableString(record.remarks);
@@ -71,6 +72,7 @@ const parseNoticeUpdateInput = (body: unknown): NoticeUpdateInput | null => {
     title === undefined ||
     station === undefined ||
     locationId === undefined ||
+    dateandtime === undefined ||
     people === undefined ||
     peopleName === undefined ||
     remarks === undefined ||
@@ -83,7 +85,7 @@ const parseNoticeUpdateInput = (body: unknown): NoticeUpdateInput | null => {
     return null;
   }
 
-  return { title, station, locationId, people, peopleName, remarks, publicAt, closedAt, startHour, endHour, money };
+  return { title, station, locationId, dateandtime, people, peopleName, remarks, publicAt, closedAt, startHour, endHour, money };
 };
 
 const parseNoticeCreateInput = parseNoticeUpdateInput;

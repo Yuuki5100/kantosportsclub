@@ -25,6 +25,7 @@ type NoticeApiResponse = {
   station: string | null;
   locationId: number | null;
   locationName: string | null;
+  dateandtime: string | null;
   people: number | null;
   peopleName: string | null;
   remarks: string | null;
@@ -53,6 +54,7 @@ type NoticeEditState = {
   station: string;
   locationId: string;
   locationName: string;
+  dateandtime: string;
   people: string;
   peopleName: string;
   remarks: string;
@@ -76,6 +78,7 @@ const normalizeNoticeResponse = (response: NoticeApiResponse): NoticeDetailRespo
   station: response.station ?? "",
   locationId: response.locationId,
   locationName: response.locationName ?? "",
+  dateandtime: response.dateandtime ?? "",
   people: response.people,
   peopleName: response.peopleName ?? "",
   remarks: response.remarks ?? "",
@@ -103,6 +106,7 @@ const NoticeDetailPage: React.FC = () => {
     station: "",
     locationId: "",
     locationName: "",
+    dateandtime: "",
     people: "",
     peopleName: "",
     remarks: "",
@@ -164,6 +168,7 @@ const NoticeDetailPage: React.FC = () => {
           station: normalized.station ?? "",
           locationId,
           locationName: normalized.locationName ?? "",
+          dateandtime: normalized.dateandtime ?? "",
           people:
             normalized.people === null || normalized.people === undefined
               ? ""
@@ -242,6 +247,7 @@ const NoticeDetailPage: React.FC = () => {
         title: editState.title,
         station: editState.station.trim() ? editState.station : null,
         locationId: editState.locationId.trim() ? Number(editState.locationId) : null,
+        dateandtime: editState.dateandtime.trim() ? editState.dateandtime : null,
         people: editState.people.trim() ? Number(editState.people) : null,
         peopleName: editState.peopleName.trim() ? editState.peopleName : null,
         remarks: editState.remarks.trim() ? editState.remarks : null,
@@ -263,6 +269,7 @@ const NoticeDetailPage: React.FC = () => {
         station: normalized.station ?? "",
         locationId: normalized.locationId === null || normalized.locationId === undefined ? "" : String(normalized.locationId),
         locationName: normalized.locationName ?? "",
+        dateandtime: normalized.dateandtime ?? "",
         people: normalized.people === null || normalized.people === undefined ? "" : String(normalized.people),
         peopleName: normalized.peopleName ?? "",
         remarks: normalized.remarks ?? "",
@@ -285,6 +292,7 @@ const NoticeDetailPage: React.FC = () => {
     () => [
       { label: "タイトル", value: notice.noticeTitle ?? "" },
       { label: "場所", value: notice.locationName ?? "" },
+      { label: "開催日", value: notice.dateandtime ?? "" },
       { label: "開始時刻", value: notice.startHour ?? "" },
       { label: "終了時刻", value: notice.endHour ?? "" },
       { label: "最寄り駅", value: notice.station ?? "" },
@@ -378,6 +386,7 @@ const NoticeDetailPage: React.FC = () => {
                         タイトル: editState.title,
                         最寄り駅: editState.station,
                         場所: editState.locationName,
+                        dateandtime: editState.dateandtime,
                         人数: editState.people,
                         参加者: editState.peopleName,
                         備考: editState.remarks,
@@ -393,6 +402,7 @@ const NoticeDetailPage: React.FC = () => {
                         タイトル: "title",
                         最寄り駅: "station",
                         場所: "locationName",
+                        dateandtime: "dateandtime",
                         人数: "people",
                         参加者: "peopleName",
                         備考: "remarks",

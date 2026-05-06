@@ -41,6 +41,7 @@ export interface NoticeDetailResponse {
   station?: string;
   locationId?: number | null;
   locationName?: string;
+  dateandtime?: string | null;
   people?: number | null;
   peopleName?: string;
   remarks?: string;
@@ -75,6 +76,7 @@ export interface NoticeDetailEditRequest {
   title: string;
   station: string | null;
   locationId: number | null;
+  dateandtime: string | null;
   people: number | null;
   peopleName: string | null;
   remarks: string | null;

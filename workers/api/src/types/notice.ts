@@ -4,6 +4,7 @@ export type NoticeItem = {
   station: string | null;
   locationId: number | null;
   locationName: string | null;
+  dateandtime: string | null;
   people: number | null;
   peopleName: string | null;
   remarks: string | null;
@@ -18,6 +19,7 @@ export type NoticeUpdateInput = {
   title: string | null;
   station: string | null;
   locationId: number | null;
+  dateandtime: string | null;
   people: number | null;
   peopleName: string | null;
   remarks: string | null;

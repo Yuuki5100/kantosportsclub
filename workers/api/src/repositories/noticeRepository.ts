@@ -6,6 +6,7 @@ type NoticeRow = {
   station: string | null;
   location_id: number | null;
   location_name: string | null;
+  dateandtime: string | null;
   people: number | null;
   people_name: string | null;
   remarks: string | null;
@@ -22,6 +23,7 @@ const toNoticeItem = (row: NoticeRow): NoticeItem => ({
   station: row.station,
   locationId: row.location_id,
   locationName: row.location_name,
+  dateandtime: row.dateandtime,
   people: row.people,
   peopleName: row.people_name,
   remarks: row.remarks,
@@ -47,6 +49,7 @@ export const findNoticeById = async (db: D1Database, id: number): Promise<Notice
          station,
          n.location_id AS location_id,
          ml.location_name AS location_name,
+         n.dateandtime AS dateandtime,
          people,
          people_name,
          remarks,
@@ -72,6 +75,7 @@ export const updateNotice = async (
   input: NoticeUpdateInput
 ): Promise<NoticeItem | null> => {
   const locationId = isNumberOrNull(input.locationId) ? input.locationId : null;
+  const dateandtime = isStringOrNull(input.dateandtime) ? input.dateandtime : null;
   const people = isNumberOrNull(input.people) ? input.people : null;
   const title = isStringOrNull(input.title) ? input.title : null;
   const station = isStringOrNull(input.station) ? input.station : null;
@@ -94,20 +98,22 @@ export const updateNotice = async (
        SET title = ?1,
            station = ?2,
            location_id = ?3,
-           people = ?4,
-           people_name = ?5,
-           remarks = ?6,
-           public_at = ?7,
-           closed_at = ?8,
-           start_hour = ?9,
-           end_hour = ?10,
-           money = ?11
-       WHERE id = ?12`
+           dateandtime = ?4,
+           people = ?5,
+           people_name = ?6,
+           remarks = ?7,
+           public_at = ?8,
+           closed_at = ?9,
+           start_hour = ?10,
+           end_hour = ?11,
+           money = ?12
+       WHERE id = ?13`
     )
     .bind(
       title,
       station,
       locationId,
+      dateandtime,
       people,
       peopleName,
       remarks,
@@ -128,6 +134,7 @@ export const createNotice = async (
   input: NoticeCreateInput
 ): Promise<NoticeItem | null> => {
   const locationId = isNumberOrNull(input.locationId) ? input.locationId : null;
+  const dateandtime = isStringOrNull(input.dateandtime) ? input.dateandtime : null;
   const people = isNumberOrNull(input.people) ? input.people : null;
   const title = isStringOrNull(input.title) ? input.title : null;
   const station = isStringOrNull(input.station) ? input.station : null;
@@ -145,6 +152,7 @@ export const createNotice = async (
          title,
          station,
          location_id,
+         dateandtime,
          people,
          people_name,
          remarks,
@@ -159,6 +167,7 @@ export const createNotice = async (
       title,
       station,
       locationId,
+      dateandtime,
       people,
       peopleName,
       remarks,
@@ -187,6 +196,7 @@ export const findNoticesByCurrentWindow = async (db: D1Database): Promise<Notice
          station,
          n.location_id,
          ml.location_name AS location_name,
+         n.dateandtime AS dateandtime,
          people,
          people_name,
          remarks,
