@@ -98,7 +98,7 @@ const NoticeCreatePage: React.FC = () => {
   }, []);
 
   const handleBack = useCallback(() => {
-    void router.push("/top-page");
+    void router.push("/admin/menu");
   }, [router]);
 
   const handleSave = useCallback(async () => {
@@ -153,7 +153,7 @@ const NoticeCreatePage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 32px, 1280px)", maxWidth: "100%", mx: "auto", py: 2, gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 2 }}>
           <Font20>お知らせ追加</Font20>
           <Font14 sx={{ color: colors.grayDark }}>

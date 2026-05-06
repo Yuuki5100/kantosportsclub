@@ -125,7 +125,7 @@ const MovieCreatePage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 32px, 1280px)", maxWidth: "100%", mx: "auto", py: 2, gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
         <Box sx={{ width: "100%", gap: 0.5 }}>
           <Font20>動画追加</Font20>
           <Font14 sx={{ color: colors.grayDark }}>タイトルと説明を入力して動画を登録します。</Font14>

@@ -303,8 +303,8 @@ const NoticeDetailPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 24px, 1200px)", maxWidth: "100%", mx: "auto", py: 2, gap: 2 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 2 }}>
+      <Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
+        <Box sx={{ width: "100%", gap: 0.5 }}>
           <Font20>お知らせ詳細</Font20>
           <Font14 sx={{ color: colors.grayDark }}>
             {isLoading ? "読み込み中です。" : "一覧から選択したお知らせの詳細"}

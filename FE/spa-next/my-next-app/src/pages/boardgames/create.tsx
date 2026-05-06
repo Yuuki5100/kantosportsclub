@@ -114,7 +114,7 @@ const BoardgameCreatePage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 32px, 1280px)", maxWidth: "100%", mx: "auto", py: 2, gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
         <Box sx={{ width: "100%", gap: 0.5 }}>
           <Font20>ボードゲーム追加</Font20>
           <Font14 sx={{ color: colors.grayDark }}>
