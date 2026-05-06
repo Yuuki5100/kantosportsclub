@@ -4,12 +4,13 @@ import { TextField } from "@mui/material";
 import apiClient from "@/api/apiClient";
 import { apiService } from "@/api/apiService";
 import { API_ENDPOINTS } from "@/api/apiEndpoints";
-import { Box, Font14, Font20 } from "@/components/base";
+import { Box, Font14 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import AutoComplete from "@/components/base/Input/AutoComplete";
 import PageContainer from "@base/Layout/PageContainer";
 import colors from "@/styles/colors";
 import { useFetch } from "@/hooks/useApi";
+import { usePermission } from "@/hooks/usePermission";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import type { NoticeDetailEditRequest, NoticeDetailResponse } from "@/types/notice";
@@ -100,6 +101,7 @@ const normalizeNoticeResponse = (response: NoticeApiResponse): NoticeDetailRespo
 const NoticeDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
+  const { canEditNotice } = usePermission();
   const [notice, setNotice] = useState<NoticeDetailResponse>(EMPTY_NOTICE);
   const [editState, setEditState] = useState<NoticeEditState>({
     title: "",
@@ -309,11 +311,139 @@ const NoticeDetailPage: React.FC = () => {
     [notice]
   );
 
+  const renderDisplayValue = useCallback((value: string) => {
+    return (
+      <Font14 sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word", color: colors.commonFontColorBlack }}>
+        {value || "-"}
+      </Font14>
+    );
+  }, []);
+
+  const renderInput = useCallback(
+    (label: string) => {
+      const sharedSx = {
+        "& .MuiInputBase-input, & .MuiInputBase-inputMultiline": {
+          fontSize: "14px",
+        },
+      };
+
+      if (label === "場所") {
+        return (
+          <AutoComplete
+            name="noticeLocation"
+            id="noticeLocation"
+            options={locationOptions}
+            defaultValue={selectedLocationId || editState.locationName || undefined}
+            disabled={isMasterLocationsLoading || isMasterLocationsError}
+            helperText={
+              isMasterLocationsError
+                ? "場所の取得に失敗しました。"
+                : isMasterLocationsLoading
+                  ? "場所を読み込み中です。"
+                  : undefined
+            }
+            error={isMasterLocationsError}
+            onChange={handleLocationChange}
+            customStyle={{ mt: 0 }}
+          />
+        );
+      }
+
+      if (label === "備考") {
+        return (
+          <TextField
+            value={editState.remarks}
+            onChange={handleChange("remarks")}
+            size="small"
+            fullWidth
+            multiline
+            minRows={3}
+            sx={sharedSx}
+          />
+        );
+      }
+
+      if (label === "開催日") {
+        return (
+          <TextField
+            value={editState.dateandtime}
+            onChange={handleChange("dateandtime")}
+            size="small"
+            fullWidth
+            sx={sharedSx}
+          />
+        );
+      }
+
+      return (
+        <TextField
+          value={
+            {
+              タイトル: editState.title,
+              最寄り駅: editState.station,
+              場所: editState.locationName,
+              dateandtime: editState.dateandtime,
+              人数: editState.people,
+              参加者: editState.peopleName,
+              備考: editState.remarks,
+              公開日時: editState.publicAt,
+              終了日時: editState.closedAt,
+              開始時刻: editState.startHour,
+              終了時刻: editState.endHour,
+              金額: editState.money,
+            }[label] ?? ""
+          }
+          onChange={handleChange(
+            {
+              タイトル: "title",
+              最寄り駅: "station",
+              場所: "locationName",
+              dateandtime: "dateandtime",
+              人数: "people",
+              参加者: "peopleName",
+              備考: "remarks",
+              公開日時: "publicAt",
+              終了日時: "closedAt",
+              開始時刻: "startHour",
+              終了時刻: "endHour",
+              金額: "money",
+            }[label] as keyof NoticeEditState
+          )}
+          size="small"
+          fullWidth
+          sx={sharedSx}
+        />
+      );
+    },
+    [
+      editState.closedAt,
+      editState.dateandtime,
+      editState.endHour,
+      editState.locationName,
+      editState.money,
+      editState.people,
+      editState.peopleName,
+      editState.publicAt,
+      editState.remarks,
+      editState.startHour,
+      editState.station,
+      editState.title,
+      handleChange,
+      handleLocationChange,
+      isMasterLocationsError,
+      isMasterLocationsLoading,
+      locationOptions,
+      selectedLocationId,
+    ]
+  );
+
   return (
     <PageContainer>
       <Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
         <Box sx={{ width: "100%", gap: 0.5 }}>
-          <Font20>お知らせ詳細</Font20>
+          <Font14 sx={{ color: colors.commonFontColorBlack, fontWeight: 700 }}>
+            お知らせ詳細
+          </Font14>
           <Font14 sx={{ color: colors.grayDark }}>
             {isLoading ? "読み込み中です。" : "一覧から選択したお知らせの詳細"}
           </Font14>
@@ -345,85 +475,17 @@ const NoticeDetailPage: React.FC = () => {
                   bgcolor: colors.commonTableHeader,
                   color: colors.commonFontColorBlack,
                   fontWeight: 600,
+                  fontSize: 14,
                 }}
               >
                 {field.label}
               </Box>
               <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-                {field.label === "ID" ? (
-                  field.value || "-"
-                ) : field.label === "場所" ? (
-                  <AutoComplete
-                    name="noticeLocation"
-                    id="noticeLocation"
-                    options={locationOptions}
-                    defaultValue={selectedLocationId || editState.locationName || undefined}
-                    disabled={isMasterLocationsLoading || isMasterLocationsError}
-                    helperText={
-                      isMasterLocationsError
-                        ? "場所の取得に失敗しました。"
-                        : isMasterLocationsLoading
-                          ? "場所を読み込み中です。"
-                          : undefined
-                    }
-                    error={isMasterLocationsError}
-                    onChange={handleLocationChange}
-                    customStyle={{ mt: 0 }}
-                  />
-                ) : field.label === "備考" ? (
-                  <TextField
-                    value={editState.remarks}
-                    onChange={handleChange("remarks")}
-                    size="small"
-                    fullWidth
-                    multiline
-                    minRows={3}
-                  />
-                ) : field.label === "開催日" ? (
-                  <TextField
-                    value={editState.dateandtime}
-                    onChange={handleChange("dateandtime")}
-                    size="small"
-                    fullWidth
-                  />
-                ) : (
-                  <TextField
-                    value={
-                      {
-                        タイトル: editState.title,
-                        最寄り駅: editState.station,
-                        場所: editState.locationName,
-                        dateandtime: editState.dateandtime,
-                        人数: editState.people,
-                        参加者: editState.peopleName,
-                        備考: editState.remarks,
-                        公開日時: editState.publicAt,
-                        終了日時: editState.closedAt,
-                        開始時刻: editState.startHour,
-                        終了時刻: editState.endHour,
-                        金額: editState.money,
-                      }[field.label] ?? ""
-                    }
-                    onChange={handleChange(
-                      {
-                        タイトル: "title",
-                        最寄り駅: "station",
-                        場所: "locationName",
-                        dateandtime: "dateandtime",
-                        人数: "people",
-                        参加者: "peopleName",
-                        備考: "remarks",
-                        公開日時: "publicAt",
-                        終了日時: "closedAt",
-                        開始時刻: "startHour",
-                        終了時刻: "endHour",
-                        金額: "money",
-                      }[field.label] as keyof NoticeEditState
-                    )}
-                    size="small"
-                    fullWidth
-                  />
-                )}
+                {field.label === "ID"
+                  ? renderDisplayValue(field.value)
+                  : canEditNotice
+                    ? renderInput(field.label)
+                    : renderDisplayValue(field.value)}
               </Box>
             </Box>
           ))}
@@ -431,7 +493,13 @@ const NoticeDetailPage: React.FC = () => {
 
         <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
           <ButtonAction label="戻る" color="secondary" onClick={handleBack} />
-          <ButtonAction label={isUpdating ? "更新中..." : "更新"} onClick={handleUpdate} disabled={isUpdating || !notice.noticeId} />
+          {canEditNotice ? (
+            <ButtonAction
+              label={isUpdating ? "更新中..." : "更新"}
+              onClick={handleUpdate}
+              disabled={isUpdating || !notice.noticeId}
+            />
+          ) : null}
         </Box>
       </Box>
     </PageContainer>
