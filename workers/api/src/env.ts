@@ -1,4 +1,4 @@
-import type { AuthStatusResponse, UserPermission } from "./types/auth";
+import type { AuthStatusResponse } from "./types/auth";
 
 export type Bindings = {
   DB?: D1Database;
@@ -12,8 +12,7 @@ export type Bindings = {
 export type AuthContext = {
   authenticated: boolean;
   user: AuthStatusResponse["user"] | null;
-  permissions: UserPermission[];
-  rolePermissions: Record<string, number>;
+  roleLevel: number | null;
   accessToken: string;
 };
 

@@ -25,11 +25,11 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, setOpen }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const toggleSidebar = () => setOpen(!open);
-  const { rolePermissions } = useAuth();
+  const { roleLevel } = useAuth();
   const { selectMenu } = useSidebar();
   const filteredMenu = useMemo(
-    () => filterPageConfig(getPageConfig(), rolePermissions || {}),
-    [rolePermissions]
+    () => filterPageConfig(getPageConfig(), roleLevel ?? null),
+    [roleLevel]
   );
 
   // Auto-select menu based on current route

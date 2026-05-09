@@ -27,7 +27,8 @@ CREATE TABLE users (
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   email TEXT NOT NULL,
-  role TEXT NOT NULL
+  role TEXT NOT NULL,
+  role_level INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE endpoint_authority_mapping (
@@ -181,10 +182,10 @@ VALUES
 -- hash比較実装の場合は、実装方式に合わせて hash 値へ差し替えてください。
 -- ============================
 
-INSERT INTO users (id, username, password, email, role) VALUES
-(1, 'admin', 'password', 'admin@example.com', 'ADMIN'),
-(2, 'user', 'password', 'user@example.com', 'USER'),
-(3, 'viewer', 'password', 'viewer@example.com', 'VIEWER');
+INSERT INTO users (id, username, password, email, role, role_level) VALUES
+(1, 'admin', 'password', 'admin@example.com', 'ADMIN', 3),
+(2, 'user', 'password', 'user@example.com', 'USER', 2),
+(3, 'viewer', 'password', 'viewer@example.com', 'VIEWER', 1);
 
 -- ============================
 -- DML: ユーザー権限
@@ -204,6 +205,7 @@ VALUES
 (4, 1, '201', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (5, 1, '202', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (6, 1, '203', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 1, '204', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 -- user: 通常更新まで
 (10, 2, '101', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -211,12 +213,14 @@ VALUES
 (12, 2, '201', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (13, 2, '202', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (14, 2, '203', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(15, 2, '204', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 -- viewer: 参照のみ
 (20, 3, '102', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (21, 3, '201', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (22, 3, '202', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(23, 3, '203', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(23, 3, '203', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(24, 3, '204', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
   -- admin (id=1)
   INSERT INTO user_role_permissions (user_id, resource, permission_level, created_at, updated_at)
@@ -377,19 +381,19 @@ VALUES
 (2, 'REPORT_CREATED', 1, 0, 0, CURRENT_TIMESTAMP, NULL);
 
 
--- password = 'pasword' の bcrypt hash に更新
+-- password = 'password' の PBKDF2 hash に更新
 -- 対象: admin / user / viewer
 
 UPDATE users
-SET password = char(36) || '2b' || char(36) || '12' || char(36) || '/01HtG3h4wRQfrtMBh6K6.l6y53mWX8wjDxkuTt8C0qbDMdEHeVq2'
+SET password = 'pbkdf2-sha256$10000$3f347321712739e8bc0b05746409243f$38b5c7fde0c1cf72176cd979058b1270fef61c4727359492dffbca853ec6f629'
 WHERE username = 'admin';
 
 UPDATE users
-SET password = char(36) || '2b' || char(36) || '12' || char(36) || '/01HtG3h4wRQfrtMBh6K6.l6y53mWX8wjDxkuTt8C0qbDMdEHeVq2'
+SET password = 'pbkdf2-sha256$10000$3f347321712739e8bc0b05746409243f$38b5c7fde0c1cf72176cd979058b1270fef61c4727359492dffbca853ec6f629'
 WHERE username = 'user';
 
 UPDATE users
-SET password = char(36) || '2b' || char(36) || '12' || char(36) || '/01HtG3h4wRQfrtMBh6K6.l6y53mWX8wjDxkuTt8C0qbDMdEHeVq2'
+SET password = 'pbkdf2-sha256$10000$3f347321712739e8bc0b05746409243f$38b5c7fde0c1cf72176cd979058b1270fef61c4727359492dffbca853ec6f629'
 WHERE username = 'viewer';
 
 CREATE TABLE IF NOT EXISTS auth_refresh_token (

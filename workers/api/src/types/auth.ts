@@ -16,16 +16,9 @@ export type ExternalLoginInput = {
 
 export type AuthUser = {
   userId: string;
-  roleId: number | null;
+  roleLevel: number | null;
   displayName: string | null;
   email: string | null;
-};
-
-export type UserPermission = {
-  permissionId?: string;
-  permissionName?: string;
-  statusLevelId: number;
-  menuFunctionId?: string | null;
 };
 
 export type AuthSession = {
@@ -37,9 +30,7 @@ export type AuthSession = {
 export type AuthStatusResponse = {
   authenticated: boolean;
   user?: AuthUser | null;
-  permissions?: UserPermission[];
-  rolePermissions?: Record<string, number> | null;
-  userPermissions?: UserPermission[];
+  roleLevel?: number | null;
 };
 
 export type EndpointPermission = {
@@ -50,7 +41,7 @@ export type EndpointPermission = {
 
 export type AuthClaims = {
   sub: string;
-  roleId: number | null;
+  roleLevel: number | null;
   name: string | null;
   iat?: number;
   exp?: number;

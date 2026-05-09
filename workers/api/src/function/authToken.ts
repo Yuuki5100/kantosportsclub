@@ -76,7 +76,7 @@ const constantTimeEqual = (a: string, b: string): boolean => {
 
 export const createAuthUser = (claims: AuthClaims): AuthUser => ({
   userId: claims.sub,
-  roleId: claims.roleId,
+  roleLevel: claims.roleLevel,
   displayName: claims.name,
   email: null,
 });
@@ -158,7 +158,7 @@ export const verifyAccessToken = async (token: string): Promise<AuthClaims | nul
 
     console.log("[authToken] verifyAccessToken payload", {
       sub: claims.sub ?? null,
-      roleId: claims.roleId ?? null,
+      roleLevel: claims.roleLevel ?? null,
       name: claims.name ?? null,
       exp: claims.exp ?? null,
       now: Math.floor(Date.now() / 1000),

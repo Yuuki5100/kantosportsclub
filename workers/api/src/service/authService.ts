@@ -5,7 +5,6 @@ import type {
   ExternalLoginInput,
   LoginInput,
   AuthUser,
-  UserPermission,
 } from "../types/auth";
 import {
   createAccessToken,
@@ -17,7 +16,6 @@ import {
 import {
   findUserByLoginId,
   findUserById,
-  findRolePermissions,
   insertRefreshToken,
   findRefreshTokenByHash,
   revokeRefreshToken,
@@ -39,7 +37,7 @@ type AuthUserRow = {
   passwordHash: string | null;
   displayName: string | null;
   email: string | null;
-  roleId: number | null;
+  roleLevel: number | null;
   status?: string | null;
   lockedUntil?: string | null;
 };
@@ -84,7 +82,7 @@ const isActiveUser = (user: { status?: string | null }): boolean => {
 
 const toAuthUser = (user: AuthUserRow): AuthUser => ({
   userId: user.userId,
-  roleId: user.roleId,
+  roleLevel: user.roleLevel,
   displayName: user.displayName,
   email: user.email,
 });
@@ -97,7 +95,7 @@ const buildSession = async ({
 }: BuildSessionInput): Promise<AuthSession> => {
   const claims = {
     sub: user.userId,
-    roleId: user.roleId,
+    roleLevel: user.roleLevel,
     name: user.displayName,
   };
 
@@ -232,7 +230,7 @@ export const status = async (db: D1Database, accessToken?: string): Promise<Auth
     return {
       authenticated: false,
       user: null,
-      permissions: [],
+      roleLevel: null,
     };
   }
 
@@ -243,7 +241,7 @@ export const status = async (db: D1Database, accessToken?: string): Promise<Auth
     return {
       authenticated: false,
       user: null,
-      permissions: [],
+      roleLevel: null,
     };
   }
 
@@ -258,23 +256,19 @@ export const status = async (db: D1Database, accessToken?: string): Promise<Auth
     return {
       authenticated: false,
       user: null,
-      permissions: [],
+      roleLevel: null,
     };
   }
 
-  const permissions: UserPermission[] =
-    user.roleId == null ? [] : await findRolePermissions(db, user.roleId);
-
   console.log("[authService] status success", {
     userId: user.userId,
-    roleId: user.roleId,
-    permissionCount: permissions.length,
+    roleLevel: user.roleLevel,
   });
 
   return {
     authenticated: true,
     user: toAuthUser(user),
-    permissions,
+    roleLevel: user.roleLevel,
   };
 };
 

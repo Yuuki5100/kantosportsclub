@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { getDb, type AppVariables, type Bindings } from '../env';
 import * as AuthService from '../service/authService';
-import type { UserPermission } from '../types/auth';
 import { readAccessToken, readCookieValue } from '../service/authCookie';
 
 const auth = new Hono<{
@@ -21,8 +20,7 @@ type LoginResponseData = {
 
 type StatusResponseData = {
   authenticated: boolean;
-  userPermissions: UserPermission[];
-  rolePermissions: Record<string, number> | null;
+  roleLevel: number | null;
   user: {
     givenName: string;
     surname: string;
@@ -73,8 +71,7 @@ const toStatusResponseData = (result: Awaited<ReturnType<typeof AuthService.stat
 
   return {
     authenticated: result.authenticated,
-    userPermissions: result.permissions ?? [],
-    rolePermissions: null,
+    roleLevel: result.roleLevel ?? null,
     user,
   };
 };

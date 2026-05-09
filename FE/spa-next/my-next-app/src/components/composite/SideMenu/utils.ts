@@ -3,26 +3,24 @@ import { PageConfigItem } from "@/config/PageConfig";
 //パーミッションチェック
 export const isAccessible = (
   item: PageConfigItem,
-  rolePermissions: Record<string, number>
+  roleLevel: number | null
 ): boolean => {
-  const key = item.permissionTargetKey || item.resourceKey;
-  const userLevel = rolePermissions[key] ?? 0;
-  return userLevel >= item.requiredPermission;
+  return (roleLevel ?? 0) >= item.requiredPermission;
 };
 
 //再帰的にメニューをフィルタリング（パーミッションによって表示するメニューを制御する）
 export const filterPageConfig = (
   config: PageConfigItem[],
-  rolePermissions: Record<string, number>
+  roleLevel: number | null
 ): PageConfigItem[] => {
   const filtered = config
     .filter((item) => !item.hidden)
     .map((item): PageConfigItem | null => {
       const children = item.children
-        ? filterPageConfig(item.children, rolePermissions)
+        ? filterPageConfig(item.children, roleLevel)
         : undefined;
 
-      const accessible = isAccessible(item, rolePermissions);
+      const accessible = isAccessible(item, roleLevel);
       const hasVisibleChildren = children && children.length > 0;
 
       if (accessible || hasVisibleChildren) {

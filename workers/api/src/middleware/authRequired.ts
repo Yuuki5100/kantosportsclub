@@ -3,7 +3,6 @@ import { readAccessToken, readCookieValue } from "../service/authCookie";
 import { getDb, type AppVariables, type Bindings } from "../env";
 import * as AuthService from "../service/authService";
 import {
-  buildRolePermissionsMap,
   findEndpointPermission,
   refreshEndpointPermissionCache,
 } from "../service/authPermissionService";
@@ -79,8 +78,7 @@ export const authRequired = createMiddleware<{
       c.set("auth", {
         authenticated: false,
         user: null,
-        permissions: [],
-        rolePermissions: {},
+        roleLevel: null,
         accessToken: "",
       });
 
@@ -106,7 +104,7 @@ export const authRequired = createMiddleware<{
     path,
     authenticated: result.authenticated,
     userId: result.user?.userId ?? null,
-    permissionCount: result.permissions?.length ?? 0,
+    roleLevel: result.roleLevel ?? null,
   });
 
   if (!result.authenticated) {
@@ -114,8 +112,7 @@ export const authRequired = createMiddleware<{
       c.set("auth", {
         authenticated: false,
         user: null,
-        permissions: [],
-        rolePermissions: {},
+        roleLevel: null,
         accessToken,
       });
 
@@ -135,12 +132,10 @@ export const authRequired = createMiddleware<{
     );
   }
 
-  const permissions = result.permissions ?? [];
   c.set("auth", {
     authenticated: true,
     user: result.user ?? null,
-    permissions,
-    rolePermissions: buildRolePermissionsMap(permissions),
+    roleLevel: result.roleLevel ?? null,
     accessToken
   });
 

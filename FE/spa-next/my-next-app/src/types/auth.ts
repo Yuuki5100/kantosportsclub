@@ -31,7 +31,6 @@ export interface UserPermission {
 
 export interface AuthStatusResponse {
   authenticated: boolean;
-  userPermissions?: UserPermission[];
-  rolePermissions?: Record<string, number>;
+  roleLevel?: number | null;
   user?: AuthStatusUser;
 }

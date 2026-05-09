@@ -14,7 +14,6 @@ export type PageConfigItem = {
   name: string;
   resourceKey: string;
   requiredPermission: number;
-  permissionTargetKey?: string;
   icon?: ReactNode;
   langKey?: keyof PageLang;
   children?: PageConfigItem[];
@@ -142,48 +141,42 @@ const pageConfig: PageConfigType = [
   {
     name: "バスケ概要",
     resourceKey: "/admin/basketball-overview",
-    requiredPermission: 0,
-    permissionTargetKey: "100",
+    requiredPermission: 1,
     icon: <AccountTreeIcon />,
     breadcrumb: { id: "basketballOverview", parentId: "top" },
   },
   {
     name: "活動サマリー",
     resourceKey: "/admin/summary",
-    requiredPermission: 0,
-    permissionTargetKey: "100",
+    requiredPermission: 1,
     icon: <TimelineIcon />,
     breadcrumb: { id: "summary", parentId: "top" },
   },
   {
     name: "チームロスター",
     resourceKey: "/roster ",
-    requiredPermission: 0,
-    permissionTargetKey: "100",
+    requiredPermission: 1,
     icon: <GroupsIcon />,
     breadcrumb: { id: "roster", parentId: "top" },
   },
   {
     name: "ボドゲ一覧",
     resourceKey: "/boardgames",
-    requiredPermission: 0,
-    permissionTargetKey: "100",
+    requiredPermission: 1,
     icon: <ListIcon />,
     breadcrumb: { id: "boardgames", parentId: "top" },
   },
   {
     name: "動画一覧",
     resourceKey: "/movies",
-    permissionTargetKey: "100",
-    requiredPermission: 0,
+    requiredPermission: 1,
     icon: <ListIcon />,
     breadcrumb: { id: "movies", parentId: "top" },
   },
   {
     name: "写真一覧",
     resourceKey: "/pictures",
-    permissionTargetKey: "100",
-    requiredPermission: 0,
+    requiredPermission: 1,
     icon: <ListIcon />,
     breadcrumb: { id: "pictures", parentId: "top" },
   },
@@ -191,7 +184,6 @@ const pageConfig: PageConfigType = [
     name: "管理者ページ",
     resourceKey: "/admin/menu",
     requiredPermission: 3,
-    permissionTargetKey: "100",
     icon: <AdminPanelSettingsIcon />,
     breadcrumb: { id: "adminMenu", parentId: "top" },
   },

@@ -1,12 +1,12 @@
 // src/slices/authSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import * as authService from '../api/services/v1/authService';
-import { AuthStatusResponse, LoginData, UserPermission } from '@/types/auth';
+import { AuthStatusResponse, LoginData } from '@/types/auth';
 import { clearStoredAuthTokens } from '@/utils/authTokenStorage';
 
 interface AuthState {
   isAuthenticated: boolean | null;
-  rolePermissions: Record<string, number> | null;
+  roleLevel: number | null;
   status: 'idle' | 'loading' | 'failed';
   error?: string | null;
   userId?: string | null;
@@ -26,7 +26,7 @@ const saveSessionState = (state: AuthState) => {
   try {
     sessionStorage.setItem('authState', JSON.stringify({
       isAuthenticated: state.isAuthenticated,
-      rolePermissions: state.rolePermissions,
+      roleLevel: state.roleLevel,
       userId: state.userId,
       name: state.name,
     }));
@@ -37,22 +37,9 @@ const clearSessionState = () => {
   try { sessionStorage.removeItem('authState'); } catch { /* ignore */ }
 };
 
-/**
- * userPermissions配列をpermissionName→statusLevelIdのマップに変換
- */
-const toRolePermissionsMap = (
-  permissions?: UserPermission[]
-): Record<string, number> | null => {
-  if (!permissions || permissions.length === 0) return null;
-  return permissions.reduce<Record<string, number>>((acc, p) => {
-    acc[p.permissionName] = p.statusLevelId;
-    return acc;
-  }, {});
-};
-
 const initialState: AuthState = {
   isAuthenticated: null,
-  rolePermissions: null,
+  roleLevel: null,
   status: 'idle',
   error: null,
   userId: null,
@@ -119,7 +106,7 @@ const authSlice = createSlice({
       const saved = loadSessionState();
       if (saved.isAuthenticated != null) {
         state.isAuthenticated = saved.isAuthenticated;
-        state.rolePermissions = saved.rolePermissions ?? null;
+        state.roleLevel = saved.roleLevel ?? null;
         state.userId = saved.userId ?? null;
         state.name = saved.name ?? null;
       }
@@ -139,7 +126,7 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.isAuthenticated = false;
-        state.rolePermissions = null;
+        state.roleLevel = null;
         state.userId = null;
         state.name = null;
         state.status = 'failed';
@@ -148,17 +135,16 @@ const authSlice = createSlice({
         clearStoredAuthTokens();
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
-        const { authenticated, userPermissions, rolePermissions, user } = action.payload;
-        const permMap = toRolePermissionsMap(userPermissions) ?? rolePermissions ?? null;
+        const { authenticated, roleLevel, user } = action.payload;
         state.isAuthenticated = authenticated;
-        state.rolePermissions = permMap;
+        state.roleLevel = roleLevel ?? null;
         state.userId = user?.userId ?? null;
         state.name = user ? `${user.givenName} ${user.surname}` : null;
         saveSessionState(state);
       })
       .addCase(checkAuth.rejected, (state, action) => {
         state.isAuthenticated = false;
-        state.rolePermissions = null;
+        state.roleLevel = null;
         state.userId = null;
         state.name = null;
         state.status = 'failed';
@@ -168,7 +154,7 @@ const authSlice = createSlice({
       })
       .addCase(logout.fulfilled, (state) => {
         state.isAuthenticated = false;
-        state.rolePermissions = null;
+        state.roleLevel = null;
         state.userId = null;
         state.name = null;
         state.status = 'idle';

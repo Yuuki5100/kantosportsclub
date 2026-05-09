@@ -16,10 +16,10 @@ type MobileSideMenuProps = {
 
 const MobileSideMenu: React.FC<MobileSideMenuProps> = ({ open, setOpen }) => {
   const router = useRouter();
-  const { rolePermissions } = useAuth();
+  const { roleLevel } = useAuth();
   const filteredMenu = useMemo(
-    () => filterPageConfig(getPageConfig(), rolePermissions || {}),
-    [rolePermissions]
+    () => filterPageConfig(getPageConfig(), roleLevel ?? null),
+    [roleLevel]
   );
 
   useEffect(() => {

@@ -89,7 +89,7 @@ export const mockAuthStatus = async (): Promise<AuthStatusResponse> => {
   }
   return {
     authenticated: true,
-    rolePermissions: user.rolePermissions,
+    roleLevel: user.roleLevel,
     user: {
       givenName: user.givenName,
       surname: user.surname,

@@ -1,13 +1,9 @@
-import bcrypt from 'bcryptjs';
-
 const encoder = new TextEncoder();
 
 const PBKDF2_ALGORITHM = 'pbkdf2-sha256';
 const PBKDF2_ITERATIONS = 10_000;
 const PBKDF2_SALT_BYTES = 16;
 const PBKDF2_HASH_BITS = 256;
-
-const BCRYPT_HASH_PATTERN = /^\$2[aby]\$\d{2}\$/;
 
 const bytesToHex = (bytes: Uint8Array): string =>
   [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -121,10 +117,6 @@ export const verifyPasswordHash = async (
   try {
     if (passwordHash.startsWith(`${PBKDF2_ALGORITHM}$`)) {
       return await verifyPbkdf2Password(plainPassword, passwordHash);
-    }
-
-    if (BCRYPT_HASH_PATTERN.test(passwordHash)) {
-      return await bcrypt.compare(plainPassword, passwordHash);
     }
 
     return false;

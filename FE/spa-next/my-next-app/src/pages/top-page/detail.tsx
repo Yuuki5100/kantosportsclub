@@ -101,7 +101,7 @@ const normalizeNoticeResponse = (response: NoticeApiResponse): NoticeDetailRespo
 const NoticeDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
-  const { canEditNotice } = usePermission();
+  const { canViewNotice, canEditNotice } = usePermission();
   const [notice, setNotice] = useState<NoticeDetailResponse>(EMPTY_NOTICE);
   const [editState, setEditState] = useState<NoticeEditState>({
     title: "",
@@ -319,6 +319,8 @@ const NoticeDetailPage: React.FC = () => {
     );
   }, []);
 
+  const canEditCurrentNotice = canViewNotice && canEditNotice;
+
   const renderInput = useCallback(
     (label: string) => {
       const sharedSx = {
@@ -483,7 +485,7 @@ const NoticeDetailPage: React.FC = () => {
               <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
                 {field.label === "ID"
                   ? renderDisplayValue(field.value)
-                  : canEditNotice
+                  : canEditCurrentNotice
                     ? renderInput(field.label)
                     : renderDisplayValue(field.value)}
               </Box>
@@ -493,7 +495,7 @@ const NoticeDetailPage: React.FC = () => {
 
         <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
           <ButtonAction label="戻る" color="secondary" onClick={handleBack} />
-          {canEditNotice ? (
+          {canEditCurrentNotice ? (
             <ButtonAction
               label={isUpdating ? "更新中..." : "更新"}
               onClick={handleUpdate}

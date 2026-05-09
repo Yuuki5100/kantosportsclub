@@ -67,7 +67,7 @@ export const permissionRequired = createMiddleware<{
     path,
     authenticated: auth?.authenticated ?? false,
     userId: auth?.user?.userId ?? null,
-    rolePermissions: auth?.rolePermissions ?? null,
+    roleLevel: auth?.roleLevel ?? null,
   });
 
   if (!auth?.authenticated) {
@@ -83,7 +83,7 @@ export const permissionRequired = createMiddleware<{
     );
   }
 
-  const allowed = checkEndpointPermission(endpointPermission, auth.rolePermissions);
+  const allowed = checkEndpointPermission(endpointPermission, auth.roleLevel);
   console.log("[permissionRequired] decision", {
     method: c.req.method,
     path,

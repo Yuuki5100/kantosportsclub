@@ -19,10 +19,7 @@ function extractTopLevelPath(resourceKey: string): string | null {
 
 function walkConfig(items: PageConfigType) {
   for (const item of items) {
-    if (
-      item.permissionTargetKey === "MENU_NOT_DISPLAY" || // 対応：除外キー
-      !item.resourceKey
-    ) {
+    if (!item.resourceKey) {
       continue;
     }
 

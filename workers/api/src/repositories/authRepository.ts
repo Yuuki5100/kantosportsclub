@@ -1,5 +1,4 @@
 import { verifyPasswordHash } from '../auth/passwordHash';
-import type { UserPermission } from '../types/auth';
 
 export type AuthUserRow = {
   userId: string;
@@ -7,7 +6,7 @@ export type AuthUserRow = {
   passwordHash: string | null;
   displayName: string | null;
   email: string | null;
-  roleId: number | null;
+  roleLevel: number | null;
   status?: string | null;
   lockedUntil?: string | null;
 };
@@ -27,16 +26,9 @@ type DbUserRow = {
   passwordHash: string | null;
   displayName: string | null;
   email: string | null;
-  roleId: string | number | null;
+  role: string | null;
   status?: string | null;
   lockedUntil?: string | null;
-};
-
-type DbRolePermissionRow = {
-  permissionId?: string | null;
-  permissionName?: string | null;
-  statusLevelId: number;
-  menuFunctionId?: string | null;
 };
 
 type DbRefreshTokenRow = {
@@ -57,6 +49,26 @@ const toNullableNumber = (value: string | number | null | undefined): number | n
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const roleToLevel = (role: string | null | undefined): number | null => {
+  if (!role) {
+    return null;
+  }
+
+  const normalized = role.trim().toUpperCase();
+  if (normalized === "ADMIN" || normalized === "LEVEL_3") {
+    return 3;
+  }
+  if (normalized === "USER" || normalized === "LEVEL_2") {
+    return 2;
+  }
+  if (normalized === "VIEWER" || normalized === "LEVEL_1") {
+    return 1;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const normalizeUserRow = (row: DbUserRow | null): AuthUserRow | null => {
   if (!row) {
     return null;
@@ -68,7 +80,7 @@ const normalizeUserRow = (row: DbUserRow | null): AuthUserRow | null => {
     passwordHash: row.passwordHash,
     displayName: row.displayName,
     email: row.email,
-    roleId: toNullableNumber(row.roleId),
+    roleLevel: roleToLevel(row.role),
     status: row.status ?? 'ACTIVE',
     lockedUntil: row.lockedUntil ?? null,
   };
@@ -113,7 +125,7 @@ export const findUserByUsername = async (
         password AS passwordHash,
         username AS displayName,
         email,
-        id AS roleId,
+        role,
         'ACTIVE' AS status,
         NULL AS lockedUntil
       FROM users
@@ -155,7 +167,7 @@ export const findUserById = async (
         password AS passwordHash,
         username AS displayName,
         email,
-        id AS roleId,
+        role,
         'ACTIVE' AS status,
         NULL AS lockedUntil
       FROM users
@@ -171,44 +183,10 @@ export const findUserById = async (
     found: Boolean(row),
     rowUserId: row?.userId ?? null,
     username: row?.username ?? null,
-    roleId: row?.roleId ?? null,
+    role: row?.role ?? null,
   });
 
   return normalizeUserRow(row ?? null);
-};
-
-/**
- * 現在の簡易DDLでは role_permission ではなく user_role_permissions なので、
- * roleId を users.id 相当として扱い、user_role_permissions から権限を返す。
- *
- * resource には menu_function_id 相当の値が入っている前提。
- */
-export const findRolePermissions = async (
-  db: D1Database,
-  roleId: number,
-): Promise<UserPermission[]> => {
-  const result = await db
-    .prepare(
-      `
-      SELECT
-        resource AS permissionId,
-        resource AS permissionName,
-        permission_level AS statusLevelId,
-        resource AS menuFunctionId
-      FROM user_role_permissions
-      WHERE user_id = ?
-      ORDER BY resource
-      `,
-    )
-    .bind(roleId)
-    .all<DbRolePermissionRow>();
-
-  return (result.results ?? []).map((row) => ({
-    permissionId: row.permissionId ?? undefined,
-    permissionName: row.permissionName ?? undefined,
-    statusLevelId: row.statusLevelId,
-    menuFunctionId: row.menuFunctionId ?? null,
-  }));
 };
 
 /**
