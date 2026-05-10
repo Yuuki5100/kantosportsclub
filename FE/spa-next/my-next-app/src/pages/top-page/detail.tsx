@@ -121,7 +121,7 @@ const NoticeDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
   const { refreshAuth } = useAuth();
-  const { canViewNotice, canEditNotice } = usePermission();
+  const { canViewNotice, canEditNotice, rolePermissions } = usePermission();
   const [notice, setNotice] = useState<NoticeDetailResponse>(EMPTY_NOTICE);
   const [editState, setEditState] = useState<NoticeEditState>({
     title: "",
@@ -577,6 +577,9 @@ const NoticeDetailPage: React.FC = () => {
             />
           ) : null}
         </Box>
+        <Font14 sx={{ color: colors.grayDark }}>
+          debug: rolePermissions["100"]={rolePermissions?.["100"] ?? 0}
+        </Font14>
       </Box>
     </PageContainer>
   );
