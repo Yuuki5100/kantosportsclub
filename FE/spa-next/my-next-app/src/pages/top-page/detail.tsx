@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { TextField } from "@mui/material";
+import dayjs, { Dayjs } from "dayjs";
 import apiClient from "@/api/apiClient";
 import { apiService } from "@/api/apiService";
 import { API_ENDPOINTS } from "@/api/apiEndpoints";
 import { Box, Font14 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import AutoComplete from "@/components/base/Input/AutoComplete";
+import DatePicker from "@/components/base/Input/DatePicker";
 import PageContainer from "@base/Layout/PageContainer";
 import colors from "@/styles/colors";
 import { useFetch } from "@/hooks/useApi";
@@ -67,6 +69,22 @@ type NoticeEditState = {
   money: string;
 };
 
+const NOTICE_DATE_FORMAT = "YYYY-MM-DD";
+const NOTICE_PLACEHOLDERS = {
+  title: "例: バスケ",
+  station: "例: 横浜",
+  locationName: "例: 横浜",
+  dateandtime: "例: 2026-05-30",
+  people: "例: 5",
+  peopleName: "例: 和田、高村、後藤",
+  remarks: "例: 持ち物を記載してください",
+  publicAt: "例: 2026-05-01",
+  closedAt: "例: 2026-05-31",
+  startHour: "例: 10:00",
+  endHour: "例: 16:00",
+  money: "例: 660",
+} as const;
+
 const getQueryValue = (value: string | string[] | undefined): string => {
   if (Array.isArray(value)) {
     return value[0] ?? "";
@@ -103,7 +121,7 @@ const NoticeDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
   const { refreshAuth } = useAuth();
-  const { canViewNotice, canEditNotice, getLevel, rolePermissions } = usePermission();
+  const { canViewNotice, canEditNotice } = usePermission();
   const [notice, setNotice] = useState<NoticeDetailResponse>(EMPTY_NOTICE);
   const [editState, setEditState] = useState<NoticeEditState>({
     title: "",
@@ -241,6 +259,16 @@ const NoticeDetailPage: React.FC = () => {
     }));
   }, []);
 
+  const handleDateChange = useCallback(
+    (field: "publicAt" | "closedAt") => (newValue: Dayjs | undefined) => {
+      setEditState((current) => ({
+        ...current,
+        [field]: newValue ? newValue.format(NOTICE_DATE_FORMAT) : "",
+      }));
+    },
+    []
+  );
+
   const handleUpdate = useCallback(async () => {
     if (!notice.noticeId) {
       showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
@@ -377,6 +405,35 @@ const NoticeDetailPage: React.FC = () => {
             size="small"
             fullWidth
             sx={sharedSx}
+            placeholder="例: 2026-05-30"
+          />
+        );
+      }
+
+      if (label === "公開日時") {
+        return (
+          <DatePicker
+            label={label}
+            value={editState.publicAt ? dayjs(editState.publicAt, NOTICE_DATE_FORMAT) : null}
+            onChange={handleDateChange("publicAt")}
+            placeholder={NOTICE_PLACEHOLDERS.publicAt}
+            showTime
+            format="YYYY/MM/DD HH:mm"
+            customStyle={{ mt: 0 }}
+          />
+        );
+      }
+
+      if (label === "終了日時") {
+        return (
+          <DatePicker
+            label={label}
+            value={editState.closedAt ? dayjs(editState.closedAt, NOTICE_DATE_FORMAT) : null}
+            onChange={handleDateChange("closedAt")}
+            placeholder={NOTICE_PLACEHOLDERS.closedAt}
+            showTime
+            format="YYYY/MM/DD HH:mm"
+            customStyle={{ mt: 0 }}
           />
         );
       }
@@ -418,6 +475,20 @@ const NoticeDetailPage: React.FC = () => {
           size="small"
           fullWidth
           sx={sharedSx}
+          placeholder={
+            {
+              タイトル: NOTICE_PLACEHOLDERS.title,
+              最寄り駅: NOTICE_PLACEHOLDERS.station,
+              場所: NOTICE_PLACEHOLDERS.locationName,
+              dateandtime: NOTICE_PLACEHOLDERS.dateandtime,
+              人数: NOTICE_PLACEHOLDERS.people,
+              参加者: NOTICE_PLACEHOLDERS.peopleName,
+              備考: NOTICE_PLACEHOLDERS.remarks,
+              開始時刻: NOTICE_PLACEHOLDERS.startHour,
+              終了時刻: NOTICE_PLACEHOLDERS.endHour,
+              金額: NOTICE_PLACEHOLDERS.money,
+            }[label] ?? undefined
+          }
         />
       );
     },
@@ -507,17 +578,6 @@ const NoticeDetailPage: React.FC = () => {
             />
           ) : null}
         </Box>
-        {/* <Box sx={{ width: "100%", gap: 0.5 }}>
-          <Font14 sx={{ color: colors.grayDark }}>
-            debug: canViewNotice={String(canViewNotice)} canEditNotice={String(canEditNotice)}
-          </Font14>
-          <Font14 sx={{ color: colors.grayDark }}>
-            debug: canEditCurrentNotice={String(canEditCurrentNotice)}
-          </Font14>
-          <Font14 sx={{ color: colors.grayDark }}>
-            debug: noticePermissionLevel={String(getLevel("3"))} rolePermissions={JSON.stringify(rolePermissions ?? {})}
-          </Font14>
-        </Box> */}
       </Box>
     </PageContainer>
   );

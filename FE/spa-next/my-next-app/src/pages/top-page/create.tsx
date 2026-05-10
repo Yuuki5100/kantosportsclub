@@ -1,11 +1,13 @@
 import React, { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { TextField } from "@mui/material";
+import dayjs, { Dayjs } from "dayjs";
 import { apiService } from "@/api/apiService";
 import { API_ENDPOINTS } from "@/api/apiEndpoints";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import AutoComplete from "@/components/base/Input/AutoComplete";
+import DatePicker from "@/components/base/Input/DatePicker";
 import PageContainer from "@base/Layout/PageContainer";
 import { useFetch } from "@/hooks/useApi";
 import { useSnackbar } from "@/hooks/useSnackbar";
@@ -41,6 +43,28 @@ type NoticeCreateState = {
   startHour: string;
   endHour: string;
   money: string;
+};
+
+const NOTICE_DATE_FORMAT = "YYYY-MM-DD";
+const NOTICE_PLACEHOLDERS = {
+  title: "例: バスケ",
+  station: "例: 横浜",
+  locationName: "例: 横浜",
+  dateandtime: "例: 2026-05-30",
+  people: "例: 5",
+  peopleName: "例: 和田、高村、後藤",
+  remarks: "例: 持ち物を記載してください",
+  publicAt: "例: 2026-05-01",
+  closedAt: "例: 2026-05-31",
+  startHour: "例: 10:00",
+  endHour: "例: 16:00",
+  money: "例: 660",
+} as const;
+
+const getPlaceholder = (field: keyof NoticeCreateState): string | undefined => {
+  if (field === "locationId") return undefined;
+  if (field === "locationName") return NOTICE_PLACEHOLDERS.locationName;
+  return NOTICE_PLACEHOLDERS[field as keyof typeof NOTICE_PLACEHOLDERS];
 };
 
 const INITIAL_STATE: NoticeCreateState = {
@@ -99,6 +123,16 @@ const NoticeCreatePage: React.FC = () => {
       locationName: option?.label ?? "",
     }));
   }, []);
+
+  const handleDateChange = useCallback(
+    (field: "publicAt" | "closedAt") => (newValue: Dayjs | undefined) => {
+      setForm((current) => ({
+        ...current,
+        [field]: newValue ? newValue.format(NOTICE_DATE_FORMAT) : "",
+      }));
+    },
+    []
+  );
 
   const handleBack = useCallback(() => {
     void router.push("/admin/menu");
@@ -215,6 +249,16 @@ const NoticeCreatePage: React.FC = () => {
                     onChange={handleLocationChange}
                     customStyle={{ mt: 0 }}
                   />
+                ) : field.field === "publicAt" || field.field === "closedAt" ? (
+                  <DatePicker
+                    label={field.label}
+                    value={form[field.field] ? dayjs(form[field.field], NOTICE_DATE_FORMAT) : null}
+                    onChange={handleDateChange(field.field)}
+                    placeholder={getPlaceholder(field.field)}
+                    showTime
+                    format="YYYY/MM/DD HH:mm"
+                    customStyle={{ mt: 0 }}
+                  />
                 ) : (
                   <TextField
                     name={`noticeCreate${field.field}`}
@@ -224,6 +268,7 @@ const NoticeCreatePage: React.FC = () => {
                     multiline={field.multiline}
                     minRows={field.multiline ? 3 : undefined}
                     onChange={handleChange(field.field)}
+                    placeholder={getPlaceholder(field.field)}
                   />
                 )}
               </Box>

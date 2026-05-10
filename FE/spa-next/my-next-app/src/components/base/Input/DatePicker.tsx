@@ -3,6 +3,7 @@ import { Dayjs } from 'dayjs';
 import { IconButton, InputAdornment, FormControl } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { DatePicker as MUIDatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateTimePicker as MUIDateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import colors from '@/styles/colors';
@@ -64,6 +65,20 @@ export type DatePickerProps = {
   format?: string;
 
   /**
+   * 時刻入力を有効にするかどうか
+   *
+   * @type {boolean}
+   */
+  showTime?: boolean;
+
+  /**
+   * プレースホルダー
+   *
+   * @type {string}
+   */
+  placeholder?: string;
+
+  /**
    * カスタムスタイル
    *
    * @type {object}
@@ -89,6 +104,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   helperText,
   error,
   format = 'YYYY/MM/DD',
+  showTime = false,
+  placeholder,
   customStyle = {},
   onBlur,
 }) => {
@@ -211,6 +228,70 @@ const DatePicker: React.FC<DatePickerProps> = ({
   return (
     <FormControl fullWidth sx={{ ...customStyle }} error ref={containerRef}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
+        {showTime ? (
+          <MUIDateTimePicker
+            label={label}
+            value={value}
+            onChange={(newValue) => handleChange(newValue ?? undefined)}
+            minDate={minDate}
+            maxDate={maxDate}
+            shouldDisableDate={shouldDisableDate}
+            disabled={disabled}
+            format={format}
+            onError={(reason) => {
+              if (reason === 'invalidDate') {
+                setInternalError(true);
+                setInternalHelperText(getMessage(MessageCodes.DATE_INVALID));
+              } else {
+                setInternalError(false);
+                setInternalHelperText('');
+              }
+            }}
+            slotProps={{
+              textField: {
+                helperText: internalHelperText !== '' ? internalHelperText : helperText,
+                error: internalError ? true : error ? true : false,
+                variant: 'outlined',
+                placeholder,
+                onBlur: handleBlur,
+                sx: {
+                  '& .MuiInputBase-input.Mui-disabled': {
+                    opacity: 1,
+                    WebkitTextFillColor: colors.inputText,
+                    backgroundColor: DISABLED_BG_COLOR,
+                    color: colors.inputText,
+                  },
+                  '& .MuiOutlinedInput-root.Mui-disabled': {
+                    backgroundColor: DISABLED_BG_COLOR,
+                    border: DISABLED_BD_COLOR,
+                  },
+                  '& .MuiIconButton-root.Mui-disabled': {
+                    backgroundColor: DISABLED_BG_COLOR,
+                    color: colors.inputText,
+                  },
+                },
+                InputProps: value
+                  ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={handleClear}
+                          edge="end"
+                          size="small"
+                          disabled={disabled}
+                          aria-label="clear DatePicker"
+                          color="error"
+                        >
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }
+                  : {},
+              },
+            }}
+          />
+        ) : (
         <MUIDatePicker
           label={label}
           value={value}
@@ -234,6 +315,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               helperText: internalHelperText !=='' ?  internalHelperText : helperText,
               error: internalError ? true : error ? true : false,
               variant: 'outlined',
+              placeholder,
               onBlur: handleBlur,
               sx: {
                 // ⬇️ disabled状態での文字色を強制上書き
@@ -275,6 +357,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             },
           }}
         />
+        )}
       </LocalizationProvider>
     </FormControl>
   );
