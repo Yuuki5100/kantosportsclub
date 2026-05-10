@@ -586,13 +586,13 @@ const NoticeDetailPage: React.FC = () => {
             />
           ) : null}
         </Box>
-        <Font14 sx={{ color: colors.grayDark }}>
+        {/* <Font14 sx={{ color: colors.grayDark }}>
           debug: rolePermissions["100"]={rolePermissions?.["100"] ?? 0}
         </Font14>
         <Font14 sx={{ color: colors.grayDark }}>
           debug: canViewNotice={String(canViewNotice)} canEditNotice={String(canEditNotice)} canEditCurrentNotice=
           {String(canEditCurrentNotice)}
-        </Font14>
+        </Font14> */}
       </Box>
     </PageContainer>
   );
