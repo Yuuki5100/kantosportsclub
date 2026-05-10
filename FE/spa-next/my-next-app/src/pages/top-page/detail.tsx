@@ -507,7 +507,7 @@ const NoticeDetailPage: React.FC = () => {
             />
           ) : null}
         </Box>
-        <Box sx={{ width: "100%", gap: 0.5 }}>
+        {/* <Box sx={{ width: "100%", gap: 0.5 }}>
           <Font14 sx={{ color: colors.grayDark }}>
             debug: canViewNotice={String(canViewNotice)} canEditNotice={String(canEditNotice)}
           </Font14>
@@ -517,7 +517,7 @@ const NoticeDetailPage: React.FC = () => {
           <Font14 sx={{ color: colors.grayDark }}>
             debug: noticePermissionLevel={String(getLevel("3"))} rolePermissions={JSON.stringify(rolePermissions ?? {})}
           </Font14>
-        </Box>
+        </Box> */}
       </Box>
     </PageContainer>
   );
