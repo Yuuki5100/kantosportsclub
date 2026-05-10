@@ -23,7 +23,9 @@ export const PERMISSION_LEVEL = {
  * if (canEdit("USER")) { // show create/update/delete buttons }
  */
 export const usePermission = () => {
-  const { rolePermissions } = useAuth();
+  const { rolePermissions } = useAuth() as {
+    rolePermissions?: Record<string, number> | null;
+  };
 
   /**
    * 指定permissionNameの権限レベルを返す（0 = 権限なし）
@@ -58,10 +60,8 @@ export const usePermission = () => {
     canEditUser: canEdit("USER"),
     canViewRole: canView("ROLE"),
     canEditRole: canEdit("ROLE"),
-    canViewNotice: canView("204"),
-    canEditNotice: canEdit("204"),
-    // canViewNotice: canView("NOTICE"),
-    // canEditNotice: canEdit("NOTICE"),
+    canViewNotice: canView("NOTICE"),
+    canEditNotice: canEdit("NOTICE"),
     canViewManual: canView("MANUAL"),
     canEditManual: canEdit("MANUAL"),
     canViewSystemSettings: canView("SYSTEM_SETTINGS"),
