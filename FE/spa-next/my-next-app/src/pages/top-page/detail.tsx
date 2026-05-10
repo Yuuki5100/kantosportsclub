@@ -260,7 +260,7 @@ const NoticeDetailPage: React.FC = () => {
   }, []);
 
   const handleDateChange = useCallback(
-    (field: "publicAt" | "closedAt") => (newValue: Dayjs | undefined) => {
+    (field: "dateandtime" | "publicAt" | "closedAt") => (newValue: Dayjs | undefined) => {
       setEditState((current) => ({
         ...current,
         [field]: newValue ? newValue.format(NOTICE_DATE_FORMAT) : "",
@@ -399,13 +399,12 @@ const NoticeDetailPage: React.FC = () => {
 
       if (label === "開催日") {
         return (
-          <TextField
-            value={editState.dateandtime}
-            onChange={handleChange("dateandtime")}
-            size="small"
-            fullWidth
-            sx={sharedSx}
+          <DatePicker
+            label={label}
+            value={editState.dateandtime ? dayjs(editState.dateandtime, NOTICE_DATE_FORMAT) : null}
+            onChange={handleDateChange("dateandtime")}
             placeholder="例: 2026-05-30"
+            customStyle={{ mt: 0 }}
           />
         );
       }

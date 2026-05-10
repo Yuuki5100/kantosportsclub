@@ -13,6 +13,12 @@ import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 import type { MediaItem } from "@/components/functional/MediaListPage";
 
+const PICTURE_PLACEHOLDERS = {
+  title: "例: 試合写真",
+  description: "例: 2026年春の集合写真です",
+  url: "例: https://example.com/image.jpg",
+} as const;
+
 type PictureCreateRequest = {
   title: string;
   description: string;
@@ -166,6 +172,7 @@ const PictureCreatePage: React.FC = () => {
                 size="small"
                 fullWidth
                 onChange={handleChange("title")}
+                placeholder={PICTURE_PLACEHOLDERS.title}
               />
             </Box>
           </Box>
@@ -198,6 +205,7 @@ const PictureCreatePage: React.FC = () => {
                 multiline
                 minRows={3}
                 onChange={handleChange("description")}
+                placeholder={PICTURE_PLACEHOLDERS.description}
               />
             </Box>
           </Box>
@@ -228,6 +236,7 @@ const PictureCreatePage: React.FC = () => {
                 size="small"
                 fullWidth
                 onChange={handleChange("url")}
+                placeholder={PICTURE_PLACEHOLDERS.url}
               />
             </Box>
           </Box>

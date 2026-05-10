@@ -13,6 +13,12 @@ import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 import type { MediaItem } from "@/components/functional/MediaListPage";
 
+const MOVIE_PLACEHOLDERS = {
+  title: "例: バスケの試合動画",
+  description: "例: 2026年の試合ハイライトです",
+  url: "例: https://example.com/video.mp4",
+} as const;
+
 type MovieCreateRequest = {
   title: string;
   description: string;
@@ -165,6 +171,7 @@ const MovieCreatePage: React.FC = () => {
                 size="small"
                 fullWidth
                 onChange={handleChange("title")}
+                placeholder={MOVIE_PLACEHOLDERS.title}
               />
             </Box>
           </Box>
@@ -196,6 +203,7 @@ const MovieCreatePage: React.FC = () => {
                 multiline
                 minRows={3}
                 onChange={handleChange("description")}
+                placeholder={MOVIE_PLACEHOLDERS.description}
               />
             </Box>
             <Box
@@ -249,13 +257,14 @@ const MovieCreatePage: React.FC = () => {
                 URL
               </Box>
               <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-                <TextField
-                  name="movieCreateUrl"
-                  value={form.url}
-                  size="small"
-                  fullWidth
-                  onChange={handleChange("url")}
-                />
+              <TextField
+                name="movieCreateUrl"
+                value={form.url}
+                size="small"
+                fullWidth
+                onChange={handleChange("url")}
+                placeholder={MOVIE_PLACEHOLDERS.url}
+              />
               </Box>
             </Box>
             <Box

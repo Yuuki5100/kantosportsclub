@@ -125,7 +125,7 @@ const NoticeCreatePage: React.FC = () => {
   }, []);
 
   const handleDateChange = useCallback(
-    (field: "publicAt" | "closedAt") => (newValue: Dayjs | undefined) => {
+    (field: "dateandtime" | "publicAt" | "closedAt") => (newValue: Dayjs | undefined) => {
       setForm((current) => ({
         ...current,
         [field]: newValue ? newValue.format(NOTICE_DATE_FORMAT) : "",
@@ -247,6 +247,14 @@ const NoticeCreatePage: React.FC = () => {
                     }
                     error={isMasterLocationsError}
                     onChange={handleLocationChange}
+                    customStyle={{ mt: 0 }}
+                  />
+                ) : field.field === "dateandtime" ? (
+                  <DatePicker
+                    label={field.label}
+                    value={form.dateandtime ? dayjs(form.dateandtime, NOTICE_DATE_FORMAT) : null}
+                    onChange={handleDateChange("dateandtime")}
+                    placeholder="例: 2026-05-30"
                     customStyle={{ mt: 0 }}
                   />
                 ) : field.field === "publicAt" || field.field === "closedAt" ? (

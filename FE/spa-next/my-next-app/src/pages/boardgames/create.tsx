@@ -9,6 +9,17 @@ import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 
+const BOARDGAME_PLACEHOLDERS = {
+  boardgameName: "例: カタン",
+  ownerName: "例: 後藤",
+  peopleMin: "例: 2",
+  peopleMax: "例: 4",
+  needTime: "例: 60",
+  urlStr: "例: https://example.com/rules",
+  howToPlay: "例: ルールを簡単に記載してください",
+  remarks: "例: 持ち運び注意",
+} as const;
+
 const BOARDGAME_CREATE_ENDPOINT = "/api/boardgames";
 
 type BoardgameCreateRequest = {
@@ -156,6 +167,7 @@ const BoardgameCreatePage: React.FC = () => {
                 size="small"
                 fullWidth
                 onChange={handleChange("boardgameName")}
+                placeholder={BOARDGAME_PLACEHOLDERS.boardgameName}
               />
             </Box>
           </Box>
@@ -186,6 +198,7 @@ const BoardgameCreatePage: React.FC = () => {
                 size="small"
                 fullWidth
                 onChange={handleChange("ownerName")}
+                placeholder={BOARDGAME_PLACEHOLDERS.ownerName}
               />
             </Box>
           </Box>
@@ -218,6 +231,7 @@ const BoardgameCreatePage: React.FC = () => {
                 type="number"
                 inputProps={{ min: 1 }}
                 onChange={handleChange("peopleMin")}
+                placeholder={BOARDGAME_PLACEHOLDERS.peopleMin}
               />
             </Box>
           </Box>
@@ -250,6 +264,7 @@ const BoardgameCreatePage: React.FC = () => {
                 type="number"
                 inputProps={{ min: 1 }}
                 onChange={handleChange("peopleMax")}
+                placeholder={BOARDGAME_PLACEHOLDERS.peopleMax}
               />
             </Box>
           </Box>
@@ -282,6 +297,7 @@ const BoardgameCreatePage: React.FC = () => {
                 type="number"
                 inputProps={{ min: 1 }}
                 onChange={handleChange("needTime")}
+                placeholder={BOARDGAME_PLACEHOLDERS.needTime}
               />
             </Box>
           </Box>
@@ -312,6 +328,7 @@ const BoardgameCreatePage: React.FC = () => {
                 size="small"
                 fullWidth
                 onChange={handleChange("urlStr")}
+                placeholder={BOARDGAME_PLACEHOLDERS.urlStr}
               />
             </Box>
           </Box>
@@ -344,6 +361,7 @@ const BoardgameCreatePage: React.FC = () => {
                 multiline
                 minRows={3}
                 onChange={handleChange("howToPlay")}
+                placeholder={BOARDGAME_PLACEHOLDERS.howToPlay}
               />
             </Box>
           </Box>
@@ -375,6 +393,7 @@ const BoardgameCreatePage: React.FC = () => {
                 multiline
                 minRows={3}
                 onChange={handleChange("remarks")}
+                placeholder={BOARDGAME_PLACEHOLDERS.remarks}
               />
             </Box>
           </Box>
