@@ -157,9 +157,17 @@ const authSlice = createSlice({
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         const { authenticated, roleLevel, user, rolePermissions, userPermissions } = action.payload;
+        console.log("[authSlice] checkAuth.fulfilled", {
+          authenticated,
+          roleLevel,
+          userId: user?.userId ?? null,
+          userPermissions,
+          rolePermissions,
+        });
         state.isAuthenticated = authenticated;
         state.roleLevel = roleLevel ?? null;
         state.rolePermissions = mapUserPermissionsToRolePermissions(userPermissions, rolePermissions);
+        console.log("[authSlice] mapped rolePermissions", state.rolePermissions);
         state.userId = user?.userId ?? null;
         state.name = user ? `${user.givenName} ${user.surname}` : null;
         saveSessionState(state);

@@ -353,6 +353,15 @@ const NoticeDetailPage: React.FC = () => {
 
   const canEditCurrentNotice = canViewNotice && canEditNotice;
 
+  useEffect(() => {
+    console.log("[top-page/detail] permission state", {
+      canViewNotice,
+      canEditNotice,
+      canEditCurrentNotice,
+      rolePermissions,
+    });
+  }, [canEditCurrentNotice, canEditNotice, canViewNotice, rolePermissions]);
+
   const renderInput = useCallback(
     (label: string) => {
       const sharedSx = {
@@ -579,6 +588,10 @@ const NoticeDetailPage: React.FC = () => {
         </Box>
         <Font14 sx={{ color: colors.grayDark }}>
           debug: rolePermissions["100"]={rolePermissions?.["100"] ?? 0}
+        </Font14>
+        <Font14 sx={{ color: colors.grayDark }}>
+          debug: canViewNotice={String(canViewNotice)} canEditNotice={String(canEditNotice)} canEditCurrentNotice=
+          {String(canEditCurrentNotice)}
         </Font14>
       </Box>
     </PageContainer>
