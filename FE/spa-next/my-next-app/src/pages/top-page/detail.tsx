@@ -70,6 +70,7 @@ type NoticeEditState = {
 };
 
 const NOTICE_DATE_FORMAT = "YYYY-MM-DD";
+const NOTICE_DATETIME_FORMAT = "YYYY-MM-DD HH:mm";
 const NOTICE_PLACEHOLDERS = {
   title: "例: バスケ",
   station: "例: 横浜",
@@ -261,9 +262,10 @@ const NoticeDetailPage: React.FC = () => {
 
   const handleDateChange = useCallback(
     (field: "dateandtime" | "publicAt" | "closedAt") => (newValue: Dayjs | undefined) => {
+      const format = field === "dateandtime" ? NOTICE_DATE_FORMAT : NOTICE_DATETIME_FORMAT;
       setEditState((current) => ({
         ...current,
-        [field]: newValue ? newValue.format(NOTICE_DATE_FORMAT) : "",
+        [field]: newValue ? newValue.format(format) : "",
       }));
     },
     []
@@ -422,7 +424,7 @@ const NoticeDetailPage: React.FC = () => {
         return (
           <DatePicker
             label={label}
-            value={editState.publicAt ? dayjs(editState.publicAt, NOTICE_DATE_FORMAT) : null}
+            value={editState.publicAt ? dayjs(editState.publicAt, NOTICE_DATETIME_FORMAT) : null}
             onChange={handleDateChange("publicAt")}
             placeholder={NOTICE_PLACEHOLDERS.publicAt}
             showTime
@@ -436,7 +438,7 @@ const NoticeDetailPage: React.FC = () => {
         return (
           <DatePicker
             label={label}
-            value={editState.closedAt ? dayjs(editState.closedAt, NOTICE_DATE_FORMAT) : null}
+            value={editState.closedAt ? dayjs(editState.closedAt, NOTICE_DATETIME_FORMAT) : null}
             onChange={handleDateChange("closedAt")}
             placeholder={NOTICE_PLACEHOLDERS.closedAt}
             showTime

@@ -9,6 +9,7 @@ import { boardgameRoutes } from "./routes/boardgame";
 import { noticeRoutes } from "./routes/notice";
 import { masterLocationRoutes } from "./routes/masterLocation";
 import { mediaRoutes } from "./routes/media";
+import { mypageRoutes } from "./routes/mypage";
 import auth from "./routes/auth";
 
 const app = new Hono<{
@@ -54,6 +55,7 @@ app.route("/api/health", healthRoutes);
 app.route("/api", boardgameRoutes);
 app.route("/api", noticeRoutes);
 app.route("/api", mediaRoutes);
+app.route("/api", mypageRoutes);
 app.route("/api", masterLocationRoutes);
 app.route('/api/auth', auth);
 

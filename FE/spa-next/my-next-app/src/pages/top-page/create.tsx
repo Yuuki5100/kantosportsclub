@@ -46,6 +46,7 @@ type NoticeCreateState = {
 };
 
 const NOTICE_DATE_FORMAT = "YYYY-MM-DD";
+const NOTICE_DATETIME_FORMAT = "YYYY-MM-DD HH:mm";
 const NOTICE_PLACEHOLDERS = {
   title: "例: バスケ",
   station: "例: 横浜",
@@ -126,9 +127,10 @@ const NoticeCreatePage: React.FC = () => {
 
   const handleDateChange = useCallback(
     (field: "dateandtime" | "publicAt" | "closedAt") => (newValue: Dayjs | undefined) => {
+      const format = field === "dateandtime" ? NOTICE_DATE_FORMAT : NOTICE_DATETIME_FORMAT;
       setForm((current) => ({
         ...current,
-        [field]: newValue ? newValue.format(NOTICE_DATE_FORMAT) : "",
+        [field]: newValue ? newValue.format(format) : "",
       }));
     },
     []
@@ -260,7 +262,7 @@ const NoticeCreatePage: React.FC = () => {
                 ) : field.field === "publicAt" || field.field === "closedAt" ? (
                   <DatePicker
                     label={field.label}
-                    value={form[field.field] ? dayjs(form[field.field], NOTICE_DATE_FORMAT) : null}
+                    value={form[field.field] ? dayjs(form[field.field], NOTICE_DATETIME_FORMAT) : null}
                     onChange={handleDateChange(field.field)}
                     placeholder={getPlaceholder(field.field)}
                     showTime
