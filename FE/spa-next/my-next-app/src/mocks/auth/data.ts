@@ -5,6 +5,7 @@ export type MockAuthUser = {
   surname: string;
   email: string;
   roleLevel: number;
+  rolePermissions: Record<string, number>;
 };
 
 export const mockUsers: Record<string, MockAuthUser> = {
@@ -15,6 +16,13 @@ export const mockUsers: Record<string, MockAuthUser> = {
     surname: "Admin",
     email: "demo-admin@example.com",
     roleLevel: 3,
+    rolePermissions: {
+      USER: 3,
+      ROLE: 3,
+      SYSTEM_SETTINGS: 3,
+      NOTICE: 3,
+      MANUAL: 3,
+    },
   },
   operator: {
     userId: "demo-operator",
@@ -23,6 +31,13 @@ export const mockUsers: Record<string, MockAuthUser> = {
     surname: "Operator",
     email: "demo-operator@example.com",
     roleLevel: 2,
+    rolePermissions: {
+      USER: 3,
+      ROLE: 2,
+      SYSTEM_SETTINGS: 2,
+      NOTICE: 2,
+      MANUAL: 2,
+    },
   },
   user: {
     userId: "demo-user",
@@ -31,6 +46,13 @@ export const mockUsers: Record<string, MockAuthUser> = {
     surname: "User",
     email: "demo-user@example.com",
     roleLevel: 2,
+    rolePermissions: {
+      USER: 3,
+      ROLE: 2,
+      SYSTEM_SETTINGS: 2,
+      NOTICE: 2,
+      MANUAL: 2,
+    },
   },
   readonly: {
     userId: "demo-readonly",
@@ -39,6 +61,13 @@ export const mockUsers: Record<string, MockAuthUser> = {
     surname: "ReadOnly",
     email: "demo-readonly@example.com",
     roleLevel: 1,
+    rolePermissions: {
+      USER: 2,
+      ROLE: 1,
+      SYSTEM_SETTINGS: 1,
+      NOTICE: 1,
+      MANUAL: 1,
+    },
   },
 };
 

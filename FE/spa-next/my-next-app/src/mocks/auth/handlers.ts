@@ -1,5 +1,5 @@
 import type { ApiResponse } from "@/types/api";
-import type { AuthStatusResponse, LoginData } from "@/types/auth";
+import type { AuthStatusResponse, LoginData, UserPermission } from "@/types/auth";
 import { mockScenario } from "@/mocks/common/response";
 import { defaultMockUser, mockUsers, MockAuthUser } from "./data";
 import { getMessage, MessageCodes } from "@/message";
@@ -59,6 +59,22 @@ const resolveUser = (userId?: string): MockAuthUser => {
   return defaultMockUser;
 };
 
+const buildUserPermissions = (user: MockAuthUser): UserPermission[] => {
+  return Object.entries(user.rolePermissions).map(([permissionName, statusLevelId]) => ({
+    permissionId: Number(
+      {
+        USER: 1,
+        ROLE: 2,
+        SYSTEM_SETTINGS: 3,
+        NOTICE: 4,
+        MANUAL: 5,
+      }[permissionName] ?? 0
+    ),
+    permissionName,
+    statusLevelId,
+  }));
+};
+
 export const mockLogin = async (userId?: string): Promise<ApiResponse<LoginData>> => {
   if (mockScenario.authError) {
     throw new Error(getMessage(MessageCodes.AUTH_ERROR_GENERIC));
@@ -90,6 +106,7 @@ export const mockAuthStatus = async (): Promise<AuthStatusResponse> => {
   return {
     authenticated: true,
     roleLevel: user.roleLevel,
+    userPermissions: buildUserPermissions(user),
     user: {
       givenName: user.givenName,
       surname: user.surname,

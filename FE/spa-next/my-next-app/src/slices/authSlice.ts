@@ -1,12 +1,13 @@
 // src/slices/authSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import * as authService from '../api/services/v1/authService';
-import { AuthStatusResponse, LoginData } from '@/types/auth';
+import { AuthStatusResponse, LoginData, UserPermission } from '@/types/auth';
 import { clearStoredAuthTokens } from '@/utils/authTokenStorage';
 
 interface AuthState {
   isAuthenticated: boolean | null;
   roleLevel: number | null;
+  rolePermissions: Record<string, number> | null;
   status: 'idle' | 'loading' | 'failed';
   error?: string | null;
   userId?: string | null;
@@ -27,6 +28,7 @@ const saveSessionState = (state: AuthState) => {
     sessionStorage.setItem('authState', JSON.stringify({
       isAuthenticated: state.isAuthenticated,
       roleLevel: state.roleLevel,
+      rolePermissions: state.rolePermissions,
       userId: state.userId,
       name: state.name,
     }));
@@ -40,10 +42,27 @@ const clearSessionState = () => {
 const initialState: AuthState = {
   isAuthenticated: null,
   roleLevel: null,
+  rolePermissions: null,
   status: 'idle',
   error: null,
   userId: null,
   name: null,
+};
+
+const mapUserPermissionsToRolePermissions = (
+  userPermissions?: UserPermission[] | null,
+  rolePermissions?: Record<string, number> | null
+): Record<string, number> | null => {
+  if (rolePermissions) return rolePermissions;
+  if (!userPermissions || userPermissions.length === 0) return null;
+
+  return userPermissions.reduce<Record<string, number>>((acc, permission) => {
+    acc[String(permission.permissionId)] = permission.statusLevelId;
+    if (permission.permissionName) {
+      acc[permission.permissionName] = permission.statusLevelId;
+    }
+    return acc;
+  }, {});
 };
 
 export const login = createAsyncThunk<
@@ -107,6 +126,7 @@ const authSlice = createSlice({
       if (saved.isAuthenticated != null) {
         state.isAuthenticated = saved.isAuthenticated;
         state.roleLevel = saved.roleLevel ?? null;
+        state.rolePermissions = saved.rolePermissions ?? null;
         state.userId = saved.userId ?? null;
         state.name = saved.name ?? null;
       }
@@ -127,6 +147,7 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.isAuthenticated = false;
         state.roleLevel = null;
+        state.rolePermissions = null;
         state.userId = null;
         state.name = null;
         state.status = 'failed';
@@ -135,9 +156,10 @@ const authSlice = createSlice({
         clearStoredAuthTokens();
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
-        const { authenticated, roleLevel, user } = action.payload;
+        const { authenticated, roleLevel, user, rolePermissions, userPermissions } = action.payload;
         state.isAuthenticated = authenticated;
         state.roleLevel = roleLevel ?? null;
+        state.rolePermissions = mapUserPermissionsToRolePermissions(userPermissions, rolePermissions);
         state.userId = user?.userId ?? null;
         state.name = user ? `${user.givenName} ${user.surname}` : null;
         saveSessionState(state);
@@ -145,6 +167,7 @@ const authSlice = createSlice({
       .addCase(checkAuth.rejected, (state, action) => {
         state.isAuthenticated = false;
         state.roleLevel = null;
+        state.rolePermissions = null;
         state.userId = null;
         state.name = null;
         state.status = 'failed';
@@ -155,6 +178,7 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.isAuthenticated = false;
         state.roleLevel = null;
+        state.rolePermissions = null;
         state.userId = null;
         state.name = null;
         state.status = 'idle';

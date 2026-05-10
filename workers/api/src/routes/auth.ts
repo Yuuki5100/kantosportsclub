@@ -21,12 +21,31 @@ type LoginResponseData = {
 type StatusResponseData = {
   authenticated: boolean;
   roleLevel: number | null;
+  userPermissions: Array<{
+    permissionId: number;
+    permissionName: string;
+    statusLevelId: number;
+  }>;
   user: {
     givenName: string;
     surname: string;
     email: string;
     userId: string;
   } | null;
+};
+
+type UserPermissionRow = {
+  permissionId: number;
+  permissionName: string;
+  statusLevelId: number;
+};
+
+const permissionMetaByResource: Record<string, { permissionId: number; permissionName: string }> = {
+  "101": { permissionId: 1, permissionName: "USER" },
+  "102": { permissionId: 2, permissionName: "ROLE" },
+  "103": { permissionId: 6, permissionName: "SYSTEM_SETTINGS" },
+  "100": { permissionId: 100, permissionName: "NOTICE" },
+  "203": { permissionId: 5, permissionName: "MANUAL" },
 };
 
 const splitDisplayName = (
@@ -72,8 +91,40 @@ const toStatusResponseData = (result: Awaited<ReturnType<typeof AuthService.stat
   return {
     authenticated: result.authenticated,
     roleLevel: result.roleLevel ?? null,
+    userPermissions: [],
     user,
   };
+};
+
+const findUserPermissions = async (db: D1Database, userId: string): Promise<UserPermissionRow[]> => {
+  const rows = await db
+    .prepare(
+      `
+      SELECT
+        resource,
+        permission_level AS statusLevelId
+      FROM user_role_permissions
+      WHERE CAST(user_id AS TEXT) = ?
+      ORDER BY CAST(resource AS INTEGER) ASC
+      `,
+    )
+    .bind(userId)
+    .all<{ resource: string; statusLevelId: number }>();
+
+  return (rows.results ?? [])
+    .map((row) => {
+      const meta = permissionMetaByResource[row.resource] ?? {
+        permissionId: Number(row.resource),
+        permissionName: row.resource,
+      };
+
+      return {
+        permissionId: meta.permissionId,
+        permissionName: meta.permissionName,
+        statusLevelId: Number(row.statusLevelId),
+      };
+    })
+    .filter((row) => Number.isFinite(row.permissionId));
 };
 
 auth.post('/login', async (c) => {
@@ -189,10 +240,16 @@ auth.get('/status', async (c) => {
       '';
 
     const result = await AuthService.status(db, accessToken);
+    const userPermissions = result.user?.userId
+      ? await findUserPermissions(db, result.user.userId)
+      : [];
 
     return c.json({
       success: true,
-      data: toStatusResponseData(result),
+      data: {
+        ...toStatusResponseData(result),
+        userPermissions,
+      },
     });
   } catch (error) {
     console.error("[auth] status failed", error);

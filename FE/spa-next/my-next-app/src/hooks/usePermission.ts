@@ -14,6 +14,18 @@ export const PERMISSION_LEVEL = {
 } as const;
 
 /**
+ * permissionId 定数
+ * BE の /auth/status は permissionId をキーにした rolePermissions を返す
+ */
+export const PERMISSION_ID = {
+  USER: 1,
+  ROLE: 2,
+  NOTICE: 100,
+  SYSTEM_SETTINGS: 6,
+  MANUAL: 5,
+} as const;
+
+/**
  * 権限チェック Hook
  *
  * @example
@@ -33,7 +45,7 @@ export const usePermission = () => {
   const getLevel = useCallback(
     (permissionName: string): number => {
       if (!rolePermissions) return 0;
-      return rolePermissions[permissionName] ?? 0;
+      return rolePermissions[permissionName] ?? rolePermissions[String(permissionName)] ?? 0;
     },
     [rolePermissions]
   );
@@ -56,16 +68,16 @@ export const usePermission = () => {
 
   /** 各機能の参照・更新権限（事前計算） */
   const permissions = {
-    canViewUser: canView("USER"),
-    canEditUser: canEdit("USER"),
-    canViewRole: canView("ROLE"),
-    canEditRole: canEdit("ROLE"),
-    canViewNotice: canView("NOTICE"),
-    canEditNotice: canEdit("NOTICE"),
-    canViewManual: canView("MANUAL"),
-    canEditManual: canEdit("MANUAL"),
-    canViewSystemSettings: canView("SYSTEM_SETTINGS"),
-    canEditSystemSettings: canEdit("SYSTEM_SETTINGS"),
+    canViewUser: canView(String(PERMISSION_ID.USER)),
+    canEditUser: canEdit(String(PERMISSION_ID.USER)),
+    canViewRole: canView(String(PERMISSION_ID.ROLE)),
+    canEditRole: canEdit(String(PERMISSION_ID.ROLE)),
+    canViewNotice: canView(String(PERMISSION_ID.NOTICE)),
+    canEditNotice: canEdit(String(PERMISSION_ID.NOTICE)),
+    canViewManual: canView(String(PERMISSION_ID.MANUAL)),
+    canEditManual: canEdit(String(PERMISSION_ID.MANUAL)),
+    canViewSystemSettings: canView(String(PERMISSION_ID.SYSTEM_SETTINGS)),
+    canEditSystemSettings: canEdit(String(PERMISSION_ID.SYSTEM_SETTINGS)),
   };
 
   return { getLevel, canView, canEdit, rolePermissions, ...permissions };

@@ -10,6 +10,7 @@ import AutoComplete from "@/components/base/Input/AutoComplete";
 import PageContainer from "@base/Layout/PageContainer";
 import colors from "@/styles/colors";
 import { useFetch } from "@/hooks/useApi";
+import { useAuth } from "@/hooks/useAuth";
 import { usePermission } from "@/hooks/usePermission";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
@@ -101,7 +102,8 @@ const normalizeNoticeResponse = (response: NoticeApiResponse): NoticeDetailRespo
 const NoticeDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
-  const { canViewNotice, canEditNotice } = usePermission();
+  const { refreshAuth } = useAuth();
+  const { canViewNotice, canEditNotice, getLevel, rolePermissions } = usePermission();
   const [notice, setNotice] = useState<NoticeDetailResponse>(EMPTY_NOTICE);
   const [editState, setEditState] = useState<NoticeEditState>({
     title: "",
@@ -145,6 +147,8 @@ const NoticeDetailPage: React.FC = () => {
     if (!router.isReady) {
       return;
     }
+
+    refreshAuth(true);
 
     const noticeId = getQueryValue(router.query.id);
     if (!noticeId) {
@@ -196,7 +200,7 @@ const NoticeDetailPage: React.FC = () => {
     };
 
     void fetchNotice();
-  }, [router, showSnackbar]);
+  }, [refreshAuth, router, showSnackbar]);
 
   const handleBack = useCallback(() => {
     void router.push("/top-page");
@@ -502,6 +506,17 @@ const NoticeDetailPage: React.FC = () => {
               disabled={isUpdating || !notice.noticeId}
             />
           ) : null}
+        </Box>
+        <Box sx={{ width: "100%", gap: 0.5 }}>
+          <Font14 sx={{ color: colors.grayDark }}>
+            debug: canViewNotice={String(canViewNotice)} canEditNotice={String(canEditNotice)}
+          </Font14>
+          <Font14 sx={{ color: colors.grayDark }}>
+            debug: canEditCurrentNotice={String(canEditCurrentNotice)}
+          </Font14>
+          <Font14 sx={{ color: colors.grayDark }}>
+            debug: noticePermissionLevel={String(getLevel("3"))} rolePermissions={JSON.stringify(rolePermissions ?? {})}
+          </Font14>
         </Box>
       </Box>
     </PageContainer>
