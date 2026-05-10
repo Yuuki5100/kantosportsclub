@@ -60,6 +60,8 @@ export const usePermission = () => {
     canEditRole: canEdit("ROLE"),
     canViewNotice: canView("204"),
     canEditNotice: canEdit("204"),
+    // canViewNotice: canView("NOTICE"),
+    // canEditNotice: canEdit("NOTICE"),
     canViewManual: canView("MANUAL"),
     canEditManual: canEdit("MANUAL"),
     canViewSystemSettings: canView("SYSTEM_SETTINGS"),
