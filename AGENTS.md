@@ -273,6 +273,16 @@ workers/api/src/index.ts
 - response 形式をフロント互換性なしに変更する。
 - `.env.local` 以外の環境ファイルを不用意に変更する。
 - secrets を `.dev.vars` や Markdown に書く。
+- Git の操作を行うこと。
+- `git add`
+- `git commit`
+- `git push`
+- `git pull`
+- `git merge`
+- `git rebase`
+- `git reset`
+- `git checkout`
+- `git switch`
 - `node_modules` や `.wrangler` を git 管理対象にする。
 - lintが通るかの検証
 - curlを用いた動作確認
