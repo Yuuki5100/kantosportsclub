@@ -29,6 +29,21 @@ const parseNullableString = (value: unknown): string | null | undefined => {
   return undefined;
 };
 
+const MAX_IMAGE_URL_LENGTH = 512;
+
+const isPersistableImageUrl = (value: string | null | undefined): boolean => {
+  if (value === null || value === undefined) {
+    return true;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+
+  return trimmed.length <= MAX_IMAGE_URL_LENGTH && !trimmed.startsWith("data:");
+};
+
 const parseMypageInput = (body: unknown): MypageUpsertInput | null => {
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
     return null;
@@ -48,6 +63,10 @@ const parseMypageInput = (body: unknown): MypageUpsertInput | null => {
     remarks === undefined ||
     imageUrl === undefined
   ) {
+    return null;
+  }
+
+  if (!isPersistableImageUrl(imageUrl)) {
     return null;
   }
 

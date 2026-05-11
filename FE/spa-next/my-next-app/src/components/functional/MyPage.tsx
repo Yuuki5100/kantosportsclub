@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TextField } from "@mui/material";
 import apiClient from "@/api/apiClient";
+import { uploadFileApi } from "@/api/services/v1/fileService";
 import KeyValueList, { type KeyValueListItem } from "@/components/composite/KeyValueList";
 import PageContainer from "@base/Layout/PageContainer";
 import { Box, Font14, Font20 } from "@/components/base";
@@ -30,6 +31,8 @@ type MypageEditState = {
 };
 
 const getValue = (value: string | null | undefined): string => value ?? "";
+const isPersistableImageUrl = (value: string): boolean =>
+  value.length > 0 && value.length <= 512 && !value.startsWith("data:");
 
 const MyPage: React.FC = () => {
   const { showSnackbar } = useSnackbar();
@@ -38,6 +41,7 @@ const MyPage: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedImageName, setSelectedImageName] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [row, setRow] = useState<MypageApiResponse | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const [editState, setEditState] = useState<MypageEditState>({
@@ -63,7 +67,7 @@ const MyPage: React.FC = () => {
         const response = await apiClient.get<MypageApiResponse>(`/api/mypage/${userId}`);
         setRow(response.data);
         setEditState({
-          imageUrl: getValue(response.data.imageUrl),
+          imageUrl: isPersistableImageUrl(getValue(response.data.imageUrl)) ? getValue(response.data.imageUrl) : "",
           userName: getValue(response.data.userName),
           enthusiasm: getValue(response.data.enthusiasm),
           hopeStyle: getValue(response.data.hopeStyle),
@@ -106,18 +110,11 @@ const MyPage: React.FC = () => {
             }
 
             setSelectedImageName(file.name);
-
-            const reader = new FileReader();
-            reader.onload = () => {
-              const result = reader.result;
-              if (typeof result === "string") {
-                setEditState((current) => ({
-                  ...current,
-                  imageUrl: result,
-                }));
-              }
-            };
-            reader.readAsDataURL(file);
+            setSelectedImageFile(file);
+            setEditState((current) => ({
+              ...current,
+              imageUrl: file.name,
+            }));
           }}
         />
         <Font14 sx={{ color: colors.grayDark }}>
@@ -192,13 +189,14 @@ const MyPage: React.FC = () => {
     }
 
     setEditState({
-      imageUrl: getValue(row.imageUrl),
+      imageUrl: isPersistableImageUrl(getValue(row.imageUrl)) ? getValue(row.imageUrl) : "",
       userName: getValue(row.userName),
       enthusiasm: getValue(row.enthusiasm),
       hopeStyle: getValue(row.hopeStyle),
       remarks: getValue(row.remarks),
     });
     setSelectedImageName("");
+    setSelectedImageFile(null);
     if (imageInputRef.current) {
       imageInputRef.current.value = "";
     }
@@ -213,8 +211,14 @@ const MyPage: React.FC = () => {
 
     setIsUpdating(true);
     try {
+      let imageUrl = editState.imageUrl.trim() ? editState.imageUrl : null;
+      if (selectedImageFile) {
+        const uploaded = await uploadFileApi(selectedImageFile, "MYPAGE");
+        imageUrl = uploaded.data.fileId;
+      }
+
       const response = await apiClient.put<MypageApiResponse>(`/api/mypage/${userId}`, {
-        imageUrl: editState.imageUrl.trim() ? editState.imageUrl : null,
+        imageUrl,
         userName: editState.userName.trim() ? editState.userName : null,
         enthusiasm: editState.enthusiasm.trim() ? editState.enthusiasm : null,
         hopeStyle: editState.hopeStyle.trim() ? editState.hopeStyle : null,
@@ -223,13 +227,14 @@ const MyPage: React.FC = () => {
 
       setRow(response.data);
       setEditState({
-        imageUrl: getValue(response.data.imageUrl),
+        imageUrl: isPersistableImageUrl(getValue(response.data.imageUrl)) ? getValue(response.data.imageUrl) : "",
         userName: getValue(response.data.userName),
         enthusiasm: getValue(response.data.enthusiasm),
         hopeStyle: getValue(response.data.hopeStyle),
         remarks: getValue(response.data.remarks),
       });
       setSelectedImageName("");
+      setSelectedImageFile(null);
       if (imageInputRef.current) {
         imageInputRef.current.value = "";
       }
