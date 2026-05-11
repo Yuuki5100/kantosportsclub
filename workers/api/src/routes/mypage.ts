@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { getDb, type AppVariables, type Bindings } from "../env";
-import { findMypageByUserId, upsertMypage } from "../repositories/mypageRepository";
+import {
+  findMypageByUserIdWithPublicImageUrl,
+  upsertMypageWithPublicImageUrl,
+} from "../repositories/mypageRepository";
 import type { MypageUpsertInput } from "../types/mypage";
 
 export const mypageRoutes = new Hono<{
@@ -66,7 +69,7 @@ mypageRoutes.get("/mypage/:user_id", async (c) => {
     );
   }
 
-  const mypage = await findMypageByUserId(getDb(c.env), userId);
+  const mypage = await findMypageByUserIdWithPublicImageUrl(getDb(c.env), userId, c.env.R2_PUBLIC_BASE_URL);
   if (!mypage) {
     return c.json(
       {
@@ -113,7 +116,7 @@ mypageRoutes.put("/mypage/:user_id", async (c) => {
     );
   }
 
-  const mypage = await upsertMypage(getDb(c.env), userId, input);
+  const mypage = await upsertMypageWithPublicImageUrl(getDb(c.env), userId, input, c.env.R2_PUBLIC_BASE_URL);
   if (!mypage) {
     return c.json(
       {

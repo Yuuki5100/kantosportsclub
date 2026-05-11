@@ -1,4 +1,5 @@
 import type { MypageItem, MypageUpsertInput } from "../types/mypage";
+import { buildR2PublicObjectUrl } from "../function/r2PublicUrl";
 
 type MypageRow = {
   user_id: number;
@@ -56,6 +57,22 @@ export const findMypageByUserId = async (db: D1Database, userId: number): Promis
   return row ? toMypageItem(row) : null;
 };
 
+export const findMypageByUserIdWithPublicImageUrl = async (
+  db: D1Database,
+  userId: number,
+  publicBaseUrl?: string | null
+): Promise<MypageItem | null> => {
+  const mypage = await findMypageByUserId(db, userId);
+  if (!mypage) {
+    return null;
+  }
+
+  return {
+    ...mypage,
+    imageUrl: buildR2PublicObjectUrl(mypage.imageUrl, publicBaseUrl),
+  };
+};
+
 export const upsertMypage = async (
   db: D1Database,
   userId: number,
@@ -94,4 +111,21 @@ export const upsertMypage = async (
     .run();
 
   return findMypageByUserId(db, userId);
+};
+
+export const upsertMypageWithPublicImageUrl = async (
+  db: D1Database,
+  userId: number,
+  input: MypageUpsertInput,
+  publicBaseUrl?: string | null
+): Promise<MypageItem | null> => {
+  const mypage = await upsertMypage(db, userId, input);
+  if (!mypage) {
+    return null;
+  }
+
+  return {
+    ...mypage,
+    imageUrl: buildR2PublicObjectUrl(mypage.imageUrl, publicBaseUrl),
+  };
 };
