@@ -77,11 +77,25 @@ filesRoutes.post("/files/upload", async (c) => {
 
   const body = await fileEntry.arrayBuffer();
 
+  console.log("[files/upload] put start", {
+    bucketName: "FILE_STORAGE_BUCKET",
+    fileId,
+    resourceType,
+    originalName,
+    size: fileEntry.size,
+    type: fileEntry.type || "application/octet-stream"
+  });
+
   await c.env.FILE_STORAGE_BUCKET.put(fileId, body, {
     httpMetadata: {
       contentType: fileEntry.type || "application/octet-stream",
       contentDisposition: `inline; filename="${safeName}"`
     }
+  });
+
+  console.log("[files/upload] put done", {
+    bucketName: "FILE_STORAGE_BUCKET",
+    fileId
   });
 
   const response: UploadedFileResponse = {
