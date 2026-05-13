@@ -19,5 +19,5 @@ database_name = "kantosportsclub-db"
 database_id = "04cc1e4a-dc18-4fb4-9de9-301b6b700d8a"
 
 [[r2_buckets]]
-binding = "kantosportsclub"
-bucket_name = "mypage"
+binding = "FILE_STORAGE_BUCKET"
+bucket_name = "kantosportsclub/mypage"
