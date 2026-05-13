@@ -31,10 +31,10 @@ const sanitizeFileName = (value: string): string => {
 
 const buildFilePrefix = (resourceType: string, mypagePrefix: string | undefined): string => {
   if (resourceType === "MYPAGE") {
-    return mypagePrefix?.trim() || "kantosportsclub/mypage";
+    return mypagePrefix?.trim() || "mypage";
   }
 
-  return `kantosportsclub/${resourceType.toLowerCase()}`;
+  return resourceType.toLowerCase();
 };
 
 const isFile = (value: unknown): value is File =>
