@@ -29,6 +29,14 @@ const sanitizeFileName = (value: string): string => {
   return trimmed.replace(/[\\/\u0000-\u001f]+/g, "_");
 };
 
+const buildFilePrefix = (resourceType: string, mypagePrefix: string | undefined): string => {
+  if (resourceType === "MYPAGE") {
+    return mypagePrefix?.trim() || "kantosportsclub/mypage";
+  }
+
+  return `kantosportsclub/${resourceType.toLowerCase()}`;
+};
+
 const isFile = (value: unknown): value is File =>
   typeof value === "object" && value !== null && value instanceof File;
 
@@ -64,7 +72,8 @@ filesRoutes.post("/files/upload", async (c) => {
   const resourceType = normalizeResourceType(formData.get("resourceType"));
   const originalName = fileEntry.name || "file";
   const safeName = sanitizeFileName(originalName);
-  const fileId = `files/${resourceType}/${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+  const filePrefix = buildFilePrefix(resourceType, c.env.FILE_STORAGE_PREFIX_MYPAGE);
+  const fileId = `${filePrefix}/${Date.now()}-${crypto.randomUUID()}-${safeName}`;
 
   const body = await fileEntry.arrayBuffer();
 

@@ -6,6 +6,7 @@ export type Bindings = {
   FILE_STORAGE_BUCKET: R2Bucket;
   CORS_ORIGIN?: string;
   R2_PUBLIC_BASE_URL?: string;
+  FILE_STORAGE_PREFIX_MYPAGE?: string;
   COOKIE_SECURE?: string;
   PERMISSION_CONFIG_CACHE_TTL_SECONDS?: string;
 };
