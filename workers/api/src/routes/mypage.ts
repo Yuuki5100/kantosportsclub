@@ -74,6 +74,11 @@ const parseMypageInput = (body: unknown): MypageUpsertInput | null => {
   return { userName, enthusiasm, hopeStyle, remarks, imageUrl };
 };
 
+mypageRoutes.get("/mypage/list", async (c) => {
+  const mypages = await findAllMypageWithPublicImageUrl(getDb(c.env), c.env.R2_PUBLIC_BASE_URL);
+  return c.json(mypages);
+});
+
 mypageRoutes.get("/mypage/:user_id", async (c) => {
   const userId = parsePositiveInteger(c.req.param("user_id"));
   if (userId === null) {
@@ -104,11 +109,6 @@ mypageRoutes.get("/mypage/:user_id", async (c) => {
   }
 
   return c.json(mypage);
-});
-
-mypageRoutes.get("/mypage/list", async (c) => {
-  const mypages = await findAllMypageWithPublicImageUrl(getDb(c.env), c.env.R2_PUBLIC_BASE_URL);
-  return c.json(mypages);
 });
 
 mypageRoutes.put("/mypage/:user_id", async (c) => {

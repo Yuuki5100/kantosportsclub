@@ -188,6 +188,13 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "player", parentId: "top" },
   },
   {
+    name: "マイページ（試用版）",
+    resourceKey: "/myPage",
+    requiredPermission: 1,
+    icon: <PeopleIcon />,
+    breadcrumb: { id: "myPageTrial", parentId: "top" },
+  },
+  {
     name: "管理者ページ",
     resourceKey: "/admin/menu",
     requiredPermission: 3,
