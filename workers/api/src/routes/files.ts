@@ -11,7 +11,7 @@ type UploadedFileResponse = {
   originalName: string;
 };
 
-const normalizeResourceType = (value: FormDataEntryValue | null): string => {
+const normalizeResourceType = (value: unknown): string => {
   if (typeof value !== "string") {
     return "USER";
   }
@@ -29,6 +29,9 @@ const sanitizeFileName = (value: string): string => {
   return trimmed.replace(/[\\/\u0000-\u001f]+/g, "_");
 };
 
+const isFile = (value: unknown): value is File =>
+  typeof value === "object" && value !== null && value instanceof File;
+
 filesRoutes.post("/files/upload", async (c) => {
   const formData = await c.req.formData().catch(() => null);
   if (!formData) {
@@ -45,7 +48,7 @@ filesRoutes.post("/files/upload", async (c) => {
   }
 
   const fileEntry = formData.get("file");
-  if (!(fileEntry instanceof File)) {
+  if (!isFile(fileEntry)) {
     return c.json(
       {
         error: {
