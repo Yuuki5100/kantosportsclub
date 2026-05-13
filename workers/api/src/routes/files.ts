@@ -1,0 +1,85 @@
+import { Hono } from "hono";
+import { type AppVariables, type Bindings } from "../env";
+
+export const filesRoutes = new Hono<{
+  Bindings: Bindings;
+  Variables: AppVariables;
+}>();
+
+type UploadedFileResponse = {
+  fileId: string;
+  originalName: string;
+};
+
+const normalizeResourceType = (value: FormDataEntryValue | null): string => {
+  if (typeof value !== "string") {
+    return "USER";
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed.toUpperCase() : "USER";
+};
+
+const sanitizeFileName = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "file";
+  }
+
+  return trimmed.replace(/[\\/\u0000-\u001f]+/g, "_");
+};
+
+filesRoutes.post("/files/upload", async (c) => {
+  const formData = await c.req.formData().catch(() => null);
+  if (!formData) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "multipart/form-data is required"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const fileEntry = formData.get("file");
+  if (!(fileEntry instanceof File)) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "file is required"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const resourceType = normalizeResourceType(formData.get("resourceType"));
+  const originalName = fileEntry.name || "file";
+  const safeName = sanitizeFileName(originalName);
+  const fileId = `files/${resourceType}/${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+
+  const body = await fileEntry.arrayBuffer();
+
+  await c.env.FILE_STORAGE_BUCKET.put(fileId, body, {
+    httpMetadata: {
+      contentType: fileEntry.type || "application/octet-stream",
+      contentDisposition: `inline; filename="${safeName}"`
+    }
+  });
+
+  const response: UploadedFileResponse = {
+    fileId,
+    originalName
+  };
+
+  return c.json({
+    success: true,
+    data: response,
+    error: null
+  });
+});

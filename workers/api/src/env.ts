@@ -3,6 +3,7 @@ import type { AuthStatusResponse } from "./types/auth";
 export type Bindings = {
   DB?: D1Database;
   kantosportsclub_db: D1Database;
+  FILE_STORAGE_BUCKET: R2Bucket;
   CORS_ORIGIN?: string;
   R2_PUBLIC_BASE_URL?: string;
   COOKIE_SECURE?: string;

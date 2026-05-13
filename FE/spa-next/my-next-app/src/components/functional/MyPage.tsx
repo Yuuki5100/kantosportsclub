@@ -11,6 +11,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 
+const toLinkHref = (url: string): string => {
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url) || url.startsWith("/")) {
+    return url;
+  }
+  return `https://${url}`;
+};
+
 type MypageApiResponse = {
   userId: number;
   imageUrl?: string | null;
@@ -31,8 +38,6 @@ type MypageEditState = {
 };
 
 const getValue = (value: string | null | undefined): string => value ?? "";
-const isPersistableImageUrl = (value: string): boolean =>
-  value.length > 0 && value.length <= 512 && !value.startsWith("data:");
 
 const MyPage: React.FC = () => {
   const { showSnackbar } = useSnackbar();
@@ -67,7 +72,7 @@ const MyPage: React.FC = () => {
         const response = await apiClient.get<MypageApiResponse>(`/api/mypage/${userId}`);
         setRow(response.data);
         setEditState({
-          imageUrl: isPersistableImageUrl(getValue(response.data.imageUrl)) ? getValue(response.data.imageUrl) : "",
+          imageUrl: getValue(response.data.imageUrl),
           userName: getValue(response.data.userName),
           enthusiasm: getValue(response.data.enthusiasm),
           hopeStyle: getValue(response.data.hopeStyle),
@@ -90,6 +95,38 @@ const MyPage: React.FC = () => {
     }
 
     const imageValue = isEditing ? editState.imageUrl : getValue(row.imageUrl);
+    const imagePreview = imageValue.trim() ? (
+      <img
+        src={toLinkHref(imageValue.trim())}
+        alt="マイページ画像"
+        style={{
+          width: 180,
+          height: 180,
+          objectFit: "cover",
+          border: `1px solid ${colors.commonBorderGray}`,
+          borderRadius: "4px",
+          backgroundColor: colors.commonFontColorWhite,
+        }}
+      />
+    ) : (
+      <Box
+        component="span"
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 180,
+          height: 180,
+          border: `1px solid ${colors.commonBorderGray}`,
+          borderRadius: "4px",
+          color: colors.grayDark,
+          fontSize: "0.75rem",
+          backgroundColor: colors.commonFontColorWhite,
+        }}
+      >
+        -
+      </Box>
+    );
     const imageNode = (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         <ButtonAction
@@ -147,7 +184,7 @@ const MyPage: React.FC = () => {
       {
         key: "image_url",
         label: "画像",
-        value: imageNode,
+        value: isEditing ? imageNode : imagePreview,
         rowSx: { alignItems: "flex-start" },
       },
       {
@@ -189,7 +226,7 @@ const MyPage: React.FC = () => {
     }
 
     setEditState({
-      imageUrl: isPersistableImageUrl(getValue(row.imageUrl)) ? getValue(row.imageUrl) : "",
+      imageUrl: getValue(row.imageUrl),
       userName: getValue(row.userName),
       enthusiasm: getValue(row.enthusiasm),
       hopeStyle: getValue(row.hopeStyle),
@@ -227,7 +264,7 @@ const MyPage: React.FC = () => {
 
       setRow(response.data);
       setEditState({
-        imageUrl: isPersistableImageUrl(getValue(response.data.imageUrl)) ? getValue(response.data.imageUrl) : "",
+        imageUrl: getValue(response.data.imageUrl),
         userName: getValue(response.data.userName),
         enthusiasm: getValue(response.data.enthusiasm),
         hopeStyle: getValue(response.data.hopeStyle),
@@ -246,7 +283,7 @@ const MyPage: React.FC = () => {
     } finally {
       setIsUpdating(false);
     }
-  }, [editState, showSnackbar, userId]);
+  }, [editState, selectedImageFile, showSnackbar, userId]);
 
   return (
     <PageContainer>
