@@ -114,7 +114,7 @@ const PlayerListPage: React.FC = () => {
 
   const handlePlayerClick = (item: PlayerItem) => {
     void router.push({
-      pathname: "/player/detail",
+      pathname: "/player/player-detail",
       query: toPlayerDetailQuery(item),
     });
   };

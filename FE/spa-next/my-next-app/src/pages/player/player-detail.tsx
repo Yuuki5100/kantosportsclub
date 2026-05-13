@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import PageContainer from "@base/Layout/PageContainer";
 import apiClient from "@/api/apiClient";
@@ -36,7 +36,7 @@ const PlayerDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const userId = useMemo(() => toText(router.query.userId), [router.query.userId]);
+  const userId = toText(router.query.userId);
 
   useEffect(() => {
     if (!router.isReady) {
