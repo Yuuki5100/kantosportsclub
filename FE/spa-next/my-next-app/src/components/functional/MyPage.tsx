@@ -22,6 +22,8 @@ type MypageApiResponse = {
   userId: number;
   imageUrl?: string | null;
   userName: string | null;
+  userNameJpn: string | null;
+  jerseyNumber: number | null;
   enthusiasm: string | null;
   hopeStyle: string | null;
   remarks: string | null;
@@ -32,6 +34,8 @@ type MypageApiResponse = {
 type MypageEditState = {
   imageUrl: string;
   userName: string;
+  userNameJpn: string;
+  jerseyNumber: string;
   enthusiasm: string;
   hopeStyle: string;
   remarks: string;
@@ -52,6 +56,8 @@ const MyPage: React.FC = () => {
   const [editState, setEditState] = useState<MypageEditState>({
     imageUrl: "",
     userName: "",
+    userNameJpn: "",
+    jerseyNumber: "",
     enthusiasm: "",
     hopeStyle: "",
     remarks: "",
@@ -74,6 +80,8 @@ const MyPage: React.FC = () => {
         setEditState({
           imageUrl: getValue(response.data.imageUrl),
           userName: getValue(response.data.userName),
+          userNameJpn: getValue(response.data.userNameJpn),
+          jerseyNumber: response.data.jerseyNumber?.toString() ?? "",
           enthusiasm: getValue(response.data.enthusiasm),
           hopeStyle: getValue(response.data.hopeStyle),
           remarks: getValue(response.data.remarks),
@@ -161,7 +169,10 @@ const MyPage: React.FC = () => {
     );
 
     const editableTextNode = (
-      field: keyof Pick<MypageEditState, "userName" | "enthusiasm" | "hopeStyle" | "remarks">,
+      field: keyof Pick<
+        MypageEditState,
+        "userName" | "userNameJpn" | "jerseyNumber" | "enthusiasm" | "hopeStyle" | "remarks"
+      >,
       multiline = false
     ) => (
       <TextField
@@ -198,6 +209,16 @@ const MyPage: React.FC = () => {
         value: isEditing ? editableTextNode("userName") : getValue(row.userName),
       },
       {
+        key: "user_name_jpn",
+        label: "ユーザー名（かな）",
+        value: isEditing ? editableTextNode("userNameJpn") : getValue(row.userNameJpn),
+      },
+      {
+        key: "jersey_number",
+        label: "背番号",
+        value: isEditing ? editableTextNode("jerseyNumber") : row.jerseyNumber ?? "",
+      },
+      {
         key: "enthusiasm",
         label: "意気込み",
         value: isEditing ? editableTextNode("enthusiasm") : getValue(row.enthusiasm),
@@ -228,6 +249,8 @@ const MyPage: React.FC = () => {
     setEditState({
       imageUrl: getValue(row.imageUrl),
       userName: getValue(row.userName),
+      userNameJpn: getValue(row.userNameJpn),
+      jerseyNumber: row.jerseyNumber?.toString() ?? "",
       enthusiasm: getValue(row.enthusiasm),
       hopeStyle: getValue(row.hopeStyle),
       remarks: getValue(row.remarks),
@@ -257,6 +280,8 @@ const MyPage: React.FC = () => {
       const response = await apiClient.put<MypageApiResponse>(`/api/mypage/${userId}`, {
         imageUrl,
         userName: editState.userName.trim() ? editState.userName : null,
+        userNameJpn: editState.userNameJpn.trim() ? editState.userNameJpn : null,
+        jerseyNumber: editState.jerseyNumber.trim() ? Number(editState.jerseyNumber) : null,
         enthusiasm: editState.enthusiasm.trim() ? editState.enthusiasm : null,
         hopeStyle: editState.hopeStyle.trim() ? editState.hopeStyle : null,
         remarks: editState.remarks.trim() ? editState.remarks : null,
@@ -266,6 +291,8 @@ const MyPage: React.FC = () => {
       setEditState({
         imageUrl: getValue(response.data.imageUrl),
         userName: getValue(response.data.userName),
+        userNameJpn: getValue(response.data.userNameJpn),
+        jerseyNumber: response.data.jerseyNumber?.toString() ?? "",
         enthusiasm: getValue(response.data.enthusiasm),
         hopeStyle: getValue(response.data.hopeStyle),
         remarks: getValue(response.data.remarks),

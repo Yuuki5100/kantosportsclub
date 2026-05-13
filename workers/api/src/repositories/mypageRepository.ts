@@ -4,6 +4,8 @@ import { buildR2PublicObjectUrl } from "../function/r2PublicUrl";
 type MypageRow = {
   user_id: number;
   user_name: string | null;
+  user_name_jpn: string | null;
+  jersey_number: number | null;
   enthusiasm: string | null;
   hope_style: string | null;
   remarks: string | null;
@@ -15,6 +17,8 @@ type MypageRow = {
 const toMypageItem = (row: MypageRow): MypageItem => ({
   userId: row.user_id,
   userName: row.user_name,
+  userNameJpn: row.user_name_jpn,
+  jerseyNumber: row.jersey_number,
   enthusiasm: row.enthusiasm,
   hopeStyle: row.hope_style,
   remarks: row.remarks,
@@ -40,6 +44,8 @@ export const findMypageByUserId = async (db: D1Database, userId: number): Promis
       SELECT
         user_id,
         user_name,
+        user_name_jpn,
+        jersey_number,
         enthusiasm,
         hope_style,
         remarks,
@@ -71,6 +77,36 @@ export const findMypageByUserIdWithPublicImageUrl = async (
     ...mypage,
     imageUrl: buildR2PublicObjectUrl(mypage.imageUrl, publicBaseUrl),
   };
+};
+
+export const findAllMypageWithPublicImageUrl = async (
+  db: D1Database,
+  publicBaseUrl?: string | null
+): Promise<MypageItem[]> => {
+  const rows = await db
+    .prepare(
+      `
+      SELECT
+        user_id,
+        user_name,
+        user_name_jpn,
+        jersey_number,
+        enthusiasm,
+        hope_style,
+        remarks,
+        image_url,
+        create_at,
+        update_at
+      FROM mypage
+      ORDER BY jersey_number ASC, user_name_jpn ASC, user_id ASC
+      `
+    )
+    .all<MypageRow>();
+
+  return (rows.results ?? []).map((row) => ({
+    ...toMypageItem(row),
+    imageUrl: buildR2PublicObjectUrl(row.image_url, publicBaseUrl),
+  }));
 };
 
 export const upsertMypage = async (

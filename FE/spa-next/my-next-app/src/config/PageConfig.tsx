@@ -180,12 +180,12 @@ const pageConfig: PageConfigType = [
     icon: <ListIcon />,
     breadcrumb: { id: "pictures", parentId: "top" },
   },
-    {
-    name: "マイページ（試用版）",
-    resourceKey: "/myPage",
+  {
+    name: "選手一覧",
+    resourceKey: "/player",
     requiredPermission: 1,
-    icon: <AdminPanelSettingsIcon />,
-    breadcrumb: { id: "myPage", parentId: "top" },
+    icon: <PeopleIcon />,
+    breadcrumb: { id: "player", parentId: "top" },
   },
   {
     name: "管理者ページ",

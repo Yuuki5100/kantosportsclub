@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { getDb, type AppVariables, type Bindings } from "../env";
 import {
+  findAllMypageWithPublicImageUrl,
   findMypageByUserIdWithPublicImageUrl,
   upsertMypageWithPublicImageUrl,
 } from "../repositories/mypageRepository";
@@ -103,6 +104,11 @@ mypageRoutes.get("/mypage/:user_id", async (c) => {
   }
 
   return c.json(mypage);
+});
+
+mypageRoutes.get("/mypage/list", async (c) => {
+  const mypages = await findAllMypageWithPublicImageUrl(getDb(c.env), c.env.R2_PUBLIC_BASE_URL);
+  return c.json(mypages);
 });
 
 mypageRoutes.put("/mypage/:user_id", async (c) => {

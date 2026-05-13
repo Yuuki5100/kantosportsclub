@@ -1,6 +1,8 @@
 export type MypageItem = {
   userId: number;
   userName: string | null;
+  userNameJpn: string | null;
+  jerseyNumber: number | null;
   enthusiasm: string | null;
   hopeStyle: string | null;
   remarks: string | null;
