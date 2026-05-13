@@ -185,113 +185,97 @@ const PlayerListPage: React.FC = () => {
             <Box
               key={item.userId}
               sx={{
-                display: "grid",
-                gridTemplateColumns: "180px minmax(0, 1fr)",
-                gap: 2,
-                padding: 2.5,
-                borderRadius: 4,
-                border: `1px solid ${colors.commonBorderGray}`,
-                backgroundColor: colors.commonFontColorWhite,
-                boxShadow: "0 10px 24px rgba(0, 0, 0, 0.06)",
-                alignItems: "stretch",
-                minHeight: 220,
+                width: 176,
                 cursor: "pointer",
-                transition: "transform 0.15s ease, box-shadow 0.15s ease",
-                "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 14px 30px rgba(0, 0, 0, 0.10)",
-                },
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 0.75,
               }}
               onClick={() => handlePlayerClick(item)}
               role="button"
               tabIndex={0}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  handlePlayerClick(item);
-                }
-              }}
             >
+              <Box
+                sx={{
+                  textAlign: "center",
+                  lineHeight: 1.1,
+                }}
+              >
+                <Font14 sx={{ fontSize: 12, lineHeight: 1.2 }}>
+                  選手番号
+                </Font14>
+                <Font20
+                  sx={{
+                    mt: 0.25,
+                    fontSize: 28,
+                    lineHeight: 1,
+                    fontWeight: 800,
+                  }}
+                >
+                  {item.jerseyNumber}
+                </Font20>
+              </Box>
+
               {hasImage ? (
                 <img
                   src={toLinkHref(item.imageUrl.trim())}
                   alt={item.userNameJpn || item.userName || "player"}
                   style={{
-                    width: "100%",
-                    height: 176,
-                    borderRadius: 12,
+                    width: 144,
+                    height: 124,
                     objectFit: "cover",
-                    border: `1px solid ${colors.commonBorderGray}`,
+                    border: `1px solid ${colors.Black}`,
+                    display: "block",
                     backgroundColor: colors.commonFontColorWhite,
                   }}
                 />
               ) : (
                 <Box
                   sx={{
-                    width: "100%",
-                    height: 176,
-                    borderRadius: 3,
-                    border: `1px solid ${colors.commonBorderGray}`,
-                    backgroundColor: colors.grayLight,
+                    width: 144,
+                    height: 124,
+                    border: `1px solid ${colors.Black}`,
+                    backgroundColor: colors.commonFontColorWhite,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: colors.grayDark,
-                    fontSize: 12,
+                    fontSize: 14,
                   }}
                 >
-                  画像なし
+                  画像
                 </Box>
               )}
 
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, minWidth: 0, py: 0.25 }}>
-                <Box
+              <Box
+                sx={{
+                  textAlign: "center",
+                  minWidth: 0,
+                }}
+              >
+                <Font14
                   sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    alignSelf: "flex-start",
-                    px: 1.5,
-                    py: 0.5,
-                    borderRadius: 999,
-                    backgroundColor: colors.Black,
-                    color: colors.commonFontColorWhite,
                     fontSize: 12,
-                    letterSpacing: 1,
+                    lineHeight: 1.2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
-                  選手番号
-                </Box>
-                <Font20 sx={{ fontWeight: 800, fontSize: 40, lineHeight: 1, letterSpacing: -1 }}>
-                  {item.jerseyNumber}
-                </Font20>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, minWidth: 0 }}>
-                  <Font14 sx={{ color: colors.grayDark }}>選手名（かな）</Font14>
-                  <Font20 sx={{ fontWeight: 700, overflowWrap: "anywhere" }}>{item.userNameJpn || "-"}</Font20>
-                </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, minWidth: 0 }}>
-                  <Font14 sx={{ color: colors.grayDark }}>選手名</Font14>
-                  <Font14 sx={{ fontSize: 16, overflowWrap: "anywhere" }}>{item.userName || "-"}</Font14>
-                </Box>
-                <Box
+                  {item.userNameJpn || "-"}
+                </Font14>
+                <Font14
                   sx={{
-                    display: "inline-flex",
-                    alignSelf: "flex-start",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    px: 1.5,
-                    py: 0.5,
-                    borderRadius: 999,
-                    backgroundColor: colors.LightBlue,
-                    color: colors.Black,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    letterSpacing: 0.5,
-                    mt: "auto",
+                    mt: 0.25,
+                    fontSize: 11,
+                    lineHeight: 1.2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
-                  選手詳細を見る
-                </Box>
+                  {item.userName || "-"}
+                </Font14>
               </Box>
             </Box>
           );
@@ -306,7 +290,7 @@ const PlayerListPage: React.FC = () => {
         <Box sx={{ gap: 0.5 }}>
           <Font20>選手一覧</Font20>
           <Font14 sx={{ color: colors.grayDark }}>
-            選手テーブルの画像、選手番号、選手名（かな）、選手名 を 2 枚ずつ並べて表示します。
+            選手番号を画像の上、選手名を画像の下に置くレイアウトで表示します。
           </Font14>
         </Box>
 
