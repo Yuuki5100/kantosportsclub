@@ -185,9 +185,20 @@ const PlayerListPage: React.FC = () => {
             <Box
               key={item.userId}
               sx={{
-                width: "100%",
-                maxWidth: 208,
+                width: {
+                  xs: "calc(100% + 4px)",
+                  md: "100%",
+                },
+                maxWidth: {
+                  xs: "none",
+                  md: 208,
+                },
+                ml: {
+                  xs: "-2px",
+                  md: 0,
+                },
                 cursor: "pointer",
+                justifySelf: "center",
               }}
               onClick={() => handlePlayerClick(item)}
               role="button"
@@ -199,8 +210,8 @@ const PlayerListPage: React.FC = () => {
                   alt={item.userNameJpn || item.userName || "player"}
                   style={{
                     width: "100%",
-                    maxWidth: 160,
-                    height: 138,
+                    maxWidth: 170,
+                    height: 146,
                     objectFit: "cover",
                     border: `1px solid ${colors.Black}`,
                     display: "block",
@@ -212,8 +223,8 @@ const PlayerListPage: React.FC = () => {
                 <Box
                   sx={{
                     width: "100%",
-                    maxWidth: 160,
-                    height: 138,
+                    maxWidth: 170,
+                    height: 146,
                     mx: "auto",
                     border: `1px solid ${colors.Black}`,
                     backgroundColor: colors.commonFontColorWhite,
@@ -231,29 +242,29 @@ const PlayerListPage: React.FC = () => {
                 sx={{
                   mt: 0.75,
                   width: "100%",
-                  maxWidth: 160,
+                  maxWidth: 170,
                   mx: "auto",
                   display: "grid",
-                  gridTemplateColumns: "56px 1fr",
-                  columnGap: 0.75,
+                  gridTemplateColumns: "60px 1fr",
+                  columnGap: 0.5,
                   alignItems: "start",
                   textAlign: "center",
                 }}
               >
                 <Box sx={{ textAlign: "left" }}>
-                  <Font14 sx={{ fontSize: 12, fontWeight: 700, lineHeight: 1.15 }}>
+                  <Font14 sx={{ fontSize: 12, fontWeight: 700, lineHeight: 1.1 }}>
                     選手番号
                   </Font14>
-                  <Font20 sx={{ fontSize: 32, fontWeight: 800, lineHeight: 0.95 }}>
+                  <Font20 sx={{ fontSize: 34, fontWeight: 800, lineHeight: 0.92 }}>
                     {item.jerseyNumber}
                   </Font20>
                 </Box>
 
                 <Box sx={{ textAlign: "left", minWidth: 0 }}>
-                  <Font14 sx={{ fontSize: 18, fontWeight: 700, lineHeight: 1.15 }}>
+                  <Font14 sx={{ fontSize: 19, fontWeight: 700, lineHeight: 1.1 }}>
                     {item.userNameJpn || "-"}
                   </Font14>
-                  <Font14 sx={{ mt: 0.3, fontSize: 15, fontWeight: 700, lineHeight: 1.15 }}>
+                  <Font14 sx={{ mt: 0.25, fontSize: 16, fontWeight: 700, lineHeight: 1.1 }}>
                     {item.userName || "-"}
                   </Font14>
                 </Box>
@@ -270,9 +281,6 @@ const PlayerListPage: React.FC = () => {
       <Box sx={{ width: "min(100vw - 32px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
         <Box sx={{ gap: 0.5 }}>
           <Font20>選手一覧</Font20>
-          <Font14 sx={{ color: colors.grayDark }}>
-            選手番号を画像の上、選手名を画像の下に置くレイアウトで表示します。
-          </Font14>
         </Box>
 
         {content}
