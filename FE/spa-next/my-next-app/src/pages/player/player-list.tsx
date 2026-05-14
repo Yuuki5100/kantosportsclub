@@ -172,10 +172,10 @@ const PlayerListPage: React.FC = () => {
         sx={{
           display: "grid",
           gridTemplateColumns: {
-            xs: "1fr",
+            xs: "repeat(2, minmax(0, 1fr))",
             md: "repeat(2, minmax(0, 1fr))",
           },
-          gap: 2,
+          gap: 1.5,
         }}
       >
         {items.map((item) => {
@@ -185,56 +185,36 @@ const PlayerListPage: React.FC = () => {
             <Box
               key={item.userId}
               sx={{
-                width: 176,
+                width: "100%",
+                maxWidth: 208,
                 cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 0.75,
               }}
               onClick={() => handlePlayerClick(item)}
               role="button"
               tabIndex={0}
             >
-              <Box
-                sx={{
-                  textAlign: "center",
-                  lineHeight: 1.1,
-                }}
-              >
-                <Font14 sx={{ fontSize: 12, lineHeight: 1.2 }}>
-                  選手番号
-                </Font14>
-                <Font20
-                  sx={{
-                    mt: 0.25,
-                    fontSize: 28,
-                    lineHeight: 1,
-                    fontWeight: 800,
-                  }}
-                >
-                  {item.jerseyNumber}
-                </Font20>
-              </Box>
-
               {hasImage ? (
                 <img
                   src={toLinkHref(item.imageUrl.trim())}
                   alt={item.userNameJpn || item.userName || "player"}
                   style={{
-                    width: 144,
-                    height: 124,
+                    width: "100%",
+                    maxWidth: 160,
+                    height: 138,
                     objectFit: "cover",
                     border: `1px solid ${colors.Black}`,
                     display: "block",
+                    margin: "0 auto",
                     backgroundColor: colors.commonFontColorWhite,
                   }}
                 />
               ) : (
                 <Box
                   sx={{
-                    width: 144,
-                    height: 124,
+                    width: "100%",
+                    maxWidth: 160,
+                    height: 138,
+                    mx: "auto",
                     border: `1px solid ${colors.Black}`,
                     backgroundColor: colors.commonFontColorWhite,
                     display: "flex",
@@ -249,33 +229,34 @@ const PlayerListPage: React.FC = () => {
 
               <Box
                 sx={{
+                  mt: 0.75,
+                  width: "100%",
+                  maxWidth: 160,
+                  mx: "auto",
+                  display: "grid",
+                  gridTemplateColumns: "56px 1fr",
+                  columnGap: 0.75,
+                  alignItems: "start",
                   textAlign: "center",
-                  minWidth: 0,
                 }}
               >
-                <Font14
-                  sx={{
-                    fontSize: 12,
-                    lineHeight: 1.2,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {item.userNameJpn || "-"}
-                </Font14>
-                <Font14
-                  sx={{
-                    mt: 0.25,
-                    fontSize: 11,
-                    lineHeight: 1.2,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {item.userName || "-"}
-                </Font14>
+                <Box sx={{ textAlign: "left" }}>
+                  <Font14 sx={{ fontSize: 12, fontWeight: 700, lineHeight: 1.15 }}>
+                    選手番号
+                  </Font14>
+                  <Font20 sx={{ fontSize: 32, fontWeight: 800, lineHeight: 0.95 }}>
+                    {item.jerseyNumber}
+                  </Font20>
+                </Box>
+
+                <Box sx={{ textAlign: "left", minWidth: 0 }}>
+                  <Font14 sx={{ fontSize: 18, fontWeight: 700, lineHeight: 1.15 }}>
+                    {item.userNameJpn || "-"}
+                  </Font14>
+                  <Font14 sx={{ mt: 0.3, fontSize: 15, fontWeight: 700, lineHeight: 1.15 }}>
+                    {item.userName || "-"}
+                  </Font14>
+                </Box>
               </Box>
             </Box>
           );
