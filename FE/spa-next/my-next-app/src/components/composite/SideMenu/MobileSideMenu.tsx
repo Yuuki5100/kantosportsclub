@@ -8,6 +8,17 @@ import { filterPageConfig } from '@/components/composite/SideMenu/utils';
 import { SideMenuItem } from './SideMenuItem';
 import { headerBgColor } from '../../color';
 import { useRouter } from 'next/router';
+import { Divider, ListItemText } from '@/components/base';
+
+type MenuSectionKey = "activity" | "assets" | "other";
+
+const SECTION_LABELS: Record<MenuSectionKey, string> = {
+  activity: "活動",
+  assets: "管理",
+  other: "その他",
+};
+
+const SECTION_ORDER: MenuSectionKey[] = ["activity", "assets", "other"];
 
 type MobileSideMenuProps = {
   open: boolean;
@@ -21,6 +32,13 @@ const MobileSideMenu: React.FC<MobileSideMenuProps> = ({ open, setOpen }) => {
     () => filterPageConfig(getPageConfig(), roleLevel ?? null),
     [roleLevel]
   );
+
+  const sectionedMenu = useMemo(() => {
+    return SECTION_ORDER.map((section) => ({
+      section,
+      items: filteredMenu.filter((item) => item.section === section),
+    })).filter((group) => group.items.length > 0);
+  }, [filteredMenu]);
 
   useEffect(() => {
     // ルート変化後も念のため閉じるが、遷移前に閉じる処理を優先する
@@ -67,8 +85,22 @@ const MobileSideMenu: React.FC<MobileSideMenuProps> = ({ open, setOpen }) => {
       </Box>
 
       <List sx={{ py: 1 }}>
-        {filteredMenu.map((item) => (
-          <SideMenuItem key={item.resourceKey} item={item} sidebarOpen onNavigate={() => setOpen(false)} />
+        {sectionedMenu.map((group, index) => (
+          <React.Fragment key={group.section}>
+            <ListItemText
+              primary={SECTION_LABELS[group.section]}
+              sx={{
+                px: 2,
+                py: 1,
+                color: 'text.secondary',
+                fontWeight: 700,
+              }}
+            />
+            {group.items.map((item) => (
+              <SideMenuItem key={item.resourceKey} item={item} sidebarOpen onNavigate={() => setOpen(false)} />
+            ))}
+            {index < sectionedMenu.length - 1 && <Divider sx={{ my: 1 }} />}
+          </React.Fragment>
         ))}
       </List>
     </Drawer>

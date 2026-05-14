@@ -14,11 +14,22 @@ import { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH, HEADER_HEIGHT } from '@/compone
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebar } from '@/hooks/useSidebar';
 import { filterPageConfig } from '@/components/composite/SideMenu/utils';
+import { Divider, ListItemText } from '@/components/base';
 
 type SideMenuProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
 };
+
+type MenuSectionKey = "activity" | "assets" | "other";
+
+const SECTION_LABELS: Record<MenuSectionKey, string> = {
+  activity: "活動",
+  assets: "管理",
+  other: "その他",
+};
+
+const SECTION_ORDER: MenuSectionKey[] = ["activity", "assets", "other"];
 
 const SideMenu: React.FC<SideMenuProps> = ({ open, setOpen }) => {
   const router = useRouter();
@@ -31,6 +42,13 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, setOpen }) => {
     () => filterPageConfig(getPageConfig(), roleLevel ?? null),
     [roleLevel]
   );
+
+  const sectionedMenu = useMemo(() => {
+    return SECTION_ORDER.map((section) => ({
+      section,
+      items: filteredMenu.filter((item) => item.section === section),
+    })).filter((group) => group.items.length > 0);
+  }, [filteredMenu]);
 
   // Auto-select menu based on current route
   useEffect(() => {
@@ -107,13 +125,28 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, setOpen }) => {
           </Box>
 
           <List sx={{ flexGrow: 1 }}>
-            {filteredMenu.map((item) => (
-              <SideMenuItem
-                key={item.resourceKey}
-                item={item}
-                sidebarOpen={isMobile ? true : open}
-                onNavigate={() => setOpen(false)}
-              />
+            {sectionedMenu.map((group, index) => (
+              <React.Fragment key={group.section}>
+                <ListItemText
+                  primary={SECTION_LABELS[group.section]}
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    color: 'text.secondary',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                  }}
+                />
+                {group.items.map((item) => (
+                  <SideMenuItem
+                    key={item.resourceKey}
+                    item={item}
+                    sidebarOpen={isMobile ? true : open}
+                    onNavigate={() => setOpen(false)}
+                  />
+                ))}
+                {index < sectionedMenu.length - 1 && <Divider sx={{ my: 1 }} />}
+              </React.Fragment>
             ))}
           </List>
         </Box>

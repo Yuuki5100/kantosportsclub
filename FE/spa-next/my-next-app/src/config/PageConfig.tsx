@@ -20,6 +20,7 @@ export type PageConfigItem = {
   icon?: ReactNode;
   langKey?: keyof PageLang;
   children?: PageConfigItem[];
+  section?: "activity" | "assets" | "other";
   breadcrumb?: {
     id: string;
     parentId?: string;
@@ -36,6 +37,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/",
     requiredPermission: 0,
     langKey: "top",
+    section: "activity",
     breadcrumb: { id: "top" },
   },
   // {
@@ -146,6 +148,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/admin/basketball-overview",
     requiredPermission: 1,
     icon: <AccountTreeIcon />,
+    section: "activity",
     breadcrumb: { id: "basketballOverview", parentId: "top" },
   },
   {
@@ -153,6 +156,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/admin/summary",
     requiredPermission: 1,
     icon: <TimelineIcon />,
+    section: "activity",
     breadcrumb: { id: "summary", parentId: "top" },
   },
   {
@@ -160,6 +164,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/roster ",
     requiredPermission: 1,
     icon: <GroupsIcon />,
+    section: "activity",
     breadcrumb: { id: "roster", parentId: "top" },
   },
   {
@@ -167,6 +172,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/player",
     requiredPermission: 1,
     icon: <SportsBasketballIcon />,
+    section: "activity",
     breadcrumb: { id: "player", parentId: "top" },
   },
   {
@@ -174,6 +180,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/boardgames",
     requiredPermission: 1,
     icon: <ListIcon />,
+    section: "assets",
     breadcrumb: { id: "boardgames", parentId: "top" },
   },
   {
@@ -181,6 +188,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/movies",
     requiredPermission: 1,
     icon: <MovieIcon />,
+    section: "assets",
     breadcrumb: { id: "movies", parentId: "top" },
   },
   {
@@ -188,6 +196,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/pictures",
     requiredPermission: 1,
     icon: <PhotoLibraryIcon />,
+    section: "assets",
     breadcrumb: { id: "pictures", parentId: "top" },
   },
   {
@@ -195,20 +204,23 @@ const pageConfig: PageConfigType = [
     resourceKey: "/myPage",
     requiredPermission: 1,
     icon: <PeopleIcon />,
+    section: "other",
     breadcrumb: { id: "myPageTrial", parentId: "top" },
   },
-    {
+  {
     name: "お問い合わせ",
     resourceKey: "/contact",
     requiredPermission: 1,
     icon: <AdminPanelSettingsIcon />,
-    breadcrumb: { id: "contact", parentId: "top" },
+    section: "other",
+    breadcrumb: { id: "contact", parentId: "  " },
   },
   {
     name: "管理者ページ",
     resourceKey: "/admin/menu",
     requiredPermission: 3,
     icon: <AdminPanelSettingsIcon />,
+    section: "other",
     breadcrumb: { id: "adminMenu", parentId: "top" },
   },
 ];
