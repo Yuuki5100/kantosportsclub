@@ -25,9 +25,10 @@ interface Props {
   item: PageConfigItem;
   depth?: number;
   sidebarOpen?: boolean;
+  onNavigate?: () => void;
 }
 
-export const SideMenuItem: React.FC<Props> = ({ item, depth = 0, sidebarOpen = true }) => {
+export const SideMenuItem: React.FC<Props> = ({ item, depth = 0, sidebarOpen = true, onNavigate }) => {
   const router = useRouter();
   const { selectedMenuKey, selectMenu } = useSidebar();
   const [open, setOpen] = useState(false);
@@ -41,6 +42,7 @@ export const SideMenuItem: React.FC<Props> = ({ item, depth = 0, sidebarOpen = t
     }
 
     selectMenu(item.resourceKey); // ← 選択状態を更新
+    onNavigate?.();
 
     // Force navigation with window.location for static export reliability
     if (router.pathname === item.resourceKey) {

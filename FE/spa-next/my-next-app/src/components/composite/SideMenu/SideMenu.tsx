@@ -112,6 +112,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, setOpen }) => {
                 key={item.resourceKey}
                 item={item}
                 sidebarOpen={isMobile ? true : open}
+                onNavigate={() => setOpen(false)}
               />
             ))}
           </List>

@@ -23,6 +23,7 @@ const MobileSideMenu: React.FC<MobileSideMenuProps> = ({ open, setOpen }) => {
   );
 
   useEffect(() => {
+    // ルート変化後も念のため閉じるが、遷移前に閉じる処理を優先する
     setOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.pathname]);
@@ -67,7 +68,7 @@ const MobileSideMenu: React.FC<MobileSideMenuProps> = ({ open, setOpen }) => {
 
       <List sx={{ py: 1 }}>
         {filteredMenu.map((item) => (
-          <SideMenuItem key={item.resourceKey} item={item} sidebarOpen />
+          <SideMenuItem key={item.resourceKey} item={item} sidebarOpen onNavigate={() => setOpen(false)} />
         ))}
       </List>
     </Drawer>

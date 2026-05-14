@@ -58,6 +58,18 @@ const BasePage = ({ children }: BasePageProps) => {
     setMenuOpen(!isMobile);
   }, [isMobile]);
 
+  useEffect(() => {
+    const closeMenu = () => {
+      setMenuOpen(false);
+    };
+
+    router.events.on("routeChangeStart", closeMenu);
+
+    return () => {
+      router.events.off("routeChangeStart", closeMenu);
+    };
+  }, [router.events]);
+
   return (
     <Box
       sx={{
