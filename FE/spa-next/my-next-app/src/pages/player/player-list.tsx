@@ -65,10 +65,30 @@ const toPlayerItem = (item: PlayerApiItem, index: number): PlayerItem => ({
 });
 
 const EXCLUDED_USER_NAMES = new Set(["user", "admin", "viewer"]);
+type SortKey = "jerseyAsc" | "jerseyDesc";
 
 const shouldIncludePlayer = (item: PlayerItem): boolean => {
   const normalizedUserName = item.userName.trim();
   return normalizedUserName.length > 0 && !EXCLUDED_USER_NAMES.has(normalizedUserName);
+};
+
+const getJerseySortValue = (item: PlayerItem): number => {
+  const parsed = Number(item.jerseyNumber);
+  return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
+};
+
+const compareJersey = (a: PlayerItem, b: PlayerItem): number => {
+  const diff = getJerseySortValue(a) - getJerseySortValue(b);
+  if (diff !== 0) {
+    return diff;
+  }
+
+  return a.userId - b.userId;
+};
+
+const sortPlayerItems = (items: PlayerItem[], sortKey: SortKey): PlayerItem[] => {
+  const sorted = [...items];
+  return sorted.sort((a, b) => (sortKey === "jerseyAsc" ? compareJersey(a, b) : compareJersey(b, a)));
 };
 
 const extractPlayerItems = (
@@ -81,6 +101,7 @@ const extractPlayerItems = (
 const PlayerListPage: React.FC = () => {
   const router = useRouter();
   const [items, setItems] = useState<PlayerItem[]>([]);
+  const [sortKey, setSortKey] = useState<SortKey>("jerseyAsc");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -126,6 +147,14 @@ const PlayerListPage: React.FC = () => {
     });
   };
 
+  const toggleJerseySort = () => {
+    setSortKey((current) => (current === "jerseyAsc" ? "jerseyDesc" : "jerseyAsc"));
+  };
+
+  const sortButtonLabel = `背番号 ${sortKey === "jerseyAsc" ? "↑" : "↓"}`;
+
+  const sortedItems = useMemo(() => sortPlayerItems(items, sortKey), [items, sortKey]);
+
   const content = useMemo(() => {
     if (isLoading) {
       return (
@@ -157,7 +186,7 @@ const PlayerListPage: React.FC = () => {
       );
     }
 
-    if (items.length === 0) {
+    if (sortedItems.length === 0) {
       return (
         <Box
           sx={{
@@ -185,7 +214,7 @@ const PlayerListPage: React.FC = () => {
           gap: 1.5,
         }}
       >
-        {items.map((item) => {
+        {sortedItems.map((item) => {
           const hasImage = item.imageUrl.trim().length > 0;
 
           return (
@@ -281,13 +310,37 @@ const PlayerListPage: React.FC = () => {
         })}
       </Box>
     );
-  }, [errorMessage, items, isLoading]);
+  }, [errorMessage, isLoading, sortedItems]);
 
   return (
     <PageContainer>
       <Box sx={{ width: "min(100vw - 32px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
         <Box sx={{ gap: 0.5 }}>
           <Font20>選手一覧</Font20>
+          <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.75,
+                px: 1.5,
+                py: 0.75,
+                borderRadius: 999,
+                border: `1px solid ${colors.commonBorderGray}`,
+                backgroundColor: colors.commonFontColorWhite,
+                color: colors.Black,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+              onClick={toggleJerseySort}
+              role="button"
+              tabIndex={0}
+            >
+              <span>{sortButtonLabel}</span>
+            </Box>
+          </Box>
         </Box>
 
         {content}
