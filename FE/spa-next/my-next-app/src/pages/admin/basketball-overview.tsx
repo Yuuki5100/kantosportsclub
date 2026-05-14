@@ -69,7 +69,7 @@ const InfoPage: React.FC = () => {
 
       <Typography variant="h6">📦 持ち物分担</Typography>
       <ul>
-        <li>三脚：和田</li>
+        <li>三脚：阿部、和田、後藤</li>
         <li>iPad：後藤</li>
         <li>空気入れ：後藤</li>
         <li>ボード：和田</li>
