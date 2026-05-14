@@ -1,6 +1,9 @@
 import HomeIcon from "@mui/icons-material/Home";
 import PeopleIcon from "@mui/icons-material/People";
 import ListIcon from "@mui/icons-material/List";
+import MovieIcon from "@mui/icons-material/Movie";
+import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
+import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
@@ -153,11 +156,18 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "summary", parentId: "top" },
   },
   {
-    name: "チームロスター",
+    name: "ロスター",
     resourceKey: "/roster ",
     requiredPermission: 1,
     icon: <GroupsIcon />,
     breadcrumb: { id: "roster", parentId: "top" },
+  },
+  {
+    name: "選手一覧",
+    resourceKey: "/player",
+    requiredPermission: 1,
+    icon: <SportsBasketballIcon />,
+    breadcrumb: { id: "player", parentId: "top" },
   },
   {
     name: "ボドゲ一覧",
@@ -170,22 +180,15 @@ const pageConfig: PageConfigType = [
     name: "動画一覧",
     resourceKey: "/movies",
     requiredPermission: 1,
-    icon: <ListIcon />,
+    icon: <MovieIcon />,
     breadcrumb: { id: "movies", parentId: "top" },
   },
   {
     name: "写真一覧",
     resourceKey: "/pictures",
     requiredPermission: 1,
-    icon: <ListIcon />,
+    icon: <PhotoLibraryIcon />,
     breadcrumb: { id: "pictures", parentId: "top" },
-  },
-  {
-    name: "選手一覧",
-    resourceKey: "/player",
-    requiredPermission: 1,
-    icon: <PeopleIcon />,
-    breadcrumb: { id: "player", parentId: "top" },
   },
   {
     name: "マイページ",

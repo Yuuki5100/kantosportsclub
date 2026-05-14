@@ -36,11 +36,11 @@ const uniformData: UniformItem[] = [
 ];
 
 const columns: ColumnDefinition[] = [
-  { id: '名前', label: 'name', display: true, sortable: true, align: 'center', widthPercent: 24 },
-  { id: 'name', label: 'uniform', display: true, sortable: true, align: 'center', widthPercent: 28 },
-  { id: '番号', label: 'number', display: true, sortable: true, align: 'center', widthPercent: 14 },
-  { id: 'サイズ', label: 'size', display: true, sortable: true, align: 'center', widthPercent: 14 },
-  { id: 'タイプ', label: 'type', display: true, sortable: true, align: 'center', widthPercent: 20 },
+  { id: 'name', label: '名前', display: true, sortable: true, align: 'center', widthPercent: 24 },
+  { id: 'uniformName', label: 'name', display: true, sortable: true, align: 'center', widthPercent: 28 },
+  { id: 'number', label: '番号', display: true, sortable: true, align: 'center', widthPercent: 14 },
+  { id: 'size', label: 'サイズ', display: true, sortable: true, align: 'center', widthPercent: 14 },
+  { id: 'type', label: 'タイプ', display: true, sortable: true, align: 'center', widthPercent: 20 },
 ];
 
 const getTypeColor = (type: UniformType): string => {
