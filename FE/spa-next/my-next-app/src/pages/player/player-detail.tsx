@@ -85,7 +85,7 @@ const PlayerDetailPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 32px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 64px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
         <Box sx={{ gap: 0.5 }}>
           <Font20>選手詳細</Font20>
           <Font14 sx={{ color: colors.grayDark }}>一覧から選択した選手の詳細を表示します。</Font14>

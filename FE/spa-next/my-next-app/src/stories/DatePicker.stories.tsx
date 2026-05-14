@@ -98,10 +98,11 @@ export const MyDatePicker = (args: DatePickerStoryProps) => {
   const value = convertStringToDayjs(args.value);
   const minDate = convertStringToDayjs(args.minDate);
   const maxDate = convertStringToDayjs(args.maxDate);
+  const { value: _value, minDate: _minDate, maxDate: _maxDate, ...rest } = args;
 
   return (
     <DatePicker
-      {...args}
+      {...rest}
       value={value}
       minDate={minDate}
       maxDate={maxDate}
@@ -142,6 +143,7 @@ export const ControlsTest: Story = {
     const value = convertStringToDayjs(args.value);
     const minDate = convertStringToDayjs(args.minDate);
     const maxDate = convertStringToDayjs(args.maxDate);
+    const { value: _value, minDate: _minDate, maxDate: _maxDate, ...rest } = args;
 
     return (
       <div style={{ padding: '20px' }}>
@@ -158,7 +160,7 @@ export const ControlsTest: Story = {
         </ul>
 
         <DatePicker
-          {...args}
+          {...rest}
           value={value}
           minDate={minDate}
           maxDate={maxDate}
@@ -206,6 +208,82 @@ export const WithHelperText: Story = {
     label: '日付を選択',
     helperText: 'YYYY/MM/DD形式で入力してください',
     error: true
+  },
+};
+
+/**
+ * wheel の時刻専用ピッカーの使用例
+ */
+export const WheelTimePickerExample: Story = {
+  render: (args: DatePickerStoryProps) => {
+    const value = convertStringToDayjs(args.value);
+    const { value: _value, minDate: _minDate, maxDate: _maxDate, ...rest } = args;
+
+    return (
+      <div style={{ padding: '20px' }}>
+        <h3>WheelTimePicker サンプル</h3>
+        <p>pickerMode="wheel" と pickerType="time" の組み合わせです。</p>
+
+        <DatePicker
+          {...rest}
+          value={value}
+          onChange={(newValue) => {
+            args.onChange?.(newValue);
+            console.log('Wheel time selected:', newValue?.format('HH:mm'));
+          }}
+        />
+      </div>
+    );
+  },
+  args: {
+    label: '開始時刻',
+    value: '2024-01-15T09:30:00',
+    helperText: '時刻を選択してください',
+    pickerMode: 'wheel',
+    pickerType: 'time',
+    format: 'HH:mm',
+    error: false,
+    disabled: false,
+  },
+};
+
+/**
+ * 日付をカレンダー、時刻をwheelで選ぶ例
+ */
+export const CalendarThenWheelExample: Story = {
+  render: (args: DatePickerStoryProps) => {
+    const value = convertStringToDayjs(args.value);
+    const minDate = convertStringToDayjs(args.minDate);
+    const maxDate = convertStringToDayjs(args.maxDate);
+    const { value: _value, minDate: _minDate, maxDate: _maxDate, ...rest } = args;
+
+    return (
+      <div style={{ padding: '20px' }}>
+        <h3>CalendarThenWheel サンプル</h3>
+        <p>pickerMode="calendarThenWheel" で、日付選択後に時刻wheelが開きます。</p>
+
+        <DatePicker
+          {...rest}
+          value={value}
+          minDate={minDate}
+          maxDate={maxDate}
+          onChange={(newValue) => {
+            args.onChange?.(newValue);
+            console.log('Calendar then wheel selected:', newValue?.format('YYYY-MM-DD HH:mm'));
+          }}
+        />
+      </div>
+    );
+  },
+  args: {
+    label: '開始日時',
+    value: '2024-01-15T09:30:00',
+    helperText: 'まず日付を選び、そのあと時刻を選択してください',
+    pickerMode: 'calendarThenWheel',
+    format: 'YYYY/MM/DD',
+    error: false,
+    disabled: false,
+    allowedDaysOfWeek: undefined,
   },
 };
 

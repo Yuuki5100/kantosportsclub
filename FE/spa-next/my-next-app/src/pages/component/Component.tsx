@@ -130,12 +130,12 @@ const ComponentPage = () => {
           <input type='checkbox' name='disabledCurrentDate' checked={currentDateDisabled} onClick={() => setCurrentDateDisabled(!currentDateDisabled)} />
           <label htmlFor='disabledCurrentDate'>無効化</label>
         </div>
-        <DatePicker value={currentDate} disabled={currentDateDisabled} onChange={(newValue) => setCurrentDate(newValue)}/>
+        <DatePicker value={currentDate} disabled={currentDateDisabled} onChange={(newValue) => setCurrentDate(newValue)} pickerMode="wheel" />
       </div>
       <div style={{ marginTop: "48px" }}>
         <h2>日付選択（入力制限付き）</h2>
-        <DatePicker label='日付from' value={minDate} maxDate={maxDate} onChange={(newValue) => setMinDate(newValue)}/>
-        <DatePicker label='日付to' value={maxDate} minDate={minDate} onChange={(newValue) => setMaxDate(newValue)}/>
+        <DatePicker label='日付from' value={minDate} maxDate={maxDate} onChange={(newValue) => setMinDate(newValue)} pickerMode="wheel" />
+        <DatePicker label='日付to' value={maxDate} minDate={minDate} onChange={(newValue) => setMaxDate(newValue)} pickerMode="wheel" />
       </div>
       <div style={{ marginTop: "48px" }}>
         <ButtonNext onClick={() => console.log("次へ")} />
@@ -159,8 +159,8 @@ const ComponentPage = () => {
           />
         </FormRow>
         <FormRow label={'複数'}>
-          <DatePicker label='日付1' />
-          <DatePicker label='日付2' />
+          <DatePicker label='日付1' pickerMode="wheel" />
+          <DatePicker label='日付2' pickerMode="wheel" />
         </FormRow>
       </div>
 

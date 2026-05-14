@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { IconButton, InputAdornment, FormControl } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { DatePicker as MUIDatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -8,6 +8,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import colors from '@/styles/colors';
 import { getMessage, MessageCodes } from '@/message';
+import WheelDatePicker from './WheelDatePicker';
+import WheelDateTimePicker from './WheelDateTimePicker';
+import WheelTimePicker from './WheelTimePicker';
 
 export type DatePickerProps = {
   /**
@@ -72,6 +75,22 @@ export type DatePickerProps = {
   showTime?: boolean;
 
   /**
+   * 日付入力のUIモード
+   *
+   * @type {"calendar" | "wheel" | "calendarThenWheel"}
+   */
+  pickerMode?: 'calendar' | 'wheel' | 'calendarThenWheel';
+
+  /**
+   * wheel picker の種別
+   *
+   * date: 日付のみ
+   * datetime: 日付 + 時刻
+   * time: 時刻のみ
+   */
+  pickerType?: 'date' | 'datetime' | 'time';
+
+  /**
    * プレースホルダー
    *
    * @type {string}
@@ -105,6 +124,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   error,
   format = 'YYYY/MM/DD',
   showTime = false,
+  pickerMode = 'calendar',
+  pickerType = showTime ? 'datetime' : 'date',
   placeholder,
   customStyle = {},
   onBlur,
@@ -114,6 +135,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [internalError, setInternalError] = useState(false);
   const [internalHelperText, setInternalHelperText] = useState('');
+  const [calendarThenWheelOpen, setCalendarThenWheelOpen] = useState(false);
+  const [calendarThenWheelDate, setCalendarThenWheelDate] = useState<Dayjs | undefined>(undefined);
 
   const handleChange = (newValue?: Dayjs) => {
     onChange?.(newValue);
@@ -129,6 +152,48 @@ const DatePicker: React.FC<DatePickerProps> = ({
       return false; // allowedDaysOfWeekが指定されていない場合は全日選択可能
     }
     return !allowedDaysOfWeek.includes(date.day());
+  };
+
+  const getCalendarThenWheelValue = () => calendarThenWheelDate ?? value ?? undefined;
+
+  const handleCalendarAccept = (newValue: Dayjs | null) => {
+    const nextDate = newValue ?? undefined;
+    if (!nextDate) {
+      return;
+    }
+
+    const timeSource = value ?? dayjs();
+    setCalendarThenWheelDate(
+      nextDate
+        .hour(timeSource.hour())
+        .minute(timeSource.minute())
+        .second(0)
+        .millisecond(0)
+    );
+    setCalendarThenWheelOpen(true);
+  };
+
+  const handleWheelTimeChange = (newValue?: Dayjs) => {
+    if (!newValue) {
+      onChange?.(undefined);
+      return;
+    }
+
+    const baseDate = calendarThenWheelDate ?? value ?? dayjs();
+    onChange?.(
+      baseDate
+        .hour(newValue.hour())
+        .minute(newValue.minute())
+        .second(0)
+        .millisecond(0)
+    );
+    setCalendarThenWheelOpen(false);
+    setCalendarThenWheelDate(undefined);
+  };
+
+  const handleWheelTimeClose = () => {
+    setCalendarThenWheelOpen(false);
+    setCalendarThenWheelDate(undefined);
   };
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -228,7 +293,127 @@ const DatePicker: React.FC<DatePickerProps> = ({
   return (
     <FormControl fullWidth sx={{ ...customStyle }} error ref={containerRef}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        {showTime ? (
+        {pickerMode === 'wheel' && pickerType === 'time' ? (
+          <WheelTimePicker
+            label={label}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+            helperText={internalHelperText !== '' ? internalHelperText : helperText}
+            error={internalError ? true : error ? true : false}
+            placeholder={placeholder}
+            customStyle={customStyle}
+          />
+        ) : pickerMode === 'calendarThenWheel' ? (
+          <>
+            <MUIDatePicker
+              label={label}
+              value={getCalendarThenWheelValue()}
+              onChange={(newValue) => {
+                setCalendarThenWheelDate(newValue ?? undefined);
+              }}
+              onAccept={handleCalendarAccept}
+              minDate={minDate}
+              maxDate={maxDate}
+              shouldDisableDate={shouldDisableDate}
+              disabled={disabled}
+              format={format}
+              onError={(reason) => {
+                if (reason === 'invalidDate') {
+                  setInternalError(true);
+                  setInternalHelperText(getMessage(MessageCodes.DATE_INVALID));
+                } else {
+                  setInternalError(false);
+                  setInternalHelperText('');
+                }
+              }}
+              slotProps={{
+                textField: {
+                  helperText: internalHelperText !== '' ? internalHelperText : helperText,
+                  error: internalError ? true : error ? true : false,
+                  variant: 'outlined',
+                  placeholder,
+                  onBlur: handleBlur,
+                  sx: {
+                    '& .MuiInputBase-input.Mui-disabled': {
+                      opacity: 1,
+                      WebkitTextFillColor: colors.inputText,
+                      backgroundColor: DISABLED_BG_COLOR,
+                      color: colors.inputText,
+                    },
+                    '& .MuiOutlinedInput-root.Mui-disabled': {
+                      backgroundColor: DISABLED_BG_COLOR,
+                      border: DISABLED_BD_COLOR,
+                    },
+                    '& .MuiIconButton-root.Mui-disabled': {
+                      backgroundColor: DISABLED_BG_COLOR,
+                      color: colors.inputText,
+                    },
+                  },
+                  InputProps: value
+                    ? {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={handleClear}
+                            edge="end"
+                            size="small"
+                            disabled={disabled}
+                            aria-label="clear DatePicker"
+                            color="error"
+                          >
+                            <ClearIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }
+                    : {},
+                },
+              }}
+            />
+
+            <WheelTimePicker
+              label={label}
+              value={calendarThenWheelDate ?? value ?? undefined}
+              onChange={handleWheelTimeChange}
+              open={calendarThenWheelOpen}
+              onClose={handleWheelTimeClose}
+              disabled={disabled}
+              helperText={internalHelperText !== '' ? internalHelperText : helperText}
+              error={internalError ? true : error ? true : false}
+              placeholder={placeholder}
+              customStyle={customStyle}
+            />
+          </>
+        ) : pickerMode === 'wheel' && pickerType === 'datetime' ? (
+          <WheelDateTimePicker
+            label={label}
+            value={value}
+            onChange={onChange}
+            minDate={minDate}
+            maxDate={maxDate}
+            allowedDaysOfWeek={allowedDaysOfWeek}
+            disabled={disabled}
+            helperText={internalHelperText !== '' ? internalHelperText : helperText}
+            error={internalError ? true : error ? true : false}
+            placeholder={placeholder}
+            customStyle={customStyle}
+          />
+        ) : pickerMode === 'wheel' && pickerType === 'date' ? (
+          <WheelDatePicker
+            label={label}
+            value={value}
+            onChange={onChange}
+            minDate={minDate}
+            maxDate={maxDate}
+            allowedDaysOfWeek={allowedDaysOfWeek}
+            disabled={disabled}
+            helperText={internalHelperText !== '' ? internalHelperText : helperText}
+            error={internalError ? true : error ? true : false}
+            placeholder={placeholder}
+            customStyle={customStyle}
+          />
+        ) : showTime ? (
           <MUIDateTimePicker
             label={label}
             value={value}
@@ -292,71 +477,68 @@ const DatePicker: React.FC<DatePickerProps> = ({
             }}
           />
         ) : (
-        <MUIDatePicker
-          label={label}
-          value={value}
-          onChange={(newValue) => handleChange(newValue ?? undefined)}
-          minDate={minDate}
-          maxDate={maxDate}
-          shouldDisableDate={shouldDisableDate}
-          disabled={disabled}
-          format={format}
-          onError={(reason) => {
-            if (reason === 'invalidDate') {
-              setInternalError(true);
-              setInternalHelperText(getMessage(MessageCodes.DATE_INVALID));
-            } else {
-              setInternalError(false);
-              setInternalHelperText('');
-            }
-          }}
-          slotProps={{
-            textField: {
-              helperText: internalHelperText !=='' ?  internalHelperText : helperText,
-              error: internalError ? true : error ? true : false,
-              variant: 'outlined',
-              placeholder,
-              onBlur: handleBlur,
-              sx: {
-                // ⬇️ disabled状態での文字色を強制上書き
-                '& .MuiInputBase-input.Mui-disabled': {
-                  opacity: 1, // デフォルトの半透明を無効化
-                  WebkitTextFillColor: colors.inputText, // Safari/Chrome用
-                  backgroundColor: DISABLED_BG_COLOR,
-                  color: colors.inputText, // テキスト色
+          <MUIDatePicker
+            label={label}
+            value={value}
+            onChange={(newValue) => handleChange(newValue ?? undefined)}
+            minDate={minDate}
+            maxDate={maxDate}
+            shouldDisableDate={shouldDisableDate}
+            disabled={disabled}
+            format={format}
+            onError={(reason) => {
+              if (reason === 'invalidDate') {
+                setInternalError(true);
+                setInternalHelperText(getMessage(MessageCodes.DATE_INVALID));
+              } else {
+                setInternalError(false);
+                setInternalHelperText('');
+              }
+            }}
+            slotProps={{
+              textField: {
+                helperText: internalHelperText !== '' ? internalHelperText : helperText,
+                error: internalError ? true : error ? true : false,
+                variant: 'outlined',
+                placeholder,
+                onBlur: handleBlur,
+                sx: {
+                  '& .MuiInputBase-input.Mui-disabled': {
+                    opacity: 1,
+                    WebkitTextFillColor: colors.inputText,
+                    backgroundColor: DISABLED_BG_COLOR,
+                    color: colors.inputText,
+                  },
+                  '& .MuiOutlinedInput-root.Mui-disabled': {
+                    backgroundColor: DISABLED_BG_COLOR,
+                    border: DISABLED_BD_COLOR,
+                  },
+                  '& .MuiIconButton-root.Mui-disabled': {
+                    backgroundColor: DISABLED_BG_COLOR,
+                    color: colors.inputText,
+                  },
                 },
-                // 入力枠全体の無効化スタイル
-                '& .MuiOutlinedInput-root.Mui-disabled': {
-                  backgroundColor: DISABLED_BG_COLOR,
-                  border:DISABLED_BD_COLOR,
-                },
-                // クリアボタン (バッテン) の無効化スタイル
-                '& .MuiIconButton-root.Mui-disabled': {
-                  backgroundColor: DISABLED_BG_COLOR,
-                  color: colors.inputText,
-                },
+                InputProps: value
+                  ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={handleClear}
+                          edge="end"
+                          size="small"
+                          disabled={disabled}
+                          aria-label="clear DatePicker"
+                          color="error"
+                        >
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }
+                  : {},
               },
-              InputProps: value
-                ? {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={handleClear}
-                        edge="end"
-                        size="small"
-                        disabled={disabled}
-                        aria-label="clear DatePicker"
-                        color="error"
-                      >
-                        <ClearIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }
-                : {},
-            },
-          }}
-        />
+            }}
+          />
         )}
       </LocalizationProvider>
     </FormControl>
