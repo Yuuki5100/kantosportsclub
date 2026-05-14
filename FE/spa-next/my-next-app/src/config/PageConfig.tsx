@@ -197,6 +197,13 @@ const pageConfig: PageConfigType = [
     icon: <PeopleIcon />,
     breadcrumb: { id: "myPageTrial", parentId: "top" },
   },
+    {
+    name: "お問い合わせ",
+    resourceKey: "/contact",
+    requiredPermission: 1,
+    icon: <AdminPanelSettingsIcon />,
+    breadcrumb: { id: "contact", parentId: "top" },
+  },
   {
     name: "管理者ページ",
     resourceKey: "/admin/menu",

@@ -11,6 +11,7 @@ import { masterLocationRoutes } from "./routes/masterLocation";
 import { filesRoutes } from "./routes/files";
 import { mediaRoutes } from "./routes/media";
 import { mypageRoutes } from "./routes/mypage";
+import { contactRoutes } from "./routes/contact";
 import auth from "./routes/auth";
 
 const app = new Hono<{
@@ -58,6 +59,7 @@ app.route("/api", noticeRoutes);
 app.route("/api", filesRoutes);
 app.route("/api", mediaRoutes);
 app.route("/api", mypageRoutes);
+app.route("/api", contactRoutes);
 app.route("/api", masterLocationRoutes);
 app.route('/api/auth', auth);
 

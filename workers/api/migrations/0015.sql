@@ -1,50 +1,12 @@
-UPDATE mypage
-SET image_url = 'mypage/yu.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 13;
-
-UPDATE mypage
-SET image_url = 'mypage/gotou.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 4;
-
-UPDATE mypage
-SET image_url = 'mypage/kawahara.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 10;
-
-UPDATE mypage
-SET image_url = 'mypage/keita.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 12;
-
-UPDATE mypage
-SET image_url = 'mypage/koizumi.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 9;
-
-UPDATE mypage
-SET image_url = 'mypage/orita.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 16;
-
-UPDATE mypage
-SET image_url = 'mypage/taichi.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 5;
-
-UPDATE mypage
-SET image_url = 'mypage/wada.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 6;
-
-UPDATE mypage
-SET image_url = 'mypage/takamura.jpg',
-    update_at = CURRENT_TIMESTAMP
-WHERE user_id = 7;
-
-UPDATE mypage
-SET 
-  image_url = 'mypage/noimage.jpeg',
-  update_at = CURRENT_TIMESTAMP
-WHERE image_url LIKE '%空ファイル.png';
+UPDATE mypage SET user_name_jpn = 'Y.GOTO', update_at = CURRENT_TIMESTAMP WHERE user_id = 4;
+UPDATE mypage SET user_name_jpn = 'TAICHI', update_at = CURRENT_TIMESTAMP WHERE user_id = 5;
+UPDATE mypage SET user_name_jpn = 'WS', update_at = CURRENT_TIMESTAMP WHERE user_id = 6;
+UPDATE mypage SET user_name_jpn = 'T.K.', update_at = CURRENT_TIMESTAMP WHERE user_id = 7;
+UPDATE mypage SET user_name_jpn = 'ABE', update_at = CURRENT_TIMESTAMP WHERE user_id = 8;
+UPDATE mypage SET user_name_jpn = 'KOIZUMI', update_at = CURRENT_TIMESTAMP WHERE user_id = 9;
+UPDATE mypage SET user_name_jpn = 'KAWAHARA', update_at = CURRENT_TIMESTAMP WHERE user_id = 10;
+UPDATE mypage SET user_name_jpn = 'TAKAFUMI', update_at = CURRENT_TIMESTAMP WHERE user_id = 11;
+UPDATE mypage SET user_name_jpn = 'KEITA', update_at = CURRENT_TIMESTAMP WHERE user_id = 12;
+UPDATE mypage SET user_name_jpn = 'YU', update_at = CURRENT_TIMESTAMP WHERE user_id = 13;
+UPDATE mypage SET user_name_jpn = 'OSAWA', update_at = CURRENT_TIMESTAMP WHERE user_id = 14;
+UPDATE mypage SET user_name_jpn = 'O.D.', update_at = CURRENT_TIMESTAMP WHERE user_id = 16;
