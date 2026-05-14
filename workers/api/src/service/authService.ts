@@ -28,7 +28,7 @@ import {
   isPasswordHashUpgradeRequired,
 } from "../auth/passwordHash";
 
-const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 60 * 15;
+const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 60 * 30;
 const REFRESH_TOKEN_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 30;
 
 type AuthUserRow = {
