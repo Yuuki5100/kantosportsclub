@@ -137,7 +137,7 @@ export const upsertMypage = async (
         create_at,
         update_at
       )
-      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       ON CONFLICT(user_id) DO UPDATE SET
         user_name = excluded.user_name,
         user_name_jpn = excluded.user_name_jpn,
