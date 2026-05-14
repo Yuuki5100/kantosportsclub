@@ -32,7 +32,7 @@ const uniformData: UniformItem[] = [
   { name: '高村', uniformName: 'T.K.', number: 66, size: 'L', types: ['C'] },
   { name: '孝文', uniformName: 'TAKAFUMI', number: 77, size: 'L', types: ['F'] },
   { name: '阿部', uniformName: 'ABE', number: 84, size: 'L', types: ['G'] },
-  { name: '川原', uniformName: 'KAWAHARA', number: 99, size: 'O', types: ['F'] },
+  { name: '河原', uniformName: 'KAWAHARA', number: 99, size: 'O', types: ['F'] },
 ];
 
 const columns: ColumnDefinition[] = [
