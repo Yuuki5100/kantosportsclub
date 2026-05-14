@@ -5,6 +5,7 @@ import PageContainer from "@base/Layout/PageContainer";
 import apiClient from "@/api/apiClient";
 import colors from "@/styles/colors";
 import type { ApiResponse } from "@/types/api";
+import { Typography } from "@mui/material";
 
 type PlayerApiItem = {
   userId?: number | string | null;
@@ -291,7 +292,7 @@ const PlayerListPage: React.FC = () => {
                   <Font14 sx={{ fontSize: 12, fontWeight: 700, lineHeight: 1.1 }}>
                     選手番号
                   </Font14>
-                  <Font20 sx={{ fontSize: 34, fontWeight: 800, lineHeight: 0.92 }}>
+                  <Font20 sx={{ mt: 0.30, fontSize: 34, fontWeight: 800, lineHeight: 0.92 }}>
                     {item.jerseyNumber}
                   </Font20>
                 </Box>
