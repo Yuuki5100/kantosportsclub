@@ -26,9 +26,16 @@ const columns: ColumnDefinition[] = [
   { id: "type", label: "種別", display: true, sortable: true, align: "center", widthPercent: 10 },
   { id: "status", label: "状態", display: true, sortable: true, align: "center", widthPercent: 10 },
   { id: "display", label: "画面名", display: true, sortable: true, align: "left", widthPercent: 18 },
-  { id: "sentence", label: "内容", display: false, sortable: false, align: "left", widthPercent: 28 },
+  { id: "sentence", label: "内容", display: true, sortable: false, align: "left", widthPercent: 28 },
   { id: "reporter", label: "投稿者", display: false, sortable: false, align: "center", widthPercent: 14 },
 ];
+
+const truncateText = (value: string, maxLength = 20): string => {
+  if (value.length <= maxLength) {
+    return value;
+  }
+  return `${value.slice(0, maxLength)}...`;
+};
 
 const ContactListPage: React.FC = () => {
   const router = useRouter();
@@ -91,7 +98,16 @@ const ContactListPage: React.FC = () => {
           { id: `type-${contact.id}`, columnId: "type", cell: contact.type, value: contact.type },
           { id: `status-${contact.id}`, columnId: "status", cell: contact.status, value: contact.status },
           { id: `display-${contact.id}`, columnId: "display", cell: contact.display ?? "", value: contact.display ?? "" },
-          { id: `sentence-${contact.id}`, columnId: "sentence", cell: contact.sentence, value: contact.sentence },
+          {
+            id: `sentence-${contact.id}`,
+            columnId: "sentence",
+            cell: (
+              <Box title={contact.sentence} sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {truncateText(contact.sentence)}
+              </Box>
+            ),
+            value: contact.sentence,
+          },
           { id: `reporter-${contact.id}`, columnId: "reporter", cell: contact.reporter, value: contact.reporter },
         ],
       })),
@@ -123,6 +139,8 @@ const ContactListPage: React.FC = () => {
           rowsPerPageOptions={[10, 20, 50]}
           showSearchOptions={false}
           onRowClick={handleRowClick}
+          topPaginationHidden={true}
+          bottomPaginationHidden={true}
           sx={{
             width: "100%",
             "& .MuiTableHead-root .MuiTableCell-root": {

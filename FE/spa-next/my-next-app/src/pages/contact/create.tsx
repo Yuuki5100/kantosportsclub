@@ -8,6 +8,7 @@ import colors from "@/styles/colors";
 import apiClient from "@/api/apiClient";
 import AutoComplete from "@/components/base/Input/AutoComplete";
 import { useAuth } from "@/hooks/useAuth";
+import { getPageConfig } from "@/config/PageConfig";
 
 type ContactCreateRequest = {
   type: string;
@@ -34,10 +35,12 @@ const STATUS_OPTIONS: Option[] = [
   { label: "完了", value: "完了" },
 ];
 
-const DISPLAY_OPTIONS: Option[] = [
-  { label: "お知らせ", value: "表示" },
-  { label: "写真", value: "非表示" },
-];
+const DISPLAY_OPTIONS: Option[] = getPageConfig()
+  .filter((item) => !item.hidden)
+  .map((item) => ({
+    label: item.name,
+    value: item.name,
+  }));
 
 const ContactCreatePage: React.FC = () => {
   const router = useRouter();

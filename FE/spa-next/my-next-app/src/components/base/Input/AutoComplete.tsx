@@ -82,7 +82,7 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({
 
   return (
     <FormControl fullWidth error={error}>
-      <Box sx={{ mt: 5, display: 'flex', justifyContent: 'flex-start', ...customStyle }}>
+      <Box sx={{ mt: 2.5, display: 'flex', justifyContent: 'flex-start', ...customStyle }}>
         <Autocomplete
           fullWidth
           options={options}
@@ -120,6 +120,9 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({
               helperText={helperText}
               error={error}
               sx={{
+                '& .MuiInputBase-root': {
+                  py: 0.5,
+                },
                 // disabled状態でのスタイル調整（TextFieldで一元管理）
                 '& .MuiInputBase-input.Mui-disabled': {
                   opacity: 1,
