@@ -1,22 +1,22 @@
-export type MypageItem = {
+export type MypageApiResponse = {
   userId: number;
+  imageUrl?: string | null;
   userName: string | null;
   userNameJpn: string | null;
   jerseyNumber: number | null;
   enthusiasm: string | null;
   hopeStyle: string | null;
   remarks: string | null;
-  imageUrl: string | null;
   createAt: string | null;
   updateAt: string | null;
 };
 
-export type MypageUpsertInput = {
+export type MypageUpdateRequest = {
+  imageUrl: string | null;
   userName: string | null;
   userNameJpn: string | null;
   jerseyNumber: number | null;
   enthusiasm: string | null;
   hopeStyle: string | null;
   remarks: string | null;
-  imageUrl: string | null;
 };

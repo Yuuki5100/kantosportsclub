@@ -10,25 +10,13 @@ import colors from "@/styles/colors";
 import { useAuth } from "@/hooks/useAuth";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
+import type { MypageApiResponse, MypageUpdateRequest } from "@/types/mypage";
 
 const toLinkHref = (url: string): string => {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url) || url.startsWith("/")) {
     return url;
   }
   return `https://${url}`;
-};
-
-type MypageApiResponse = {
-  userId: number;
-  imageUrl?: string | null;
-  userName: string | null;
-  userNameJpn: string | null;
-  jerseyNumber: number | null;
-  enthusiasm: string | null;
-  hopeStyle: string | null;
-  remarks: string | null;
-  createAt: string | null;
-  updateAt: string | null;
 };
 
 type MypageEditState = {
@@ -277,7 +265,7 @@ const MyPage: React.FC = () => {
         imageUrl = uploaded.data.fileId;
       }
 
-      const response = await apiClient.put<MypageApiResponse>(`/api/mypage/${userId}`, {
+      const requestBody: MypageUpdateRequest = {
         imageUrl,
         userName: editState.userName.trim() ? editState.userName : null,
         userNameJpn: editState.userNameJpn.trim() ? editState.userNameJpn : null,
@@ -285,7 +273,9 @@ const MyPage: React.FC = () => {
         enthusiasm: editState.enthusiasm.trim() ? editState.enthusiasm : null,
         hopeStyle: editState.hopeStyle.trim() ? editState.hopeStyle : null,
         remarks: editState.remarks.trim() ? editState.remarks : null,
-      });
+      };
+
+      const response = await apiClient.put<MypageApiResponse>(`/api/mypage/${userId}`, requestBody);
 
       setRow(response.data);
       setEditState({

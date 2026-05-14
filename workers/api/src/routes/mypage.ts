@@ -30,6 +30,16 @@ const parseNullableString = (value: unknown): string | null | undefined => {
   return undefined;
 };
 
+const parseNullableInteger = (value: unknown): number | null | undefined => {
+  if (value === null) {
+    return null;
+  }
+  if (typeof value === "number" && Number.isInteger(value)) {
+    return value;
+  }
+  return undefined;
+};
+
 const MAX_IMAGE_URL_LENGTH = 512;
 
 const isPersistableImageUrl = (value: string | null | undefined): boolean => {
@@ -52,6 +62,8 @@ const parseMypageInput = (body: unknown): MypageUpsertInput | null => {
 
   const record = body as Record<string, unknown>;
   const userName = parseNullableString(record.userName);
+  const userNameJpn = parseNullableString(record.userNameJpn ?? record.user_name_jpn);
+  const jerseyNumber = parseNullableInteger(record.jerseyNumber ?? record.jersey_number);
   const enthusiasm = parseNullableString(record.enthusiasm);
   const hopeStyle = parseNullableString(record.hopeStyle);
   const remarks = parseNullableString(record.remarks);
@@ -59,6 +71,8 @@ const parseMypageInput = (body: unknown): MypageUpsertInput | null => {
 
   if (
     userName === undefined ||
+    userNameJpn === undefined ||
+    jerseyNumber === undefined ||
     enthusiasm === undefined ||
     hopeStyle === undefined ||
     remarks === undefined ||
@@ -71,7 +85,7 @@ const parseMypageInput = (body: unknown): MypageUpsertInput | null => {
     return null;
   }
 
-  return { userName, enthusiasm, hopeStyle, remarks, imageUrl };
+  return { userName, userNameJpn, jerseyNumber, enthusiasm, hopeStyle, remarks, imageUrl };
 };
 
 mypageRoutes.get("/mypage/list", async (c) => {

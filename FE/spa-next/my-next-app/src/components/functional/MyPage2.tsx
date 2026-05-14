@@ -10,21 +10,13 @@ import colors from "@/styles/colors";
 import { useAuth } from "@/hooks/useAuth";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
-
-type MypageApiResponse = {
-  userId: number;
-  imageUrl?: string | null;
-  userName: string | null;
-  enthusiasm: string | null;
-  hopeStyle: string | null;
-  remarks: string | null;
-  createAt: string | null;
-  updateAt: string | null;
-};
+import type { MypageApiResponse, MypageUpdateRequest } from "@/types/mypage";
 
 type MypageEditState = {
   imageUrl: string;
   userName: string;
+  userNameJpn: string;
+  jerseyNumber: string;
   enthusiasm: string;
   hopeStyle: string;
   remarks: string;
@@ -47,6 +39,8 @@ const MyPage2: React.FC = () => {
   const [editState, setEditState] = useState<MypageEditState>({
     imageUrl: "",
     userName: "",
+    userNameJpn: "",
+    jerseyNumber: "",
     enthusiasm: "",
     hopeStyle: "",
     remarks: "",
@@ -69,6 +63,8 @@ const MyPage2: React.FC = () => {
         setEditState({
           imageUrl: isPersistableImageUrl(getValue(response.data.imageUrl)) ? getValue(response.data.imageUrl) : "",
           userName: getValue(response.data.userName),
+          userNameJpn: getValue(response.data.userNameJpn),
+          jerseyNumber: response.data.jerseyNumber?.toString() ?? "",
           enthusiasm: getValue(response.data.enthusiasm),
           hopeStyle: getValue(response.data.hopeStyle),
           remarks: getValue(response.data.remarks),
@@ -124,7 +120,10 @@ const MyPage2: React.FC = () => {
     );
 
     const editableTextNode = (
-      field: keyof Pick<MypageEditState, "userName" | "enthusiasm" | "hopeStyle" | "remarks">,
+      field: keyof Pick<
+        MypageEditState,
+        "userName" | "userNameJpn" | "jerseyNumber" | "enthusiasm" | "hopeStyle" | "remarks"
+      >,
       multiline = false
     ) => (
       <TextField
@@ -161,6 +160,16 @@ const MyPage2: React.FC = () => {
         value: isEditing ? editableTextNode("userName") : getValue(row.userName),
       },
       {
+        key: "user_name_jpn",
+        label: "ユーザー名（かな）",
+        value: isEditing ? editableTextNode("userNameJpn") : getValue(row.userNameJpn),
+      },
+      {
+        key: "jersey_number",
+        label: "背番号",
+        value: isEditing ? editableTextNode("jerseyNumber") : row.jerseyNumber ?? "",
+      },
+      {
         key: "enthusiasm",
         label: "意気込み",
         value: isEditing ? editableTextNode("enthusiasm") : getValue(row.enthusiasm),
@@ -191,6 +200,8 @@ const MyPage2: React.FC = () => {
     setEditState({
       imageUrl: isPersistableImageUrl(getValue(row.imageUrl)) ? getValue(row.imageUrl) : "",
       userName: getValue(row.userName),
+      userNameJpn: getValue(row.userNameJpn),
+      jerseyNumber: row.jerseyNumber?.toString() ?? "",
       enthusiasm: getValue(row.enthusiasm),
       hopeStyle: getValue(row.hopeStyle),
       remarks: getValue(row.remarks),
@@ -217,18 +228,24 @@ const MyPage2: React.FC = () => {
         imageUrl = uploaded.data.fileId;
       }
 
-      const response = await apiClient.put<MypageApiResponse>(`/api/mypage/${userId}`, {
+      const requestBody: MypageUpdateRequest = {
         imageUrl,
         userName: editState.userName.trim() ? editState.userName : null,
+        userNameJpn: editState.userNameJpn.trim() ? editState.userNameJpn : null,
+        jerseyNumber: editState.jerseyNumber.trim() ? Number(editState.jerseyNumber) : null,
         enthusiasm: editState.enthusiasm.trim() ? editState.enthusiasm : null,
         hopeStyle: editState.hopeStyle.trim() ? editState.hopeStyle : null,
         remarks: editState.remarks.trim() ? editState.remarks : null,
-      });
+      };
+
+      const response = await apiClient.put<MypageApiResponse>(`/api/mypage/${userId}`, requestBody);
 
       setRow(response.data);
       setEditState({
         imageUrl: isPersistableImageUrl(getValue(response.data.imageUrl)) ? getValue(response.data.imageUrl) : "",
         userName: getValue(response.data.userName),
+        userNameJpn: getValue(response.data.userNameJpn),
+        jerseyNumber: response.data.jerseyNumber?.toString() ?? "",
         enthusiasm: getValue(response.data.enthusiasm),
         hopeStyle: getValue(response.data.hopeStyle),
         remarks: getValue(response.data.remarks),

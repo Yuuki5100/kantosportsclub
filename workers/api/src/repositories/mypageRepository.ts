@@ -115,6 +115,8 @@ export const upsertMypage = async (
   input: MypageUpsertInput,
 ): Promise<MypageItem | null> => {
   const userName = normalizeString(input.userName);
+  const userNameJpn = normalizeString(input.userNameJpn);
+  const jerseyNumber = input.jerseyNumber;
   const enthusiasm = normalizeString(input.enthusiasm);
   const hopeStyle = normalizeString(input.hopeStyle);
   const remarks = normalizeString(input.remarks);
@@ -126,6 +128,8 @@ export const upsertMypage = async (
       INSERT INTO mypage (
         user_id,
         user_name,
+        user_name_jpn,
+        jersey_number,
         enthusiasm,
         hope_style,
         remarks,
@@ -133,9 +137,11 @@ export const upsertMypage = async (
         create_at,
         update_at
       )
-      VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       ON CONFLICT(user_id) DO UPDATE SET
         user_name = excluded.user_name,
+        user_name_jpn = excluded.user_name_jpn,
+        jersey_number = excluded.jersey_number,
         enthusiasm = excluded.enthusiasm,
         hope_style = excluded.hope_style,
         remarks = excluded.remarks,
@@ -143,7 +149,7 @@ export const upsertMypage = async (
         update_at = CURRENT_TIMESTAMP
       `
     )
-    .bind(userId, userName, enthusiasm, hopeStyle, remarks, imageUrl)
+    .bind(userId, userName, userNameJpn, jerseyNumber, enthusiasm, hopeStyle, remarks, imageUrl)
     .run();
 
   return findMypageByUserId(db, userId);
