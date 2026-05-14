@@ -188,7 +188,7 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "player", parentId: "top" },
   },
   {
-    name: "マイページ（試用版）",
+    name: "マイページ",
     resourceKey: "/myPage",
     requiredPermission: 1,
     icon: <PeopleIcon />,

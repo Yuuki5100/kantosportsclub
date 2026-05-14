@@ -314,7 +314,7 @@ const MyPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 32px, 1152px)", maxWidth: "95%", py: 2, mx: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 64px, 1152px)", maxWidth: "90%", py: 2, mx: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
           <Font20>マイページ</Font20>
           <Font14 sx={{ color: colors.grayDark }}>
