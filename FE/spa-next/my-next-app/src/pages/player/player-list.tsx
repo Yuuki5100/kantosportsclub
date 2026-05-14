@@ -64,11 +64,18 @@ const toPlayerItem = (item: PlayerApiItem, index: number): PlayerItem => ({
   imageUrl: toText(item.imageUrl ?? item.image_url),
 });
 
+const EXCLUDED_USER_NAMES = new Set(["user", "admin", "viewer"]);
+
+const shouldIncludePlayer = (item: PlayerItem): boolean => {
+  const normalizedUserName = item.userName.trim();
+  return normalizedUserName.length > 0 && !EXCLUDED_USER_NAMES.has(normalizedUserName);
+};
+
 const extractPlayerItems = (
   response: PlayerApiItem[] | ApiResponse<PlayerApiItem[]> | null | undefined
 ): PlayerItem[] => {
   const items = Array.isArray(response) ? response : response?.data;
-  return (items ?? []).map(toPlayerItem);
+  return (items ?? []).map(toPlayerItem).filter(shouldIncludePlayer);
 };
 
 const PlayerListPage: React.FC = () => {
