@@ -4,8 +4,7 @@ import ListIcon from "@mui/icons-material/List";
 import MovieIcon from "@mui/icons-material/Movie";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
-import SettingsIcon from "@mui/icons-material/Settings";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
+import ChecklistIcon  from "@mui/icons-material/MenuBook";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import TimelineIcon from "@mui/icons-material/Timeline";
@@ -44,7 +43,7 @@ const pageConfig: PageConfigType = [
     name: "練習メニュー",
     resourceKey: "/practiceMenu",
     requiredPermission: 1,
-    icon: <AccountTreeIcon />,
+    icon: <ChecklistIcon />,
     section: "activity",
     breadcrumb: { id: "practiceMenu", parentId: "top" },
   },
@@ -214,6 +213,14 @@ const pageConfig: PageConfigType = [
     icon: <PeopleIcon />,
     section: "other",
     breadcrumb: { id: "myPageTrial", parentId: "top" },
+  },
+    {
+    name: "体育館予約手順（開発中）",
+    resourceKey: "/",
+    requiredPermission: 1,
+    icon: <ChecklistIcon />,
+    section: "activity",
+    breadcrumb: { id: "practiceMenu", parentId: "top" },
   },
   {
     name: "お問い合わせ",
