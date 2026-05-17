@@ -40,6 +40,14 @@ const pageConfig: PageConfigType = [
     section: "activity",
     breadcrumb: { id: "top" },
   },
+  {
+    name: "練習メニュー",
+    resourceKey: "/practiceMenu",
+    requiredPermission: 1,
+    icon: <AccountTreeIcon />,
+    section: "activity",
+    breadcrumb: { id: "practiceMenu", parentId: "top" },
+  },
   // {
   //   name: "動画追加",
   //   resourceKey: "/movies/create",

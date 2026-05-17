@@ -13,6 +13,7 @@ import { mediaRoutes } from "./routes/media";
 import { mypageRoutes } from "./routes/mypage";
 import { contactRoutes } from "./routes/contact";
 import auth from "./routes/auth";
+import { practiceMenuRoutes } from "./routes/practiceMenu";
 
 const app = new Hono<{
   Bindings: Bindings;
@@ -61,6 +62,7 @@ app.route("/api", mediaRoutes);
 app.route("/api", mypageRoutes);
 app.route("/api", contactRoutes);
 app.route("/api", masterLocationRoutes);
+app.route("/api", practiceMenuRoutes);
 app.route('/api/auth', auth);
 
 app.notFound((c) =>

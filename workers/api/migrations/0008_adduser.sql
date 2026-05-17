@@ -45,6 +45,7 @@ INSERT INTO tmp_resources (resource) VALUES ('201');
 INSERT INTO tmp_resources (resource) VALUES ('202');
 INSERT INTO tmp_resources (resource) VALUES ('203');
 INSERT INTO tmp_resources (resource) VALUES ('204');
+INSERT INTO tmp_resources (resource) VALUES ('208');
 
 -- ---------------------------------------------------------------------------
 -- Additional test users
@@ -95,7 +96,7 @@ SELECT
 FROM users u
 CROSS JOIN tmp_resources r
 WHERE u.username IN ('narita', 'oosawa', 'araki', 'orita')
-  AND r.resource IN ('101', '201', '204');
+  AND r.resource IN ('101', '201', '204', '208');
 
 INSERT INTO user_role_permissions
   (user_id, resource, permission_level, created_at, updated_at)

@@ -131,7 +131,8 @@ INSERT INTO master_menu_function (id, name) VALUES
 (204, 'お知らせ'),
 (205, 'マイページ'),
 (206, 'ファイルアップロード'),
-(207, '問い合わせ');
+(207, '問い合わせ'),
+(208, '練習メニュー');
 
 -- ============================
 -- DML: endpoint authority mapping
@@ -182,7 +183,12 @@ VALUES
 (47, '/api/contacts', 'GET', 207, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (48, '/api/contacts', 'POST', 207, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (49, '/api/contacts/*', 'GET', 207, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(50, '/api/contacts/*', 'PUT', 207, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(50, '/api/contacts/*', 'PUT', 207, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(51, '/api/practice-menu/headers', 'GET', 208, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(52, '/api/practice-menu/headers', 'POST', 208, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(53, '/api/practice-menu/headers', 'PUT', 208, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(54, '/api/practice-menu/headers/*', 'GET', 208, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(55, '/api/practice-menu/headers/*', 'PUT', 208, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 
 
