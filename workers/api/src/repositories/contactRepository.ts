@@ -108,33 +108,27 @@ export const createContact = async (
          ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
       );
 
-  const result = isIntegerId
-    ? await statement
-        .bind(
-          input.type,
-          input.status,
-          input.display,
-          input.sentence,
-          input.reporter
-        )
-        .first<{ id: string | number }>()
-    : await statement
-        .bind(
-          input.id,
-          input.type,
-          input.status,
-          input.display,
-          input.sentence,
-          input.reporter
-        )
-        .run();
+  if (isIntegerId) {
+    const result = await statement
+      .bind(input.type, input.status, input.display, input.sentence, input.reporter)
+      .first<{ id: string | number }>();
+
+    if (!result) {
+      return null;
+    }
+
+    return findContactById(db, String(result.id));
+  }
+
+  const result = await statement
+    .bind(input.id, input.type, input.status, input.display, input.sentence, input.reporter)
+    .run();
 
   if (!result) {
     return null;
   }
 
-  const contactId = isIntegerId ? String(result.id) : input.id;
-  return findContactById(db, contactId);
+  return findContactById(db, input.id);
 };
 
 export const updateContact = async (

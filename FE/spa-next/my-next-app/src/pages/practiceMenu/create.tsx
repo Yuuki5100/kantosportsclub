@@ -95,12 +95,11 @@ export default function PracticeMenuBuilder() {
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 3 }}>
         <TextField fullWidth size="small" label="タイトル" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <TextField fullWidth size="small" label="備考" value={remarks} onChange={(e) => setRemarks(e.target.value)} multiline minRows={3} />
       </Box>
 
       <Paper variant="outlined" sx={{ minHeight: 140, p: 2, mb: 3, borderRadius: 3 }}>
         <Typography fontWeight="bold" mb={1}>
-          今日のメニュー
+          練習メニュー
         </Typography>
         <PracticeMenuSortableList
           items={menu as PracticeMenuRowItem[]}
@@ -112,14 +111,19 @@ export default function PracticeMenuBuilder() {
           onTimeChange={updateTime}
           emptyMessage="下の入力欄からメニューを追加してください"
         />
+        <Typography fontWeight="bold" mt={2} mb={1}>
+          メニューを追加
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <TextField fullWidth size="small" value={inputName} onChange={(e) => setInputName(e.target.value)} placeholder="例：レイアップシュート" />
+          <Button variant="contained" onClick={addMenu} disabled={!inputName.trim()} sx={{ fontSize: 14, whiteSpace: "nowrap" }}>
+            追加
+          </Button>
+        </Box>
       </Paper>
 
-      <Typography fontWeight="bold" mb={1}>メニューを追加</Typography>
-      <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
-        <TextField fullWidth size="small" value={inputName} onChange={(e) => setInputName(e.target.value)} placeholder="例：レイアップシュート" />
-        <Button variant="contained" onClick={addMenu} disabled={!inputName.trim()} sx={{ fontSize: 14, whiteSpace: "nowrap" }}>
-          追加
-        </Button>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 3 }}>
+        <TextField fullWidth size="small" label="備考" value={remarks} onChange={(e) => setRemarks(e.target.value)} multiline minRows={3} />
       </Box>
 
       <Box sx={{ display: "flex", gap: 1 }}>

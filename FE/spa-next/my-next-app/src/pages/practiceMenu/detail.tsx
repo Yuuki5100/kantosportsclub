@@ -159,7 +159,7 @@ const PracticeMenuDetailPage: React.FC = () => {
             label="一覧へ戻る"
             size="medium"
             onClick={() => void router.push("/practiceMenu")}
-            width={120} 
+            width={120}
             sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2, boxShadow: "0 2px 4px rgba(0,0,0,0.2)", "&:hover": { backgroundColor: "commonTableHeader" } }}
           />
         </Box>
@@ -167,6 +167,7 @@ const PracticeMenuDetailPage: React.FC = () => {
         <Box sx={{ width: "100%", border: `1.5px solid ${colors.commonBorderGray}`, borderRadius: 1, overflow: "hidden", mb: 3 }}>
           {[
             { label: "タイトル", value: detail.title, field: "title" as const },
+            { label: "練習メニュー", value: "", isMenu: true as const },
             { label: "備考", value: detail.remarks, field: "remarks" as const },
             { label: "更新者", value: detail.updater, isLabel: true as const },
           ].map((item) => (
@@ -186,6 +187,26 @@ const PracticeMenuDetailPage: React.FC = () => {
               <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
                 {"isLabel" in item && item.isLabel ? (
                   <Font14 sx={{ minHeight: 40, display: "flex", alignItems: "center" }}>{item.value || "-"}</Font14>
+                ) : "isMenu" in item && item.isMenu ? (
+                  <Box>
+                    <PracticeMenuSortableList
+                      items={menuItems as PracticeMenuRowItem[]}
+                      onChange={(nextItems) => setMenuItems(nextItems)}
+                      onRemove={removeMenuItem}
+                      onNameChange={(index, value) => updateMenuItem(index, "name", value)}
+                      onTimeChange={(index, value) => updateMenuItem(index, "time", value)}
+                      emptyMessage="メニューはまだ登録されていません。"
+                    />
+                    <Box sx={{ display: "flex", gap: 1, mt: 2, justifyContent: "flex-start" }}>
+                      <ButtonAction
+                        label="追加"
+                        size="medium"
+                        onClick={addMenuItem}
+                        width={80}
+                        sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2 }}
+                      />
+                    </Box>
+                  </Box>
                 ) : (
                   <TextField
                     value={item.value}
@@ -199,25 +220,16 @@ const PracticeMenuDetailPage: React.FC = () => {
           ))}
         </Box>
 
-        <Box sx={{ width: "100%", border: `1.5px solid ${colors.commonBorderGray}`, borderRadius: 1, overflow: "hidden" }}>
-          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" }, width: "100%", borderBottom: `1.5px solid ${colors.commonBorderGray}` }}>
-            <Box sx={{ width: "100%", p: 1.5, bgcolor: colors.commonTableHeader, color: colors.commonFontColorBlack, fontWeight: 600 }}>今日のメニュー</Box>
-            <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <PracticeMenuSortableList
-                items={menuItems as PracticeMenuRowItem[]}
-                onChange={(nextItems) => setMenuItems(nextItems)}
-                onRemove={removeMenuItem}
-                onNameChange={(index, value) => updateMenuItem(index, "name", value)}
-                onTimeChange={(index, value) => updateMenuItem(index, "time", value)}
-                emptyMessage="メニューはまだ登録されていません。"
-              />
-              <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-                <ButtonAction label="追加" size="medium" onClick={addMenuItem} width={80} sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2 }} />
-                <ButtonAction label={isSaving ? "更新中" : "更新"} size="medium" onClick={() => void handleSave()} width={80} sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2 }} />
-              </Box>
-            </Box>
-          </Box>
+        <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+          <ButtonAction
+            label={isSaving ? "更新中" : "更新"}
+            size="medium"
+            onClick={() => void handleSave()}
+            width={100}
+            sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2, whiteSpace: "norwap  " }}
+          />
         </Box>
+
       </Box>
     </PageContainer>
   );

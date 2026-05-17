@@ -47,7 +47,7 @@ const parsePracticeMenuHeaderInput = (body: unknown): PracticeMenuHeaderCreateIn
       return null;
     }
     const category = parseNullableString(item.category);
-    const menuName = parseNullableString(item.menuName);
+    const menuName = typeof item.menuName === "string" ? item.menuName : undefined;
     const menuTimeRaw = item.menuTime;
     const sortNoRaw = item.sortNo;
     const detailUpdater = parseNullableString(item.updater);
