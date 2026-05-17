@@ -1,6 +1,7 @@
 import React from "react";
-import { Box, TextField } from "@mui/material";
+import { Box, IconButton, TextField } from "@mui/material";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -42,7 +43,7 @@ const SortableRow: React.FC<{
       ref={setNodeRef}
       sx={{
         display: "grid",
-        gridTemplateColumns: "24px minmax(0, 1.4fr) 40px 32px",
+        gridTemplateColumns: "24px minmax(0, 1.4fr) 52px 36px",
         alignItems: "center",
         gap: 0.5,
         p: 0.4,
@@ -91,35 +92,45 @@ const SortableRow: React.FC<{
         }}
       />
 
-      <TextField
-        size="small"
-        value={item.time}
-        onChange={(event) => onTimeChange(index, event.target.value)}
-        placeholder="時間"
-        sx={{
-          width: 40,
-          "& .MuiInputBase-input": {
-            fontSize: 14,
-            py: 0.6,
-            px: 0.5,
-          },
-        }}
-      />
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+        <TextField
+          size="small"
+          value={item.time}
+          onChange={(event) => onTimeChange(index, event.target.value)}
+          placeholder="時間"
+          sx={{
+            width: 40,
+            "& .MuiInputBase-input": {
+              fontSize: 14,
+              py: 0.6,
+              px: 0.5,
+            },
+          }}
+        />
+        <Font14 sx={{ color: colors.grayDark, whiteSpace: "nowrap", flexShrink: 0 }}>分</Font14>
+      </Box>
 
-      <ButtonAction
-        label="削除"
-        size="small"
-        onClick={() => onRemove(index)}
-        width={32}
-        sx={{
-          minWidth: 32,
-          backgroundColor: "commonTableHeader",
-          color: "#ffffff",
-          borderRadius: 2,
-          px: 0,
-          py: 0,
-        }}
-      />
+      <Box sx={{ display: "flex", justifyContent: "center", flexShrink: 0 }}>
+        <IconButton
+          aria-label="削除"
+          onClick={() => onRemove(index)}
+          size="small"
+          sx={{
+            width: 36,
+            height: 36,
+            bgcolor: "#6b7280",
+            color: "#1f2937",
+            border: "1px solid #4b5563",
+            borderRadius: 2,
+            p: 0,
+            "&:hover": {
+              bgcolor: "#4b5563",
+            },
+          }}
+        >
+          <DeleteIcon sx={{ fontSize: 20, color: "#111827" }} />
+        </IconButton>
+      </Box>
     </Box>
   );
 };
