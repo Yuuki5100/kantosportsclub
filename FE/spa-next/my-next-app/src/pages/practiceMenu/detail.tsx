@@ -169,7 +169,7 @@ const PracticeMenuDetailPage: React.FC = () => {
       } = {
         title: detail.title.trim(),
         remarks: detail.remarks.trim() || null,
-        updater: detail.updater.trim() || null,
+        updater: loginUserName ?? null,
         details: menuItems
           .filter((item) => item.name.trim())
           .map((item, index) => ({
