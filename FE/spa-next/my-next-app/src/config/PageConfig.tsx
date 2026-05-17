@@ -219,7 +219,7 @@ const pageConfig: PageConfigType = [
     resourceKey: "/",
     requiredPermission: 1,
     icon: <ChecklistIcon />,
-    section: "activity",
+    section: "other",
     breadcrumb: { id: "practiceMenu", parentId: "top" },
   },
   {
