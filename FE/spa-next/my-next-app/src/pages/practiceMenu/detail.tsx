@@ -159,7 +159,7 @@ const PracticeMenuDetailPage: React.FC = () => {
             label="一覧へ戻る"
             size="medium"
             onClick={() => void router.push("/practiceMenu")}
-            width={140}
+            width={120} 
             sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2, boxShadow: "0 2px 4px rgba(0,0,0,0.2)", "&:hover": { backgroundColor: "commonTableHeader" } }}
           />
         </Box>
@@ -212,8 +212,8 @@ const PracticeMenuDetailPage: React.FC = () => {
                 emptyMessage="メニューはまだ登録されていません。"
               />
               <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-                <ButtonAction label="メニュー追加" size="medium" onClick={addMenuItem} width={120} sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2 }} />
-                <ButtonAction label={isSaving ? "更新中" : "更新する"} size="medium" onClick={() => void handleSave()} width={120} sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2 }} />
+                <ButtonAction label="追加" size="medium" onClick={addMenuItem} width={80} sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2 }} />
+                <ButtonAction label={isSaving ? "更新中" : "更新"} size="medium" onClick={() => void handleSave()} width={80} sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2 }} />
               </Box>
             </Box>
           </Box>
