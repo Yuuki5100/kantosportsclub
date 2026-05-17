@@ -10,7 +10,7 @@ import { API_ENDPOINTS } from "@/api/apiEndpoints";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import { useAuth } from "@/hooks/useAuth";
-import { PracticeMenuSortableList, type PracticeMenuRowItem } from "./PracticeMenuSortableList";
+import { PracticeMenuSortableList, type PracticeMenuRowItem } from "@/components/practiceMenu/PracticeMenuSortableList";
 
 type PracticeMenuDetail = {
   id: string;
