@@ -168,15 +168,31 @@ const PracticeMenuDetailPage: React.FC = () => {
           {[
             { label: "タイトル", value: detail.title, field: "title" as const },
             { label: "備考", value: detail.remarks, field: "remarks" as const },
-            { label: "更新者", value: detail.updater, isLabel: true },
+            { label: "更新者", value: detail.updater, isLabel: true as const },
           ].map((item) => (
-            <Box key={item.label} sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" }, width: "100%", borderBottom: `1.5px solid ${colors.commonBorderGray}`, "&:last-of-type": { borderBottom: "none" } }}>
-              <Box sx={{ width: "100%", p: 1.5, bgcolor: colors.commonTableHeader, color: colors.commonFontColorBlack, fontWeight: 600 }}>{item.label}</Box>
+            <Box
+              key={item.label}
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
+                width: "100%",
+                borderBottom: `1.5px solid ${colors.commonBorderGray}`,
+                "&:last-of-type": { borderBottom: "none" },
+              }}
+            >
+              <Box sx={{ width: "100%", p: 1.5, bgcolor: colors.commonTableHeader, color: colors.commonFontColorBlack, fontWeight: 600 }}>
+                {item.label}
+              </Box>
               <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-                {item.isLabel ? (
+                {"isLabel" in item && item.isLabel ? (
                   <Font14 sx={{ minHeight: 40, display: "flex", alignItems: "center" }}>{item.value || "-"}</Font14>
                 ) : (
-                  <TextField value={item.value} size="small" fullWidth onChange={(event) => updateDetailField(item.field, event.target.value)} />
+                  <TextField
+                    value={item.value}
+                    size="small"
+                    fullWidth
+                    onChange={(event) => updateDetailField(item.field, event.target.value)}
+                  />
                 )}
               </Box>
             </Box>

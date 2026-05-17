@@ -224,7 +224,7 @@ const BoardgameDetailPage: React.FC = () => {
       isInvalidPositiveIntegerInput(boardgame.peopleMax) ||
       isInvalidPositiveIntegerInput(boardgame.needTime)
     ) {
-      showSnackbar("人数と目安時間は正の整数で入力してください。", "ERROR");
+      showSnackbar(getMessage(MessageCodes.BAD_REQUEST), "ERROR");
       return;
     }
 
