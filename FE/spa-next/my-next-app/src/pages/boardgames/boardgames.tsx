@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, TextField } from "@mui/material";
 import { useRouter } from "next/router";
 import { Box, Font14, Font20 } from "@/components/base";
@@ -11,8 +11,14 @@ import type { ColumnDefinition, RowDefinition } from "@/components/composite/Lis
 import { useFetch } from "@/hooks/useApi";
 import colors from "@/styles/colors";
 import type { ApiResponse } from "@/types/api";
+import {
+  readSessionSearchCondition,
+  removeSessionSearchCondition,
+  saveSessionSearchCondition,
+} from "@/utils/sessionSearchConditionStorage";
 
 const BOARDGAME_LIST_ENDPOINT = "/api/boardgames/search";
+const BOARDGAME_SEARCH_CONDITION_STORAGE_KEY = "searchCondition:boardgames";
 
 type BoardgameApiItem = {
   id?: number | string | null;
@@ -84,6 +90,16 @@ const toNumber = (value: number | string | null | undefined): number | null => {
 const toText = (value: string | null | undefined): string => value ?? "";
 
 const normalizeSearchText = (value: string): string => value.trim().toLowerCase();
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isBoardgameSearchCondition = (value: unknown): value is BoardgameSearchCondition =>
+  isRecord(value) &&
+  typeof value.boardgameName === "string" &&
+  typeof value.people === "string" &&
+  typeof value.needTime === "string" &&
+  typeof value.ownerName === "string";
 
 const toBoardgameItem = (item: BoardgameApiItem, index: number): BoardgameItem => ({
   id: toNumber(item.id) ?? index + 1,
@@ -304,6 +320,21 @@ const BoardgamePage: React.FC = () => {
     },
   });
 
+  useEffect(() => {
+    const storedSearchCondition = readSessionSearchCondition(
+      BOARDGAME_SEARCH_CONDITION_STORAGE_KEY,
+      isBoardgameSearchCondition
+    );
+
+    if (!storedSearchCondition) {
+      return;
+    }
+
+    setSearchCondition(storedSearchCondition);
+    setAppliedSearchCondition(storedSearchCondition);
+    setTableState((current) => ({ ...current, page: 1 }));
+  }, []);
+
   const searchParams = useMemo(() => {
     const params: Record<string, string> = {};
 
@@ -388,11 +419,13 @@ const BoardgamePage: React.FC = () => {
   );
 
   const handleSearch = useCallback(() => {
+    saveSessionSearchCondition(BOARDGAME_SEARCH_CONDITION_STORAGE_KEY, searchCondition);
     setTableState((current) => ({ ...current, page: 1 }));
     setAppliedSearchCondition(searchCondition);
   }, [searchCondition]);
 
   const handleClear = useCallback(() => {
+    removeSessionSearchCondition(BOARDGAME_SEARCH_CONDITION_STORAGE_KEY);
     setSearchCondition(INITIAL_SEARCH_CONDITION);
     setAppliedSearchCondition(INITIAL_SEARCH_CONDITION);
     setTableState((current) => ({ ...current, page: 1 }));

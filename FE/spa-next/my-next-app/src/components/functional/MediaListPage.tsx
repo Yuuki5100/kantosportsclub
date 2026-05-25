@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, TextField } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
@@ -10,6 +10,11 @@ import type { ColumnDefinition, RowDefinition } from "@/components/composite/Lis
 import { useFetch } from "@/hooks/useApi";
 import colors from "@/styles/colors";
 import type { ApiResponse } from "@/types/api";
+import {
+  readSessionSearchCondition,
+  removeSessionSearchCondition,
+  saveSessionSearchCondition,
+} from "@/utils/sessionSearchConditionStorage";
 
 export type MediaItem = {
   id: number;
@@ -40,6 +45,14 @@ const INITIAL_SEARCH_CONDITION: MediaSearchCondition = {
   title: "",
   description: "",
 };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isMediaSearchCondition = (value: unknown): value is MediaSearchCondition =>
+  isRecord(value) &&
+  typeof value.title === "string" &&
+  typeof value.description === "string";
 
 const extractMediaItems = (
   response: MediaItem[] | ApiResponse<MediaItem[]> | null | undefined
@@ -230,6 +243,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   enableTitleDescriptionSearch = false,
   onItemClick,
 }) => {
+  const searchConditionStorageKey = `searchCondition:${queryKey}`;
   const [searchCondition, setSearchCondition] = useState<MediaSearchCondition>(INITIAL_SEARCH_CONDITION);
   const [appliedSearchCondition, setAppliedSearchCondition] = useState<MediaSearchCondition>(
     INITIAL_SEARCH_CONDITION
@@ -242,6 +256,25 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
       sortOrder: "asc",
     },
   });
+
+  useEffect(() => {
+    if (!enableTitleDescriptionSearch) {
+      return;
+    }
+
+    const storedSearchCondition = readSessionSearchCondition(
+      searchConditionStorageKey,
+      isMediaSearchCondition
+    );
+
+    if (!storedSearchCondition) {
+      return;
+    }
+
+    setSearchCondition(storedSearchCondition);
+    setAppliedSearchCondition(storedSearchCondition);
+    setTableState((current) => ({ ...current, page: 1 }));
+  }, [enableTitleDescriptionSearch, searchConditionStorageKey]);
 
   const searchParams = useMemo(() => {
     const params: Record<string, string> = {};
@@ -310,11 +343,19 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   );
 
   const handleSearch = () => {
+    if (enableTitleDescriptionSearch) {
+      saveSessionSearchCondition(searchConditionStorageKey, searchCondition);
+    }
+
     setTableState((current) => ({ ...current, page: 1 }));
     setAppliedSearchCondition(searchCondition);
   };
 
   const handleClear = () => {
+    if (enableTitleDescriptionSearch) {
+      removeSessionSearchCondition(searchConditionStorageKey);
+    }
+
     setSearchCondition(INITIAL_SEARCH_CONDITION);
     setAppliedSearchCondition(INITIAL_SEARCH_CONDITION);
     setTableState((current) => ({ ...current, page: 1 }));
