@@ -8,6 +8,27 @@ const json = (body: RouteJson, status = 200) => ({
   body: JSON.stringify(body),
 });
 
+const normalizeRolePermissions = (rolePermissions: Record<string, number> | undefined) => {
+  if (!rolePermissions) return rolePermissions;
+  const normalized: Record<string, number> = { ...rolePermissions };
+  const permissionIdByName: Record<string, number> = {
+    USER: 1,
+    ROLE: 2,
+    SYSTEM_SETTINGS: 3,
+    NOTICE: 4,
+    MANUAL: 5,
+  };
+
+  for (const [permissionName, permissionLevel] of Object.entries(rolePermissions)) {
+    const permissionId = permissionIdByName[permissionName];
+    if (permissionId !== undefined) {
+      normalized[String(permissionId)] = permissionLevel;
+    }
+  }
+
+  return normalized;
+};
+
 export const statusSuccessBody = {
   success: true,
   data: {
@@ -15,6 +36,8 @@ export const statusSuccessBody = {
     rolePermissions: {
       SYSTEM_SETTINGS: 3,
       NOTICE: 3,
+      "3": 3,
+      "4": 3,
       USER: 3,
       ROLE: 3,
       MANUAL: 3,
@@ -71,7 +94,17 @@ export async function mockAuthStatus(
     if (delayMs > 0) {
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
-    await route.fulfill(json(body, status));
+    const data = body.data as Record<string, unknown> | undefined;
+    const rolePermissions = normalizeRolePermissions(data?.rolePermissions as Record<string, number> | undefined);
+    await route.fulfill(json({
+      ...body,
+      data: data
+        ? {
+            ...data,
+            rolePermissions,
+          }
+        : data,
+    }, status));
   });
 }
 

@@ -35,7 +35,8 @@ export const PERMISSION_ID = {
  * if (canEdit("USER")) { // show create/update/delete buttons }
  */
 export const usePermission = () => {
-  const { rolePermissions } = useAuth() as {
+  const { roleLevel, rolePermissions } = useAuth() as {
+    roleLevel?: number | null;
     rolePermissions?: Record<string, number> | null;
   };
 
@@ -66,18 +67,24 @@ export const usePermission = () => {
     [getLevel]
   );
 
+  const canViewByRoleLevel = (requiredLevel: number = PERMISSION_LEVEL.NONE): boolean =>
+    (roleLevel ?? 0) >= requiredLevel;
+
+  const canEditByRoleLevel = (requiredLevel: number = PERMISSION_LEVEL.EDIT): boolean =>
+    (roleLevel ?? 0) >= requiredLevel;
+
   /** 各機能の参照・更新権限（事前計算） */
   const permissions = {
-    canViewUser: canView(String(PERMISSION_ID.USER)),
-    canEditUser: canEdit(String(PERMISSION_ID.USER)),
-    canViewRole: canView(String(PERMISSION_ID.ROLE)),
-    canEditRole: canEdit(String(PERMISSION_ID.ROLE)),
-    canViewNotice: canView(String(PERMISSION_ID.NOTICE)),
-    canEditNotice: canEdit(String(PERMISSION_ID.NOTICE)),
-    canViewManual: canView(String(PERMISSION_ID.MANUAL)),
-    canEditManual: canEdit(String(PERMISSION_ID.MANUAL)),
-    canViewSystemSettings: canView(String(PERMISSION_ID.SYSTEM_SETTINGS)),
-    canEditSystemSettings: canEdit(String(PERMISSION_ID.SYSTEM_SETTINGS)),
+    canViewUser: canViewByRoleLevel(PERMISSION_LEVEL.VIEW),
+    canEditUser: canEditByRoleLevel(),
+    canViewRole: canViewByRoleLevel(PERMISSION_LEVEL.VIEW),
+    canEditRole: canEditByRoleLevel(),
+    canViewNotice: canViewByRoleLevel(PERMISSION_LEVEL.VIEW),
+    canEditNotice: canEditByRoleLevel(),
+    canViewManual: canViewByRoleLevel(PERMISSION_LEVEL.VIEW),
+    canEditManual: canEditByRoleLevel(),
+    canViewSystemSettings: canViewByRoleLevel(PERMISSION_LEVEL.VIEW),
+    canEditSystemSettings: canEditByRoleLevel(),
   };
 
   return { getLevel, canView, canEdit, rolePermissions, ...permissions };

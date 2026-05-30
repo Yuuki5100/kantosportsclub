@@ -43,8 +43,8 @@ type UserPermissionRow = {
 const permissionMetaByResource: Record<string, { permissionId: number; permissionName: string }> = {
   "101": { permissionId: 1, permissionName: "USER" },
   "102": { permissionId: 2, permissionName: "ROLE" },
-  "103": { permissionId: 6, permissionName: "SYSTEM_SETTINGS" },
-  "100": { permissionId: 100, permissionName: "NOTICE" },
+  "103": { permissionId: 3, permissionName: "SYSTEM_SETTINGS" },
+  "204": { permissionId: 4, permissionName: "NOTICE" },
   "203": { permissionId: 5, permissionName: "MANUAL" },
 };
 

@@ -84,7 +84,7 @@ describe("authSlice", () => {
         {
           authenticated: true,
           userPermissions: [
-            { permissionId: 1, permissionName: "NOTICE", statusLevelId: 3 },
+            { permissionId: 4, permissionName: "NOTICE", statusLevelId: 3 },
           ],
         },
         "req-4",
@@ -93,7 +93,7 @@ describe("authSlice", () => {
     );
 
     const state = store.getState().auth;
-    expect(state.rolePermissions).toEqual({ NOTICE: 3 });
+    expect(state.rolePermissions).toEqual({ "4": 3, NOTICE: 3 });
   });
 
   it("clears auth state on logout fulfilled", () => {
