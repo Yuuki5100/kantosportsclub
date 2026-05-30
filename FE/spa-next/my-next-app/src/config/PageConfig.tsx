@@ -9,6 +9,7 @@ import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import GroupsIcon from "@mui/icons-material/Settings";
+import SpeedIcon from "@mui/icons-material/Speed";
 import { ReactNode } from "react";
 import { PageLang } from '@/config/PageLang';
 
@@ -181,6 +182,14 @@ const pageConfig: PageConfigType = [
     icon: <SportsBasketballIcon />,
     section: "activity",
     breadcrumb: { id: "player", parentId: "top" },
+  },
+  {
+    name: "個人ステータス設定（開発中）",
+    resourceKey: "/playerStatus/list",
+    requiredPermission: 3,
+    icon: <SpeedIcon />,
+    section: "activity",
+    breadcrumb: { id: "playerStatusList", parentId: "top" },
   },
   {
     name: "ボドゲ一覧",
