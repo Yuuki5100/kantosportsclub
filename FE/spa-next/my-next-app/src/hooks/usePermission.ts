@@ -20,7 +20,7 @@ export const PERMISSION_LEVEL = {
 export const PERMISSION_ID = {
   USER: 1,
   ROLE: 2,
-  NOTICE: 100,
+  NOTICE: 4,
   SYSTEM_SETTINGS: 6,
   MANUAL: 5,
 } as const;
