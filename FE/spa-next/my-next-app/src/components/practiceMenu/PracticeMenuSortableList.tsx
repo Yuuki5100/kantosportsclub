@@ -13,6 +13,8 @@ export type PracticeMenuRowItem = {
   id: string;
   name: string;
   time: string;
+  startTime: string;
+  endTime: string;
 };
 
 type Props = {
@@ -21,6 +23,8 @@ type Props = {
   onRemove: (index: number) => void;
   onNameChange: (index: number, value: string) => void;
   onTimeChange: (index: number, value: string) => void;
+  onStartTimeChange: (index: number, value: string) => void;
+  onEndTimeChange: (index: number, value: string) => void;
   emptyMessage: string;
   showAddButton?: boolean;
   addLabel?: string;
@@ -33,7 +37,9 @@ const SortableRow: React.FC<{
   onRemove: (index: number) => void;
   onNameChange: (index: number, value: string) => void;
   onTimeChange: (index: number, value: string) => void;
-}> = ({ item, index, onRemove, onNameChange, onTimeChange }) => {
+  onStartTimeChange: (index: number, value: string) => void;
+  onEndTimeChange: (index: number, value: string) => void;
+}> = ({ item, index, onRemove, onNameChange, onTimeChange, onStartTimeChange, onEndTimeChange }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });
@@ -43,10 +49,10 @@ const SortableRow: React.FC<{
       ref={setNodeRef}
       sx={{
         display: "grid",
-        gridTemplateColumns: "24px minmax(0, 1.4fr) 52px 36px",
-        alignItems: "center",
-        gap: 0.5,
-        p: 0.4,
+        gridTemplateColumns: "24px 76px minmax(0, 1fr)",
+        alignItems: "stretch",
+        gap: 0.25,
+        p: 0.75,
         borderRadius: 2,
         bgcolor: colors.commonFontColorWhite,
         border: `1px solid ${colors.commonBorderGray}`,
@@ -77,40 +83,38 @@ const SortableRow: React.FC<{
         <DragIndicatorIcon sx={{ fontSize: 16 }} />
       </Box>
 
-      <TextField
-        size="small"
-        value={item.name}
-        onChange={(event) => onNameChange(index, event.target.value)}
-        placeholder="練習名"
-        fullWidth
-        sx={{
-          minWidth: 0,
-          "& .MuiInputBase-input": {
-            fontSize: 14,
-            py: 0.6,
-          },
-        }}
-      />
-
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
         <TextField
+          value={item.startTime}
+          placeholder="10:20"
           size="small"
-          value={item.time}
-          onChange={(event) => onTimeChange(index, event.target.value)}
-          placeholder="時間"
-          sx={{
-            width: 40,
-            "& .MuiInputBase-input": {
-              fontSize: 14,
-              py: 0.6,
-              px: 0.5,
-            },
-          }}
+          onChange={(e) => onStartTimeChange(index, e.target.value)}
+          sx={{ width: "100%" }}
         />
-        <Font14 sx={{ color: colors.grayDark, whiteSpace: "nowrap", flexShrink: 0 }}>分</Font14>
+        <TextField
+          value={item.endTime}
+          placeholder="10:30"
+          size="small"
+          onChange={(e) => onEndTimeChange(index, e.target.value)}
+          sx={{ width: "100%" }}
+        />
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "center", flexShrink: 0 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, minWidth: 0 }}>
+        <TextField
+          value={item.name}
+          placeholder="メニュー名"
+          size="small"
+          onChange={(e) => onNameChange(index, e.target.value)}
+          sx={{ flex: 1, minWidth: 0 }}
+        />
+        <TextField
+          value={item.time}
+          placeholder="時間（分）"
+          size="small"
+          onChange={(e) => onTimeChange(index, e.target.value)}
+          sx={{ width: 64, flexShrink: 0 }}
+        />
         <IconButton
           aria-label="削除"
           onClick={() => onRemove(index)}
@@ -118,6 +122,7 @@ const SortableRow: React.FC<{
           sx={{
             width: 36,
             height: 36,
+            flexShrink: 0,
             bgcolor: "#6b7280",
             color: "#1f2937",
             border: "1px solid #4b5563",
@@ -131,6 +136,7 @@ const SortableRow: React.FC<{
           <DeleteIcon sx={{ fontSize: 20, color: "#111827" }} />
         </IconButton>
       </Box>
+
     </Box>
   );
 };
@@ -141,6 +147,8 @@ export const PracticeMenuSortableList: React.FC<Props> = ({
   onRemove,
   onNameChange,
   onTimeChange,
+  onStartTimeChange,
+  onEndTimeChange,
   emptyMessage,
   showAddButton = false,
   addLabel = "追加",
@@ -179,6 +187,8 @@ export const PracticeMenuSortableList: React.FC<Props> = ({
                   onRemove={onRemove}
                   onNameChange={onNameChange}
                   onTimeChange={onTimeChange}
+                  onStartTimeChange={onStartTimeChange}
+                  onEndTimeChange={onEndTimeChange}
                 />
               ))
             )}

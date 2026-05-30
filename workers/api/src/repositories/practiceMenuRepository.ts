@@ -22,6 +22,9 @@ type PracticeMenuDetailRow = {
   category: string | null;
   menu_name: string;
   menu_time: number | null;
+  time_white: string | null;
+  start_time: string | null;
+  end_time: string | null;
   sort_no: number;
   updater: string | null;
   created_at: string;
@@ -43,6 +46,9 @@ const toPracticeMenuDetailItem = (row: PracticeMenuDetailRow): PracticeMenuDetai
   category: row.category,
   menuName: row.menu_name,
   menuTime: row.menu_time,
+  timeWhite: row.time_white,
+  startTime: row.start_time,
+  endTime: row.end_time,
   sortNo: row.sort_no,
   updater: row.updater,
   created_at: row.created_at,
@@ -108,18 +114,24 @@ export const createPracticeMenuHeader = async (
            category,
            menuName,
            menuTime,
+           timeWhite,
+           startTime,
+           endTime,
            sortNo,
            updater,
            created_at,
            updated_at
          )
-         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
       )
       .bind(
         created.id,
         normalizeNullableString(detail.category),
         detail.menuName.trim(),
         detail.menuTime,
+        normalizeNullableString(detail.timeWhite),
+        normalizeNullableString(detail.startTime),
+        normalizeNullableString(detail.endTime),
         detail.sortNo,
         normalizeNullableString(detail.updater)
       )
@@ -180,18 +192,24 @@ export const updatePracticeMenuHeader = async (
            category,
            menuName,
            menuTime,
+           timeWhite,
+           startTime,
+           endTime,
            sortNo,
            updater,
            created_at,
            updated_at
          )
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
       )
       .bind(
         id,
         normalizeNullableString(detail.category),
         detail.menuName.trim(),
         detail.menuTime,
+        normalizeNullableString(detail.timeWhite),
+        normalizeNullableString(detail.startTime),
+        normalizeNullableString(detail.endTime),
         detail.sortNo,
         normalizeNullableString(detail.updater)
       )
@@ -233,6 +251,9 @@ export const findPracticeMenuHeaderWithDetailsById = async (
          category,
          menuName AS menu_name,
          menuTime AS menu_time,
+         timeWhite AS time_white,
+         startTime AS start_time,
+         endTime AS end_time,
          sortNo AS sort_no,
          updater,
          created_at,

@@ -49,6 +49,9 @@ const parsePracticeMenuHeaderInput = (body: unknown): PracticeMenuHeaderCreateIn
     const category = parseNullableString(item.category);
     const menuName = typeof item.menuName === "string" ? item.menuName : undefined;
     const menuTimeRaw = item.menuTime;
+    const timeWhite = item.timeWhite === undefined ? null : parseNullableString(item.timeWhite);
+    const startTime = item.startTime === undefined ? null : parseNullableString(item.startTime);
+    const endTime = item.endTime === undefined ? null : parseNullableString(item.endTime);
     const sortNoRaw = item.sortNo;
     const detailUpdater = parseNullableString(item.updater);
 
@@ -56,6 +59,9 @@ const parsePracticeMenuHeaderInput = (body: unknown): PracticeMenuHeaderCreateIn
       category === undefined ||
       menuName === undefined ||
       menuTimeRaw === undefined ||
+      timeWhite === undefined ||
+      startTime === undefined ||
+      endTime === undefined ||
       sortNoRaw === undefined ||
       detailUpdater === undefined
     ) {
@@ -85,6 +91,9 @@ const parsePracticeMenuHeaderInput = (body: unknown): PracticeMenuHeaderCreateIn
       category,
       menuName,
       menuTime,
+      timeWhite,
+      startTime,
+      endTime,
       sortNo,
       updater: detailUpdater,
     });

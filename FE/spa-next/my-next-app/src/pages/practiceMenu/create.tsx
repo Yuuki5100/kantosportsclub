@@ -11,6 +11,8 @@ type MenuItem = {
   id: string;
   name: string;
   time: string;
+  startTime: string;
+  endTime: string;
 };
 
 type PracticeMenuHeaderCreateResponse = {
@@ -43,7 +45,7 @@ export default function PracticeMenuBuilder() {
     if (!inputName.trim()) return;
     setMenu((prev) => [
       ...prev,
-      { id: `new-${Date.now()}-${prev.length}`, name: inputName.trim(), time: "" },
+      { id: `new-${Date.now()}-${prev.length}`, name: inputName.trim(), time: "", startTime: "", endTime: "" },
     ]);
     setInputName("");
   };
@@ -109,6 +111,12 @@ export default function PracticeMenuBuilder() {
             setMenu((prev) => prev.map((item, i) => (i === index ? { ...item, name: value } : item)))
           }
           onTimeChange={updateTime}
+          onStartTimeChange={(index, value) =>
+            setMenu((prev) => prev.map((item, i) => (i === index ? { ...item, startTime: value } : item)))
+          }
+          onEndTimeChange={(index, value) =>
+            setMenu((prev) => prev.map((item, i) => (i === index ? { ...item, endTime: value } : item)))
+          }
           emptyMessage="下の入力欄からメニューを追加してください"
         />
         <Typography fontWeight="bold" mt={2} mb={1}>

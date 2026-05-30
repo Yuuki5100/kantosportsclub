@@ -18,6 +18,9 @@ export type PracticeMenuDetailCreateInput = {
   category: string | null;
   menuName: string;
   menuTime: number | null;
+  timeWhite: string | null;
+  startTime: string | null;
+  endTime: string | null;
   sortNo: number;
   updater: string | null;
 };
@@ -28,6 +31,9 @@ export type PracticeMenuDetailItem = {
   category: string | null;
   menuName: string;
   menuTime: number | null;
+  timeWhite: string | null;
+  startTime: string | null;
+  endTime: string | null;
   sortNo: number;
   updater: string | null;
   created_at: string;

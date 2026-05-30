@@ -23,6 +23,8 @@ type MenuItem = {
   id: string;
   name: string;
   time: string;
+  startTime: string;
+  endTime: string;
 };
 
 type PracticeMenuHeaderWithDetailsResponse = {
@@ -34,6 +36,8 @@ type PracticeMenuHeaderWithDetailsResponse = {
     id: number;
     menuName: string;
     menuTime: number | null;
+    startTime: string | null;
+    endTime: string | null;
   }>;
 };
 
@@ -41,6 +45,8 @@ type PracticeMenuDetailUpdateRequest = {
   category: string | null;
   menuName: string;
   menuTime: number | null;
+  startTime: string | null;
+  endTime: string | null;
   sortNo: number;
   updater: string | null;
 };
@@ -87,6 +93,8 @@ const PracticeMenuDetailPage: React.FC = () => {
             id: String(item.id),
             name: item.menuName,
             time: item.menuTime === null ? "" : String(item.menuTime),
+            startTime: item.startTime ?? "",
+            endTime: item.endTime ?? "",
           }))
         );
       } catch (error) {
@@ -109,7 +117,16 @@ const PracticeMenuDetailPage: React.FC = () => {
   };
 
   const addMenuItem = () => {
-    setMenuItems((current) => [...current, { id: `new-${Date.now()}-${current.length}`, name: "", time: "" }]);
+    setMenuItems((current) => [
+      ...current,
+      {
+        id: `new-${Date.now()}-${current.length}`,
+        name: "",
+        time: "",
+        startTime: "",
+        endTime: "",
+      },
+    ]);
   };
 
   const removeMenuItem = (index: number) => {
@@ -131,6 +148,8 @@ const PracticeMenuDetailPage: React.FC = () => {
             category: null,
             menuName: item.name.trim(),
             menuTime: item.time.trim() ? Number(item.time) : null,
+            startTime: item.startTime.trim() || null,
+            endTime: item.endTime.trim() || null,
             sortNo: index + 1,
             updater: loginUserName ?? null,
           })),
@@ -181,10 +200,10 @@ const PracticeMenuDetailPage: React.FC = () => {
                 "&:last-of-type": { borderBottom: "none" },
               }}
             >
-              <Box sx={{ width: "100%", p: 1.5, bgcolor: colors.commonTableHeader, color: colors.commonFontColorBlack, fontWeight: 600 }}>
+              <Box sx={{ width: "100%", p: 1.25, bgcolor: colors.commonTableHeader, color: colors.commonFontColorBlack, fontWeight: 600 }}>
                 {item.label}
               </Box>
-              <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
+              <Box sx={{ width: "100%", minWidth: 0, p: 1.25 }}>
                 {"isLabel" in item && item.isLabel ? (
                   <Font14 sx={{ minHeight: 40, display: "flex", alignItems: "center" }}>{item.value || "-"}</Font14>
                 ) : "isMenu" in item && item.isMenu ? (
@@ -195,6 +214,8 @@ const PracticeMenuDetailPage: React.FC = () => {
                       onRemove={removeMenuItem}
                       onNameChange={(index, value) => updateMenuItem(index, "name", value)}
                       onTimeChange={(index, value) => updateMenuItem(index, "time", value)}
+                      onStartTimeChange={(index, value) => updateMenuItem(index, "startTime", value)}
+                      onEndTimeChange={(index, value) => updateMenuItem(index, "endTime", value)}
                       emptyMessage="メニューはまだ登録されていません。"
                     />
                     <Box sx={{ display: "flex", gap: 1, mt: 2, justifyContent: "flex-start" }}>
