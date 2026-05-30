@@ -46,13 +46,16 @@ const MobileSideMenu: React.FC<MobileSideMenuProps> = ({ open, setOpen }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.pathname]);
 
+  if (!open) {
+    return null;
+  }
+
   return (
     <Drawer
       anchor="left"
       open={open}
       variant="temporary"
       onClose={() => setOpen(false)}
-      ModalProps={{ keepMounted: true }}
       sx={{
         '& .MuiDrawer-paper': {
           width: 'min(84vw, 320px)',

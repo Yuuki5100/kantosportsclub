@@ -14,6 +14,20 @@ type PlayerStatusRow = {
   updated_at: string;
 };
 
+type PlayerStatusAggregateRow = {
+  user_id: number;
+  review_user_id: number;
+  record_count: number;
+  shooting_sum: number;
+  dribbling_sum: number;
+  passing_sum: number;
+  defense_sum: number;
+  stamina_sum: number;
+  remarks: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 const toPlayerStatusItem = (row: PlayerStatusRow): PlayerStatusItem => ({
   id: row.id,
   userId: row.user_id,
@@ -57,27 +71,52 @@ const normalizeNullableString = (value: unknown): string | null | undefined => {
   return undefined;
 };
 
+const floorDivide = (sum: number, count: number): number | null => {
+  if (!Number.isFinite(sum) || !Number.isFinite(count) || count <= 0) {
+    return null;
+  }
+  return Math.floor(sum / count);
+};
+
 export const findAllPlayerStatuses = async (db: D1Database): Promise<PlayerStatusItem[]> => {
   const result = await db
     .prepare(
       `SELECT
-         id,
          user_id,
-         review_user_id,
-         shooting,
-         dribbling,
-         passing,
-         defense,
-         stamina,
-         remarks,
-         created_at,
-         updated_at
+         MAX(review_user_id) AS review_user_id,
+         COUNT(*) AS record_count,
+         SUM(COALESCE(shooting, 0)) AS shooting_sum,
+         SUM(COALESCE(dribbling, 0)) AS dribbling_sum,
+         SUM(COALESCE(passing, 0)) AS passing_sum,
+         SUM(COALESCE(defense, 0)) AS defense_sum,
+         SUM(COALESCE(stamina, 0)) AS stamina_sum,
+         MAX(remarks) AS remarks,
+         MIN(created_at) AS created_at,
+         MAX(updated_at) AS updated_at
        FROM playerStatus
-       ORDER BY updated_at DESC, id DESC`
+       GROUP BY user_id
+       ORDER BY MAX(updated_at) DESC, user_id DESC`
     )
-    .all<PlayerStatusRow>();
+    .all<PlayerStatusAggregateRow>();
 
-  return result.results.map(toPlayerStatusItem);
+  return result.results.map((row, index) => {
+    const recordCount = Number(row.record_count);
+    const averageRow: PlayerStatusRow = {
+      id: index + 1,
+      user_id: row.user_id,
+      review_user_id: row.review_user_id,
+      shooting: floorDivide(Number(row.shooting_sum), recordCount),
+      dribbling: floorDivide(Number(row.dribbling_sum), recordCount),
+      passing: floorDivide(Number(row.passing_sum), recordCount),
+      defense: floorDivide(Number(row.defense_sum), recordCount),
+      stamina: floorDivide(Number(row.stamina_sum), recordCount),
+      remarks: row.remarks,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    };
+
+    return toPlayerStatusItem(averageRow);
+  });
 };
 
 export const findPlayerStatusById = async (db: D1Database, id: number): Promise<PlayerStatusItem | null> => {
