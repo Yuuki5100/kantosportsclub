@@ -21,7 +21,7 @@ export const PERMISSION_ID = {
   USER: 1,
   ROLE: 2,
   NOTICE: 4,
-  SYSTEM_SETTINGS: 6,
+  SYSTEM_SETTINGS: 3,
   MANUAL: 5,
 } as const;
 
