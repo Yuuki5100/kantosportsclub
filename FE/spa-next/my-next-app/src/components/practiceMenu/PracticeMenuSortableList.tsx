@@ -86,7 +86,7 @@ const SortableRow: React.FC<{
         <DragIndicatorIcon sx={{ fontSize: 16 }} />
       </Box>
 
-      <Box sx={{ display: "flex", gap: 0.25, gridColumn: "2", gridRow: "1" }}>
+      <Box sx={{ display: "flex", gap: 0.25, alignItems: "center", gridColumn: "2", gridRow: "1" }}>
         <TextField
           value={item.startTime}
           placeholder="10:20"
