@@ -104,7 +104,7 @@ export const findAllMedia = async (
   options?: FindAllMediaOptions
 ): Promise<MediaItem[]> => {
   const search = buildMediaSearch(filter);
-  const orderSql = mediaOrderSql[options?.order ?? "idAsc"];
+  const orderSql = mediaOrderSql[options?.order ?? (table === "movies" ? "createdAtDesc" : "idAsc")];
   const statement = db.prepare(
     `${mediaSelect}
      FROM ${table} m
