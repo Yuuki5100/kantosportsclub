@@ -252,8 +252,8 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
     page: 1,
     rowsPerPage: 10,
     sortParams: {
-      sortColumn: "id",
-      sortOrder: "asc",
+      sortColumn: "createdAt",
+      sortOrder: "desc",
     },
   });
 
