@@ -49,7 +49,8 @@ const SortableRow: React.FC<{
       ref={setNodeRef}
       sx={{
         display: "grid",
-        gridTemplateColumns: "24px 76px minmax(0, 1fr)",
+        gridTemplateColumns: "24px minmax(0, 1fr)",
+        gridTemplateRows: "auto auto",
         alignItems: "stretch",
         gap: 0.25,
         p: 0.75,
@@ -68,6 +69,8 @@ const SortableRow: React.FC<{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          gridColumn: "1",
+          gridRow: "1 / span 2",
           cursor: "grab",
           color: colors.grayDark,
           p: 0.4,
@@ -83,38 +86,24 @@ const SortableRow: React.FC<{
         <DragIndicatorIcon sx={{ fontSize: 16 }} />
       </Box>
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+      <Box sx={{ display: "flex", gap: 0.25, gridColumn: "2", gridRow: "1" }}>
         <TextField
           value={item.startTime}
           placeholder="10:20"
           size="small"
           onChange={(e) => onStartTimeChange(index, e.target.value)}
-          sx={{ width: "100%" }}
+          sx={{ width: "25%" }}
         />
+        <Font14 sx={{ color: colors.grayDark }}>～</Font14>
+
         <TextField
           value={item.endTime}
           placeholder="10:30"
           size="small"
           onChange={(e) => onEndTimeChange(index, e.target.value)}
-          sx={{ width: "100%" }}
+          sx={{ width: "25%" }}
         />
-      </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, minWidth: 0 }}>
-        <TextField
-          value={item.name}
-          placeholder="メニュー名"
-          size="small"
-          onChange={(e) => onNameChange(index, e.target.value)}
-          sx={{ flex: 1, minWidth: 0 }}
-        />
-        <TextField
-          value={item.time}
-          placeholder="時間（分）"
-          size="small"
-          onChange={(e) => onTimeChange(index, e.target.value)}
-          sx={{ width: 64, flexShrink: 0 }}
-        />
         <IconButton
           aria-label="削除"
           onClick={() => onRemove(index)}
@@ -137,6 +126,35 @@ const SortableRow: React.FC<{
         </IconButton>
       </Box>
 
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr) 56px",
+          alignItems: "center",
+          gap: 0.5,
+          minWidth: 0,
+          gridColumn: "2",
+          gridRow: "2",
+        }}
+      >
+        <TextField
+          value={item.name}
+          placeholder="メニュー名"
+          size="small"
+          onChange={(e) => onNameChange(index, e.target.value)}
+          sx={{ minWidth: 0, width: "100%" }}
+        />
+        <TextField
+          value={item.time}
+          placeholder="時間（分）"
+          size="small"
+          onChange={(e) => onTimeChange(index, e.target.value)}
+          sx={{
+            width: 56,
+            justifySelf: "end",
+          }}
+        />
+      </Box>
     </Box>
   );
 };
