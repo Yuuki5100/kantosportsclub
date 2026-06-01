@@ -184,7 +184,7 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "player", parentId: "top" },
   },
   {
-    name: "個人ステータス設定（開発中）",
+    name: "選手ステータス設定",
     resourceKey: "/playerStatus/list",
     requiredPermission: 3,
     icon: <SpeedIcon />,
