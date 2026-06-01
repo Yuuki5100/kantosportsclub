@@ -16,6 +16,22 @@ type PlayerDetailApiResponse = {
   remarks: string | null;
 };
 
+type PlayerStatusApiResponse = {
+  id: number;
+  userId: number;
+  reviewUserId: number;
+  shooting: number | null;
+  dribbling: number | null;
+  passing: number | null;
+  defense: number | null;
+  stamina: number | null;
+  remarks: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type PlayerStatusRecordApiResponse = PlayerStatusApiResponse;
+
 const toText = (value: string | string[] | undefined): string => {
   if (Array.isArray(value)) {
     return value[0] ?? "";
@@ -35,24 +51,31 @@ type RadarMetric = {
   value: number;
 };
 
-const radarMetrics: RadarMetric[] = [
-  { label: "アシスト", value: 72 },
-  { label: "スピード", value: 86 },
-  { label: "ドライブ", value: 79 },
-  { label: "シュート", value: 68 },
-  { label: "その他", value: 64 },
-];
+const clampRadarValue = (value: number): number => Math.max(0, Math.min(10, value));
 
-const clampRadarValue = (value: number): number => Math.max(0, Math.min(100, value));
+const toRadarValue = (value: number | null | undefined): number => {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return 0;
+  }
+  return clampRadarValue(Math.round(value));
+};
 
-const PlayerRadarChart: React.FC = () => {
+const averageNullableNumbers = (values: Array<number | null | undefined>): number | null => {
+  const validValues = values.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  if (validValues.length === 0) {
+    return null;
+  }
+  return Math.floor(validValues.reduce((sum, value) => sum + value, 0) / validValues.length);
+};
+
+const PlayerRadarChart: React.FC<{ metrics: RadarMetric[] }> = ({ metrics }) => {
   const size = 188;
   const center = size / 2;
   const radius = 62;
   const ringLevels = [0.25, 0.5, 0.75, 1];
-  const points = radarMetrics.map((metric, index) => {
-    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / radarMetrics.length;
-    const distance = radius * (clampRadarValue(metric.value) / 100);
+  const points = metrics.map((metric, index) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / metrics.length;
+    const distance = radius * (clampRadarValue(metric.value) / 10);
     return {
       ...metric,
       x: center + Math.cos(angle) * distance,
@@ -77,9 +100,9 @@ const PlayerRadarChart: React.FC = () => {
       }}
     >
       <Box sx={{ position: "relative", width: "100%", height: "100%", px: 1.25, pt: 1.25, pb: 0.75 }}>
-        <Font14 sx={{ fontSize: 11, fontWeight: 700, color: colors.grayDark, mb: 0.25 }}>
-          開発中
-        </Font14>
+        {/* <Font14 sx={{ fontSize: 11, fontWeight: 700, color: colors.grayDark, mb: 0.25 }}>
+          ステータス
+        </Font14> */}
         <svg
           width={size}
           height={size}
@@ -126,7 +149,7 @@ const PlayerRadarChart: React.FC = () => {
             <circle key={`${point.label}-dot`} cx={point.x} cy={point.y} r={3} fill={colors.Black} />
           ))}
           {points.map((point, index) => {
-            const labelAngle = -Math.PI / 2 + (Math.PI * 2 * index) / radarMetrics.length;
+            const labelAngle = -Math.PI / 2 + (Math.PI * 2 * index) / metrics.length;
             const labelRadius = radius + 18;
             const labelX = center + Math.cos(labelAngle) * labelRadius;
             const labelY = center + Math.sin(labelAngle) * labelRadius;
@@ -149,6 +172,19 @@ const PlayerRadarChart: React.FC = () => {
               </text>
             );
           })}
+          {points.map((point) => (
+            <text
+              key={`${point.label}-value`}
+              x={point.x}
+              y={point.y - 10}
+              textAnchor="middle"
+              fill={colors.Black}
+              fontSize="9"
+              fontWeight="700"
+            >
+              {point.value}
+            </text>
+          ))}
         </svg>
       </Box>
     </Box>
@@ -178,6 +214,7 @@ const DetailBlock: React.FC<{ label: string; value: string | number | null | und
 const PlayerDetailPage: React.FC = () => {
   const router = useRouter();
   const [player, setPlayer] = useState<PlayerDetailApiResponse | null>(null);
+  const [playerStatus, setPlayerStatus] = useState<PlayerStatusApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -201,16 +238,39 @@ const PlayerDetailPage: React.FC = () => {
       setErrorMessage("");
 
       try {
-        const response = await apiClient.get<PlayerDetailApiResponse>(`/api/mypage/${userId}`);
+        const [playerResponse, statusResponse] = await Promise.all([
+          apiClient.get<PlayerDetailApiResponse>(`/api/mypage/${userId}`),
+          apiClient.get<PlayerStatusRecordApiResponse[]>(`/api/player-status/user/${userId}/records`),
+        ]);
         if (!isMounted) {
           return;
         }
-        setPlayer(response.data);
+        setPlayer(playerResponse.data);
+        const statusRecords = statusResponse.data;
+        if (statusRecords.length === 0) {
+          setPlayerStatus(null);
+          return;
+        }
+
+        setPlayerStatus({
+          id: statusRecords[0].id,
+          userId: statusRecords[0].userId,
+          reviewUserId: statusRecords[0].reviewUserId,
+          shooting: averageNullableNumbers(statusRecords.map((item) => item.shooting)),
+          dribbling: averageNullableNumbers(statusRecords.map((item) => item.dribbling)),
+          passing: averageNullableNumbers(statusRecords.map((item) => item.passing)),
+          defense: averageNullableNumbers(statusRecords.map((item) => item.defense)),
+          stamina: averageNullableNumbers(statusRecords.map((item) => item.stamina)),
+          remarks: statusRecords[0].remarks,
+          created_at: statusRecords[0].created_at,
+          updated_at: statusRecords[0].updated_at,
+        });
       } catch (error) {
         console.error("Failed to fetch player detail:", error);
         if (isMounted) {
           setErrorMessage("選手詳細の取得に失敗しました。");
           setPlayer(null);
+          setPlayerStatus(null);
         }
       } finally {
         if (isMounted) {
@@ -227,6 +287,13 @@ const PlayerDetailPage: React.FC = () => {
   }, [router.isReady, userId]);
 
   const hasImage = (player?.imageUrl ?? "").trim().length > 0;
+  const radarMetrics: RadarMetric[] = [
+    { label: "シュート", value: toRadarValue(playerStatus?.shooting) },
+    { label: "ドリブル", value: toRadarValue(playerStatus?.dribbling) },
+    { label: "パス", value: toRadarValue(playerStatus?.passing) },
+    { label: "ディフェンス", value: toRadarValue(playerStatus?.defense) },
+    { label: "スタミナ", value: toRadarValue(playerStatus?.stamina) },
+  ];
 
   return (
     <PageContainer>
@@ -336,7 +403,7 @@ const PlayerDetailPage: React.FC = () => {
                 <DetailBlock label="選手名（かな）" value={player?.userNameJpn} strong />
                 <DetailBlock label="選手名" value={player?.userName} strong />
                 <DetailBlock label="目指すスタイル" value={player?.hopeStyle} strong />
-                <PlayerRadarChart />
+                <PlayerRadarChart metrics={radarMetrics} />
               </Box>
             </Box>
 

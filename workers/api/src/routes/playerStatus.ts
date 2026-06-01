@@ -4,7 +4,9 @@ import {
   createPlayerStatus,
   findAllPlayerStatuses,
   findPlayerStatusById,
-  updatePlayerStatus,
+  findPlayerStatusByUserIdAndReviewUserId,
+  findPlayerStatusesByUserId,
+  updatePlayerStatusByUserIdAndReviewUserId,
 } from "../repositories/playerStatusRepository";
 import type { PlayerStatusCreateInput, PlayerStatusUpdateInput } from "../types/playerStatus";
 
@@ -97,6 +99,23 @@ const parsePlayerStatusId = (value: string | undefined): number | null => {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
+const parseUserId = (value: string | undefined): number | null => {
+  if (!value) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+};
+
+const getCurrentAuthUserId = (c: { get: (key: "auth") => { user?: { userId?: string | null } | null } | null | undefined }): number | null => {
+  const authUserId = c.get("auth")?.user?.userId;
+  if (!authUserId) {
+    return null;
+  }
+  const parsed = Number(authUserId);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+};
+
 playerStatusRoutes.get("/player-status", async (c) => {
   const items = await findAllPlayerStatuses(getDb(c.env));
   return c.json(items);
@@ -132,6 +151,67 @@ playerStatusRoutes.get("/player-status/:id", async (c) => {
   return c.json(item);
 });
 
+playerStatusRoutes.get("/player-status/user/:user_id", async (c) => {
+  const userId = parseUserId(c.req.param("user_id"));
+  if (userId === null) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "player status user id must be a positive integer",
+        },
+      },
+      400
+    );
+  }
+
+  const reviewUserId = getCurrentAuthUserId(c);
+  if (reviewUserId === null) {
+    return c.json(
+      {
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Authentication required",
+        },
+      },
+      401
+    );
+  }
+
+  const item = await findPlayerStatusByUserIdAndReviewUserId(getDb(c.env), userId, reviewUserId);
+  if (!item) {
+    return c.json(
+      {
+        error: {
+          code: "NOT_FOUND",
+          message: "Player status not found",
+        },
+      },
+      404
+    );
+  }
+
+  return c.json(item);
+});
+
+playerStatusRoutes.get("/player-status/user/:user_id/records", async (c) => {
+  const userId = parseUserId(c.req.param("user_id"));
+  if (userId === null) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "player status user id must be a positive integer",
+        },
+      },
+      400
+    );
+  }
+
+  const items = await findPlayerStatusesByUserId(getDb(c.env), userId);
+  return c.json(items);
+});
+
 playerStatusRoutes.post("/player-status", async (c) => {
   const body = await c.req.json().catch(() => null);
   const input = parsePlayerStatusInput(body);
@@ -163,17 +243,30 @@ playerStatusRoutes.post("/player-status", async (c) => {
   return c.json(created, 201);
 });
 
-playerStatusRoutes.put("/player-status/:id", async (c) => {
-  const id = parsePlayerStatusId(c.req.param("id"));
-  if (id === null) {
+playerStatusRoutes.put("/player-status/user/:user_id", async (c) => {
+  const userId = parseUserId(c.req.param("user_id"));
+  if (userId === null) {
     return c.json(
       {
         error: {
           code: "BAD_REQUEST",
-          message: "player status id must be a positive integer",
+          message: "player status user id must be a positive integer",
         },
       },
       400
+    );
+  }
+
+  const reviewUserId = getCurrentAuthUserId(c);
+  if (reviewUserId === null) {
+    return c.json(
+      {
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Authentication required",
+        },
+      },
+      401
     );
   }
 
@@ -191,7 +284,7 @@ playerStatusRoutes.put("/player-status/:id", async (c) => {
     );
   }
 
-  const updated = await updatePlayerStatus(getDb(c.env), id, input);
+  const updated = await updatePlayerStatusByUserIdAndReviewUserId(getDb(c.env), userId, reviewUserId, input);
   if (!updated) {
     return c.json(
       {

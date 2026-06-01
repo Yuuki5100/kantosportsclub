@@ -144,6 +144,94 @@ export const findPlayerStatusById = async (db: D1Database, id: number): Promise<
   return row ? toPlayerStatusItem(row) : null;
 };
 
+export const findPlayerStatusByUserId = async (
+  db: D1Database,
+  userId: number
+): Promise<PlayerStatusItem | null> => {
+  const row = await db
+    .prepare(
+      `SELECT
+         id,
+         user_id,
+         review_user_id,
+         shooting,
+         dribbling,
+         passing,
+         defense,
+         stamina,
+         remarks,
+         created_at,
+         updated_at
+       FROM playerStatus
+       WHERE user_id = ?1
+       ORDER BY updated_at DESC, id DESC
+       LIMIT 1`
+    )
+    .bind(userId)
+    .first<PlayerStatusRow>();
+
+  return row ? toPlayerStatusItem(row) : null;
+};
+
+export const findPlayerStatusesByUserId = async (
+  db: D1Database,
+  userId: number
+): Promise<PlayerStatusItem[]> => {
+  const result = await db
+    .prepare(
+      `SELECT
+         id,
+         user_id,
+         review_user_id,
+         shooting,
+         dribbling,
+         passing,
+         defense,
+         stamina,
+         remarks,
+         created_at,
+         updated_at
+       FROM playerStatus
+       WHERE user_id = ?1
+       ORDER BY updated_at DESC, id DESC`
+    )
+    .bind(userId)
+    .all<PlayerStatusRow>();
+
+  return result.results.map(toPlayerStatusItem);
+};
+
+export const findPlayerStatusByUserIdAndReviewUserId = async (
+  db: D1Database,
+  userId: number,
+  reviewUserId: number
+): Promise<PlayerStatusItem | null> => {
+  const row = await db
+    .prepare(
+      `SELECT
+         id,
+         user_id,
+         review_user_id,
+         shooting,
+         dribbling,
+         passing,
+         defense,
+         stamina,
+         remarks,
+         created_at,
+         updated_at
+       FROM playerStatus
+       WHERE user_id = ?1
+         AND review_user_id = ?2
+       ORDER BY updated_at DESC, id DESC
+       LIMIT 1`
+    )
+    .bind(userId, reviewUserId)
+    .first<PlayerStatusRow>();
+
+  return row ? toPlayerStatusItem(row) : null;
+};
+
 export const createPlayerStatus = async (
   db: D1Database,
   input: PlayerStatusCreateInput
@@ -243,6 +331,75 @@ export const updatePlayerStatus = async (
     .run();
 
   return findPlayerStatusById(db, id);
+};
+
+export const updatePlayerStatusByUserIdAndReviewUserId = async (
+  db: D1Database,
+  userId: number,
+  reviewUserId: number,
+  input: PlayerStatusUpdateInput
+): Promise<PlayerStatusItem | null> => {
+  const existing = await findPlayerStatusByUserIdAndReviewUserId(db, userId, reviewUserId);
+  if (!existing) {
+    return null;
+  }
+
+  const normalizedUserId = normalizeNullableNumber(input.userId);
+  const normalizedReviewUserId = normalizeNullableNumber(input.reviewUserId);
+  const shooting = normalizeNullableNumber(input.shooting);
+  const dribbling = normalizeNullableNumber(input.dribbling);
+  const passing = normalizeNullableNumber(input.passing);
+  const defense = normalizeNullableNumber(input.defense);
+  const stamina = normalizeNullableNumber(input.stamina);
+  const remarks = normalizeNullableString(input.remarks);
+
+  if (
+    normalizedUserId === undefined ||
+    normalizedReviewUserId === undefined ||
+    shooting === undefined ||
+    dribbling === undefined ||
+    passing === undefined ||
+    defense === undefined ||
+    stamina === undefined ||
+    remarks === undefined
+  ) {
+    return null;
+  }
+
+  await db
+    .prepare(
+      `UPDATE playerStatus
+       SET user_id = ?1,
+           review_user_id = ?2,
+           shooting = ?3,
+           dribbling = ?4,
+           passing = ?5,
+           defense = ?6,
+           stamina = ?7,
+           remarks = ?8,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE user_id = ?9
+         AND review_user_id = ?10`
+    )
+    .bind(
+      normalizedUserId,
+      normalizedReviewUserId,
+      shooting,
+      dribbling,
+      passing,
+      defense,
+      stamina,
+      remarks,
+      userId,
+      reviewUserId
+    )
+    .run();
+
+  if (normalizedUserId === null || normalizedReviewUserId === null) {
+    return null;
+  }
+
+  return findPlayerStatusByUserIdAndReviewUserId(db, normalizedUserId, normalizedReviewUserId);
 };
 
 export { normalizeNullableNumber, normalizeNullableString };

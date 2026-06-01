@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { MenuItem, Select, type SelectChangeEvent } from "@mui/material";
 import PageContainer from "@base/Layout/PageContainer";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonBack from "@/components/base/Button/ButtonBack";
 import ButtonAction from "@/components/base/Button/ButtonAction";
+import apiClient from "@/api/apiClient";
 import { apiService } from "@/api/apiService";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,20 @@ type StatusField = {
 };
 
 const STATUS_OPTIONS = Array.from({ length: 10 }, (_, index) => String(index + 1));
+
+type PlayerStatusApiResponse = {
+  id: number;
+  userId: number;
+  reviewUserId: number;
+  shooting: number | null;
+  dribbling: number | null;
+  passing: number | null;
+  defense: number | null;
+  stamina: number | null;
+  remarks: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 const getQueryText = (value: string | string[] | undefined): string => {
   if (Array.isArray(value)) {
@@ -40,6 +55,47 @@ const PlayerStatusDetailPage: React.FC = () => {
     defense: "5",
     stamina: "9",
   });
+
+  useEffect(() => {
+    if (!router.isReady || !playerId) {
+      return;
+    }
+
+    if (!currentUserId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchPlayerStatus = async () => {
+      try {
+        const response = await apiClient.get<PlayerStatusApiResponse>(`/api/player-status/user/${playerId}`);
+        if (!isMounted) {
+          return;
+        }
+
+        setStatusMap({
+          shoot: String(response.data.shooting ?? 6),
+          dribble: String(response.data.dribbling ?? 7),
+          pass: String(response.data.passing ?? 8),
+          defense: String(response.data.defense ?? 5),
+          stamina: String(response.data.stamina ?? 9),
+        });
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error("Failed to fetch player status:", error);
+      }
+    };
+
+    void fetchPlayerStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUserId, playerId, router.isReady]);
 
   const fields: StatusField[] = useMemo(
     () => [
@@ -71,7 +127,7 @@ const PlayerStatusDetailPage: React.FC = () => {
     }
 
     try {
-      await apiService.put(`/api/player-status/${playerId}`, {
+      await apiService.put(`/api/player-status/user/${playerId}`, {
         userId: Number(playerId),
         reviewUserId,
         shooting: Number(statusMap.shoot),
