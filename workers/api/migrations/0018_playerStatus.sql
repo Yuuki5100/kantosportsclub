@@ -22,17 +22,17 @@ CREATE TABLE IF NOT EXISTS playerStatus (
 
 INSERT INTO endpoint_authority_mapping
   (url, method, menu_function_id, required_level, created_at, updated_at)
-SELECT '/api/player-status', 'GET', 101, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT '/api/player-status/user/*', 'GET', 101, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
   SELECT 1
   FROM endpoint_authority_mapping
-  WHERE url = '/api/player-status'
+  WHERE url = '/api/player-status/user/*'
     AND method = 'GET'
 );
 
 INSERT INTO endpoint_authority_mapping
   (url, method, menu_function_id, required_level, created_at, updated_at)
-SELECT '/api/player-status/*', 'GET', 101, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT '/api/player-status/user/*', 'GET', 101, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
   SELECT 1
   FROM endpoint_authority_mapping
@@ -52,20 +52,20 @@ WHERE NOT EXISTS (
 
 INSERT INTO endpoint_authority_mapping
   (url, method, menu_function_id, required_level, created_at, updated_at)
-SELECT '/api/player-status', 'POST', 101, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT '/api/player-status/user/*', 'POST', 101, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
   SELECT 1
   FROM endpoint_authority_mapping
-  WHERE url = '/api/player-status'
+  WHERE url = '/api/player-status/user/*'
     AND method = 'POST'
 );
 
 INSERT INTO endpoint_authority_mapping
   (url, method, menu_function_id, required_level, created_at, updated_at)
-SELECT '/api/player-status/*', 'PUT', 101, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT '/api/player-status/user/*', 'PUT', 101, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
   SELECT 1
   FROM endpoint_authority_mapping
-  WHERE url = '/api/player-status/*'
+  WHERE url = '/api/player-status/user/*'
     AND method = 'PUT'
 );

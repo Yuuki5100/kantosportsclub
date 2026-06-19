@@ -32,50 +32,97 @@ type PlayerStatusApiResponse = {
 
 type PlayerStatusRecordApiResponse = PlayerStatusApiResponse;
 
-const toText = (value: string | string[] | undefined): string => {
-  if (Array.isArray(value)) {
-    return value[0] ?? "";
-  }
-  return value ?? "";
-};
-
-const toLinkHref = (url: string): string => {
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url) || url.startsWith("/")) {
-    return url;
-  }
-  return `https://${url}`;
-};
-
 type RadarMetric = {
   label: string;
   value: number;
 };
 
+const CARD_WIDTH = 360;
+const LEFT_IMAGE_WIDTH = 175;
+const GAP = 8;
+
+const toText = (value: string | string[] | undefined): string => {
+  if (Array.isArray(value)) return value[0] ?? "";
+  return value ?? "";
+};
+
+const toLinkHref = (url: string): string => {
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url) || url.startsWith("/")) return url;
+  return `https://${url}`;
+};
+
 const clampRadarValue = (value: number): number => Math.max(0, Math.min(10, value));
 
 const toRadarValue = (value: number | null | undefined): number => {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return 0;
-  }
+  if (value === null || value === undefined || Number.isNaN(value)) return 0;
   return clampRadarValue(Math.round(value));
 };
 
 const averageNullableNumbers = (values: Array<number | null | undefined>): number | null => {
-  const validValues = values.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
-  if (validValues.length === 0) {
-    return null;
-  }
+  const validValues = values.filter(
+    (value): value is number => typeof value === "number" && Number.isFinite(value)
+  );
+
+  if (validValues.length === 0) return null;
+
   return Math.floor(validValues.reduce((sum, value) => sum + value, 0) / validValues.length);
 };
 
+const SectionTitle: React.FC<{ icon: string; title: string }> = ({ icon, title }) => (
+  <Box
+    sx={{
+      width: "100%",
+      backgroundColor: "#002b5c",
+      color: "#fff",
+      fontWeight: 900,
+      fontSize: 10,
+      lineHeight: 1,
+      px: 0.8,
+      py: 0.6,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 0.4,
+      textAlign: "center",
+      boxSizing: "border-box",
+    }}
+  >
+    <span>{icon}</span>
+    <span>{title}</span>
+  </Box>
+);
+
+const InfoBox: React.FC<{
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+  sx?: object;
+}> = ({ title, icon, children, sx }) => (
+  <Box
+    sx={{
+      border: `1px solid ${colors.commonBorderGray}`,
+      backgroundColor: colors.commonFontColorWhite,
+      overflow: "hidden",
+      boxSizing: "border-box",
+      minWidth: 0,
+      ...sx,
+    }}
+  >
+    <SectionTitle icon={icon} title={title} />
+    <Box sx={{ p: 1, boxSizing: "border-box" }}>{children}</Box>
+  </Box>
+);
+
 const PlayerRadarChart: React.FC<{ metrics: RadarMetric[] }> = ({ metrics }) => {
-  const size = 188;
+  const size = 150;
   const center = size / 2;
-  const radius = 62;
+  const radius = 45;
   const ringLevels = [0.25, 0.5, 0.75, 1];
+
   const points = metrics.map((metric, index) => {
     const angle = -Math.PI / 2 + (Math.PI * 2 * index) / metrics.length;
     const distance = radius * (clampRadarValue(metric.value) / 10);
+
     return {
       ...metric,
       x: center + Math.cos(angle) * distance,
@@ -84,135 +131,104 @@ const PlayerRadarChart: React.FC<{ metrics: RadarMetric[] }> = ({ metrics }) => 
       axisY: center + Math.sin(angle) * radius,
     };
   });
+
   const polygon = points.map((point) => `${point.x},${point.y}`).join(" ");
   const outerPolygon = points.map((point) => `${point.axisX},${point.axisY}`).join(" ");
 
   return (
     <Box
       sx={{
-        maxWidth: "100%",
-        height: 190,
-        borderRadius: 3,
-        border: `1px solid ${colors.commonBorderGray}`,
-        backgroundColor: "rgba(255, 255, 255, 0.96)",
-        boxShadow: "0 8px 20px rgba(0, 0, 0, 0.10)",
+        height: 170,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         overflow: "hidden",
       }}
     >
-      <Box sx={{ position: "relative", width: "100%", height: "100%", px: 1.25, pt: 1.25, pb: 0.75 }}>
-        {/* <Font14 sx={{ fontSize: 11, fontWeight: 700, color: colors.grayDark, mb: 0.25 }}>
-          ステータス
-        </Font14> */}
-        <svg
-          width={size}
-          height={size}
-          viewBox={`0 0 ${size} ${size}`}
-          style={{
-            display: "block",
-            transform: "translate(-10px, -6px)",
-          }}
-        >
-          {ringLevels.map((level) => (
-            <polygon
-              key={level}
-              points={points
-                .map((point) => {
-                  const distance = radius * level;
-                  const angle = Math.atan2(point.axisY - center, point.axisX - center);
-                  return `${center + Math.cos(angle) * distance},${center + Math.sin(angle) * distance}`;
-                })
-                .join(" ")}
-              fill="none"
-              stroke="rgba(0, 0, 0, 0.08)"
-              strokeWidth={1}
-            />
-          ))}
-          {points.map((point) => (
-            <line
-              key={`${point.label}-axis`}
-              x1={center}
-              y1={center}
-              x2={point.axisX}
-              y2={point.axisY}
-              stroke="rgba(0, 0, 0, 0.08)"
-              strokeWidth={1}
-            />
-          ))}
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {ringLevels.map((level) => (
           <polygon
-            points={outerPolygon}
-            fill="rgba(0, 0, 0, 0.03)"
-            stroke="rgba(0, 0, 0, 0.16)"
+            key={level}
+            points={points
+              .map((point) => {
+                const distance = radius * level;
+                const angle = Math.atan2(point.axisY - center, point.axisX - center);
+                return `${center + Math.cos(angle) * distance},${center + Math.sin(angle) * distance}`;
+              })
+              .join(" ")}
+            fill="none"
+            stroke="rgba(0, 0, 0, 0.12)"
             strokeWidth={1}
           />
-          <polygon points={polygon} fill="rgba(0, 0, 0, 0.22)" stroke={colors.Black} strokeWidth={2} />
-          {points.map((point) => (
-            <circle key={`${point.label}-dot`} cx={point.x} cy={point.y} r={3} fill={colors.Black} />
-          ))}
-          {points.map((point, index) => {
-            const labelAngle = -Math.PI / 2 + (Math.PI * 2 * index) / metrics.length;
-            const labelRadius = radius + 18;
-            const labelX = center + Math.cos(labelAngle) * labelRadius;
-            const labelY = center + Math.sin(labelAngle) * labelRadius;
-            const textAnchor = Math.abs(Math.cos(labelAngle)) < 0.15 ? "middle" : Math.cos(labelAngle) > 0 ? "start" : "end";
-            const dominantBaseline =
-              Math.abs(Math.sin(labelAngle)) < 0.15 ? "middle" : Math.sin(labelAngle) > 0 ? "hanging" : "auto";
+        ))}
 
-            return (
-              <text
-                key={`${point.label}-label`}
-                x={labelX}
-                y={labelY}
-                textAnchor={textAnchor}
-                dominantBaseline={dominantBaseline}
-                fill={colors.grayDark}
-                fontSize="10"
-                fontWeight="600"
-              >
-                {point.label}
-              </text>
-            );
-          })}
-          {points.map((point) => (
+        {points.map((point) => (
+          <line
+            key={`${point.label}-axis`}
+            x1={center}
+            y1={center}
+            x2={point.axisX}
+            y2={point.axisY}
+            stroke="rgba(0, 0, 0, 0.12)"
+            strokeWidth={1}
+          />
+        ))}
+
+        <polygon
+          points={outerPolygon}
+          fill="rgba(0, 43, 92, 0.04)"
+          stroke="rgba(0, 0, 0, 0.2)"
+          strokeWidth={1}
+        />
+
+        <polygon points={polygon} fill="rgba(0, 43, 92, 0.25)" stroke="#002b5c" strokeWidth={2} />
+
+        {points.map((point) => (
+          <circle key={`${point.label}-dot`} cx={point.x} cy={point.y} r={3} fill="#002b5c" />
+        ))}
+
+        {points.map((point, index) => {
+          const labelAngle = -Math.PI / 2 + (Math.PI * 2 * index) / metrics.length;
+          const labelRadius = radius + 18;
+          const labelX = center + Math.cos(labelAngle) * labelRadius;
+          const labelY = center + Math.sin(labelAngle) * labelRadius;
+
+          return (
             <text
-              key={`${point.label}-value`}
-              x={point.x}
-              y={point.y - 10}
+              key={`${point.label}-label`}
+              x={labelX}
+              y={labelY}
               textAnchor="middle"
-              fill={colors.Black}
+              fill={colors.grayDark}
               fontSize="9"
               fontWeight="700"
             >
-              {point.value}
+              {point.label}
             </text>
-          ))}
-        </svg>
-      </Box>
+          );
+        })}
+
+        {points.map((point) => (
+          <text
+            key={`${point.label}-value`}
+            x={point.x}
+            y={point.y - 8}
+            textAnchor="middle"
+            fill="#000"
+            fontSize="8"
+            fontWeight="800"
+          >
+            {point.value}
+          </text>
+        ))}
+      </svg>
     </Box>
   );
 };
 
-const DetailBlock: React.FC<{ label: string; value: string | number | null | undefined; strong?: boolean }> = ({
-  label,
-  value,
-  strong = false,
-}) => (
-  <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, minWidth: 0 }}>
-    <Font14 sx={{ color: colors.grayDark, fontWeight: 700 }}>{label}</Font14>
-    <Font14
-      sx={{
-        fontSize: strong ? 18 : 16,
-        fontWeight: strong ? 800 : 600,
-        lineHeight: 1.35,
-        overflowWrap: "anywhere",
-      }}
-    >
-      {value || "-"}
-    </Font14>
-  </Box>
-);
-
 const PlayerDetailPage: React.FC = () => {
   const router = useRouter();
+
   const [player, setPlayer] = useState<PlayerDetailApiResponse | null>(null);
   const [playerStatus, setPlayerStatus] = useState<PlayerStatusApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -221,9 +237,7 @@ const PlayerDetailPage: React.FC = () => {
   const userId = toText(router.query.userId);
 
   useEffect(() => {
-    if (!router.isReady) {
-      return;
-    }
+    if (!router.isReady) return;
 
     let isMounted = true;
 
@@ -242,11 +256,13 @@ const PlayerDetailPage: React.FC = () => {
           apiClient.get<PlayerDetailApiResponse>(`/api/mypage/${userId}`),
           apiClient.get<PlayerStatusRecordApiResponse[]>(`/api/player-status/user/${userId}/records`),
         ]);
-        if (!isMounted) {
-          return;
-        }
+
+        if (!isMounted) return;
+
         setPlayer(playerResponse.data);
+
         const statusRecords = statusResponse.data;
+
         if (statusRecords.length === 0) {
           setPlayerStatus(null);
           return;
@@ -267,6 +283,7 @@ const PlayerDetailPage: React.FC = () => {
         });
       } catch (error) {
         console.error("Failed to fetch player detail:", error);
+
         if (isMounted) {
           setErrorMessage("選手詳細の取得に失敗しました。");
           setPlayer(null);
@@ -287,6 +304,7 @@ const PlayerDetailPage: React.FC = () => {
   }, [router.isReady, userId]);
 
   const hasImage = (player?.imageUrl ?? "").trim().length > 0;
+
   const radarMetrics: RadarMetric[] = [
     { label: "シュート", value: toRadarValue(playerStatus?.shooting) },
     { label: "ドリブル", value: toRadarValue(playerStatus?.dribbling) },
@@ -297,13 +315,13 @@ const PlayerDetailPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 24px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
-        <Box sx={{ gap: 0.5 }}>
+      <Box sx={{ width: "min(100vw - 24px, 1280px)", mx: "auto", py: 2 }}>
+        <Box sx={{ mb: 2 }}>
           <Font20>選手詳細</Font20>
           <Font14 sx={{ color: colors.grayDark }}>一覧から選択した選手の詳細を表示します。</Font14>
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
           <ButtonBack onClick={() => void router.push("/player")} />
         </Box>
 
@@ -324,49 +342,93 @@ const PlayerDetailPage: React.FC = () => {
         ) : (
           <Box
             sx={{
-              padding: { xs: 1.5, md: 3 },
-              borderRadius: 4,
-              border: `1px solid ${colors.commonBorderGray}`,
+              width: `${CARD_WIDTH}px`,
+              mx: "auto",
               backgroundColor: colors.commonFontColorWhite,
-              boxShadow: "0 10px 24px rgba(0, 0, 0, 0.06)",
-              overflowX: "auto",
+              border: `1px solid ${colors.commonBorderGray}`,
+              boxShadow: "0 4px 14px rgba(0,0,0,0.16)",
+              overflow: "hidden",
+              boxSizing: "border-box",
             }}
           >
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: {
-                  xs: "150px minmax(180px, 1fr)",
-                  sm: "190px minmax(240px, 1fr)",
-                  md: "260px minmax(0, 1fr)",
-                },
-                gap: { xs: 1.5, sm: 2, md: 3 },
-                alignItems: "start",
-                minWidth: { xs: 360, sm: 0 },
+                gridTemplateColumns: "44px 1fr 72px",
+                alignItems: "center",
+                borderTop: "5px solid #002b5c",
+                borderBottom: "2px solid #0070c0",
+                px: 0.8,
+                py: 0.8,
+                columnGap: 0.8,
+                boxSizing: "border-box",
               }}
             >
-              <Box sx={{ width: "100%" }}>
+              <Box sx={{ fontSize: 30, fontWeight: 900, color: "#002b5c", lineHeight: 1 }}>
+                {player?.jerseyNumber ?? "-"}
+              </Box>
+
+              <Box sx={{ minWidth: 0 }}>
+                <Box
+                  sx={{
+                    fontSize: 20,
+                    fontWeight: 900,
+                    color: "#002b5c",
+                    lineHeight: 1,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {player?.userNameJpn ?? "-"}
+                </Box>
+                <Box sx={{ mt: 0.4, fontSize: 9, fontWeight: 800 }}>{player?.userName ?? "-"}</Box>
+              </Box>
+
+              <Box sx={{ fontSize: 9, fontWeight: 900, color: "#002b5c", lineHeight: 1.2 }}>
+                SUPOKURA
+                <br />
+                BASKETBALL
+              </Box>
+            </Box>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: `${LEFT_IMAGE_WIDTH}px 1fr`,
+                gap: `${GAP}px`,
+                p: `${GAP}px`,
+                alignItems: "start",
+                boxSizing: "border-box",
+              }}
+            >
+              <Box
+                sx={{
+                  gridRow: "span 3",
+                  height: 365,
+                  border: `1px solid ${colors.commonBorderGray}`,
+                  overflow: "hidden",
+                  boxSizing: "border-box",
+                }}
+              >
                 {hasImage ? (
-                  <img
+                  <Box
+                    component="img"
                     src={toLinkHref(player?.imageUrl?.trim() ?? "")}
                     alt={player?.userNameJpn || player?.userName || "player"}
-                    style={{
+                    sx={{
                       width: "100%",
-                      height: 390,
-                      borderRadius: 16,
+                      height: "100%",
                       objectFit: "cover",
                       objectPosition: "center top",
-                      border: `1px solid ${colors.commonBorderGray}`,
-                      backgroundColor: colors.commonFontColorWhite,
+                      display: "block",
                     }}
                   />
                 ) : (
                   <Box
                     sx={{
                       width: "100%",
-                      height: 390,
-                      borderRadius: 3,
-                      border: `1px solid ${colors.commonBorderGray}`,
+                      height: "100%",
                       backgroundColor: colors.grayLight,
                       display: "flex",
                       alignItems: "center",
@@ -380,37 +442,62 @@ const PlayerDetailPage: React.FC = () => {
                 )}
               </Box>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: { xs: 1.4, md: 2 },
-                  minWidth: 0,
-                  pt: { xs: 0.5, md: 1 },
-                }}
-              >
-                <Font20
+              <InfoBox title="能力チャート" icon="▥" sx={{ height: 218 }}>
+                <PlayerRadarChart metrics={radarMetrics} />
+              </InfoBox>
+
+              <InfoBox title="POSITION" icon="●" sx={{ height: 76 }}>
+                <Box
                   sx={{
+                    height: 36,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 22,
                     fontWeight: 900,
-                    fontSize: { xs: 50, md: 64 },
-                    lineHeight: 1,
-                    letterSpacing: -1,
+                    color: "#002b5c",
+                    lineHeight: 1.2,
+                    textAlign: "center",
+                    wordBreak: "break-word",
                   }}
                 >
-                  #{player?.jerseyNumber ?? "-"}
-                </Font20>
+                  {player?.hopeStyle ?? "-"}
+                </Box>
+              </InfoBox>
 
-                <DetailBlock label="選手名（かな）" value={player?.userNameJpn} strong />
-                <DetailBlock label="選手名" value={player?.userName} strong />
-                <DetailBlock label="目指すスタイル" value={player?.hopeStyle} strong />
-                <PlayerRadarChart metrics={radarMetrics} />
-              </Box>
+              <InfoBox title="強み / 特技" icon="💪" sx={{ height: 63 }}>
+                <Box sx={{ fontWeight: 900, fontSize: 14 }}>開発中</Box>
+              </InfoBox>
             </Box>
 
-            <Box sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 2 }}>
-              <DetailBlock label="意気込み" value={player?.enthusiasm} />
-              <DetailBlock label="目指すスタイル" value={player?.hopeStyle} />
-              <DetailBlock label="備考" value={player?.remarks} />
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: `${GAP}px`,
+                px: `${GAP}px`,
+                pb: `${GAP}px`,
+                boxSizing: "border-box",
+                width: "100%",
+              }}
+            >
+              <InfoBox title="目標 / 意気込み" icon="⚑" sx={{ minHeight: 78, width: "100%" }}>
+                <Box sx={{ fontWeight: 900, fontSize: 13, lineHeight: 1.6, wordBreak: "break-word" }}>
+                  {player?.enthusiasm || "-"}
+                </Box>
+              </InfoBox>
+
+              <InfoBox title="プレースタイル" icon="🏃" sx={{ minHeight: 78, width: "100%" }}>
+                <Box sx={{ fontWeight: 900, fontSize: 14 }}>開発中</Box>
+              </InfoBox>
+            </Box>
+
+            <Box sx={{ px: `${GAP}px`, pb: `${GAP}px`, boxSizing: "border-box", width: "100%" }}>
+              <InfoBox title="一言 / COMMENT" icon="💬" sx={{ minHeight: 80, width: "100%" }}>
+                <Box sx={{ fontSize: 18, fontWeight: 900, lineHeight: 1.6, wordBreak: "break-word" }}>
+                  {player?.remarks || "-"}
+                </Box>
+              </InfoBox>
             </Box>
           </Box>
         )}
