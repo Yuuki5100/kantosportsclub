@@ -77,7 +77,7 @@ const SectionTitle: React.FC<{ icon: string; title: string }> = ({ icon, title }
       fontWeight: 900,
       fontSize: 10,
       lineHeight: 1,
-      px: 0.8,
+      px: 0.4,
       py: 0.6,
       display: "flex",
       alignItems: "center",
@@ -315,7 +315,7 @@ const PlayerDetailPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 24px, 1280px)", mx: "auto", py: 2 }}>
+      <Box sx={{ width: "min(100vw - 64px, 1280px)", mx: "auto", py: 0 }}>
         <Box sx={{ mb: 2 }}>
           <Font20>選手詳細</Font20>
           <Font14 sx={{ color: colors.grayDark }}>一覧から選択した選手の詳細を表示します。</Font14>
@@ -353,39 +353,40 @@ const PlayerDetailPage: React.FC = () => {
           >
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: "44px 1fr 72px",
-                alignItems: "center",
+                position: "relative",
                 borderTop: "5px solid #002b5c",
                 borderBottom: "2px solid #0070c0",
                 px: 0.8,
                 py: 0.8,
-                columnGap: 0.8,
+                minHeight: 58,
                 boxSizing: "border-box",
               }}
             >
-              <Box sx={{ fontSize: 30, fontWeight: 900, color: "#002b5c", lineHeight: 1 }}>
+              <Box sx={{ position: "absolute", left: 8, top: 10, fontSize: 30, fontWeight: 900, color: "#002b5c" }}>
                 {player?.jerseyNumber ?? "-"}
               </Box>
 
-              <Box sx={{ minWidth: 0 }}>
-                <Box
-                  sx={{
-                    fontSize: 20,
-                    fontWeight: 900,
-                    color: "#002b5c",
-                    lineHeight: 1,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
+              <Box sx={{ pl: "58px", pr: "120px", minWidth: 0 }}>
+                <Box sx={{ fontSize: 20, fontWeight: 900, color: "#002b5c", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {player?.userNameJpn ?? "-"}
                 </Box>
-                <Box sx={{ mt: 0.4, fontSize: 9, fontWeight: 800 }}>{player?.userName ?? "-"}</Box>
+                <Box sx={{ mt: 0.4, fontSize: 14, fontWeight: 800 }}>
+                  {player?.userName ?? "-"}
+                </Box>
               </Box>
 
-              <Box sx={{ fontSize: 9, fontWeight: 900, color: "#002b5c", lineHeight: 1.2 }}>
+              <Box
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: 10,
+                  fontSize: 16,
+                  fontWeight: 900,
+                  color: "#002b5c",
+                  lineHeight: 1.2,
+                  textAlign: "right",
+                }}
+              >
                 SUPOKURA
                 <br />
                 BASKETBALL
@@ -412,11 +413,10 @@ const PlayerDetailPage: React.FC = () => {
                 }}
               >
                 {hasImage ? (
-                  <Box
-                    component="img"
+                  <img
                     src={toLinkHref(player?.imageUrl?.trim() ?? "")}
                     alt={player?.userNameJpn || player?.userName || "player"}
-                    sx={{
+                    style={{
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
