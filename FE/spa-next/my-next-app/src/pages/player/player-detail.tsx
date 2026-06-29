@@ -403,7 +403,7 @@ const PlayerDetailPage: React.FC = () => {
               >
                 <Box
                   sx={{
-                    fontSize: 16,
+                    fontSize: 11,
                     fontWeight: 900,
                     color: "#002b5c",
                     lineHeight: 1.2,
