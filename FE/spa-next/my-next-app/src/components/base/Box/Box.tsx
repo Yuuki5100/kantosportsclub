@@ -3,7 +3,7 @@ import { Box as MuiBox, BoxProps as MuiBoxProps } from "@mui/material";
 
 export const Box: React.FC<MuiBoxProps> = ({ children, ...rest }) => {
   return (
-    <MuiBox display="flex" flexDirection="column" alignItems="flex-start" {...rest}>
+    <MuiBox {...rest}>
       {children}
     </MuiBox>
   );

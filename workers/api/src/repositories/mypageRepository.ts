@@ -178,3 +178,40 @@ export const upsertMypageWithPublicImageUrl = async (
     imageUrl: buildR2PublicObjectUrl(mypage.imageUrl, publicBaseUrl),
   };
 };
+
+export const updateMypageHopeStyle = async (
+  db: D1Database,
+  userId: number,
+  hopeStyle: string | null
+): Promise<MypageItem | null> => {
+  await db
+    .prepare(
+      `
+      UPDATE mypage
+      SET hope_style = ?2,
+          update_at = CURRENT_TIMESTAMP
+      WHERE user_id = ?1
+      `
+    )
+    .bind(userId, hopeStyle)
+    .run();
+
+  return findMypageByUserId(db, userId);
+};
+
+export const updateMypageHopeStyleWithPublicImageUrl = async (
+  db: D1Database,
+  userId: number,
+  hopeStyle: string | null,
+  publicBaseUrl?: string | null
+): Promise<MypageItem | null> => {
+  const mypage = await updateMypageHopeStyle(db, userId, hopeStyle);
+  if (!mypage) {
+    return null;
+  }
+
+  return {
+    ...mypage,
+    imageUrl: buildR2PublicObjectUrl(mypage.imageUrl, publicBaseUrl),
+  };
+};

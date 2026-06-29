@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { MenuItem, Select, type SelectChangeEvent } from "@mui/material";
+import { Checkbox, FormControlLabel, FormGroup, MenuItem, Select, type SelectChangeEvent } from "@mui/material";
 import PageContainer from "@base/Layout/PageContainer";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonBack from "@/components/base/Button/ButtonBack";
@@ -34,6 +34,12 @@ type PlayerStatusApiResponse = {
   updated_at: string;
 };
 
+type MypageApiResponse = {
+  hopeStyle: string | null;
+};
+
+const HOPE_STYLE_OPTIONS = ["G", "F", "C"] as const;
+
 const getQueryText = (value: string | string[] | undefined): string => {
   if (Array.isArray(value)) {
     return value[0] ?? "";
@@ -55,6 +61,7 @@ const PlayerStatusDetailPage: React.FC = () => {
     defense: "5",
     stamina: "9",
   });
+  const [hopeStyleOptions, setHopeStyleOptions] = useState<string[]>([]);
 
   useEffect(() => {
     if (!router.isReady || !playerId) {
@@ -69,17 +76,17 @@ const PlayerStatusDetailPage: React.FC = () => {
 
     const fetchPlayerStatus = async () => {
       try {
-        const response = await apiClient.get<PlayerStatusApiResponse>(`/api/player-status/user/${playerId}`);
+        const playerStatusResponse = await apiClient.get<PlayerStatusApiResponse>(`/api/player-status/user/${playerId}`);
         if (!isMounted) {
           return;
         }
 
         setStatusMap({
-          shoot: String(response.data.shooting ?? 6),
-          dribble: String(response.data.dribbling ?? 7),
-          pass: String(response.data.passing ?? 8),
-          defense: String(response.data.defense ?? 5),
-          stamina: String(response.data.stamina ?? 9),
+          shoot: String(playerStatusResponse.data.shooting ?? 6),
+          dribble: String(playerStatusResponse.data.dribbling ?? 7),
+          pass: String(playerStatusResponse.data.passing ?? 8),
+          defense: String(playerStatusResponse.data.defense ?? 5),
+          stamina: String(playerStatusResponse.data.stamina ?? 9),
         });
       } catch (error) {
         if (!isMounted) {
@@ -90,7 +97,30 @@ const PlayerStatusDetailPage: React.FC = () => {
       }
     };
 
+    const fetchMypage = async () => {
+      try {
+        const mypageResponse = await apiClient.get<MypageApiResponse>(`/api/mypage/${playerId}`);
+        if (!isMounted) {
+          return;
+        }
+
+        setHopeStyleOptions(
+          (mypageResponse.data.hopeStyle ?? "")
+            .split(" / ")
+            .map((value) => value.trim())
+            .filter((value): value is string => HOPE_STYLE_OPTIONS.includes(value as (typeof HOPE_STYLE_OPTIONS)[number]))
+        );
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error("Failed to fetch mypage:", error);
+      }
+    };
+
     void fetchPlayerStatus();
+    void fetchMypage();
 
     return () => {
       isMounted = false;
@@ -115,6 +145,17 @@ const PlayerStatusDetailPage: React.FC = () => {
     }));
   };
 
+  const handleHopeStyleToggle = (option: string) => (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    setHopeStyleOptions((current) => {
+      if (checked) {
+        return current.includes(option) ? current : [...current, option];
+      }
+      return current.filter((item) => item !== option);
+    });
+  };
+
+  const hopeStyleValue = useMemo(() => hopeStyleOptions.join(" / "), [hopeStyleOptions]);
+
   const handleSave = async () => {
     if (!playerId) {
       showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
@@ -137,6 +178,11 @@ const PlayerStatusDetailPage: React.FC = () => {
         stamina: Number(statusMap.stamina),
         remarks: null,
       });
+
+      await apiService.put(`/api/mypage/${playerId}/hope-style`, {
+        hopeStyle: hopeStyleValue,
+      });
+
       showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "個人ステータスを保存"), "SUCCESS");
     } catch (error) {
       console.error("Failed to save player status:", error);
@@ -229,6 +275,35 @@ const PlayerStatusDetailPage: React.FC = () => {
                 </Box>
               ))}
             </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "180px 1fr" },
+              gap: 1.5,
+              alignItems: "start",
+            }}
+          >
+            <Box sx={{ display: "grid", gap: 0.5 }}>
+              <Font14 sx={{ color: colors.grayDark, fontWeight: 700 }}>ポジション</Font14>
+              <Font14 sx={{ color: colors.grayDark }}>G / F / C を複数選択できます</Font14>
+            </Box>
+
+            <FormGroup row>
+              {HOPE_STYLE_OPTIONS.map((option) => (
+                <FormControlLabel
+                  key={option}
+                  control={
+                    <Checkbox
+                      checked={hopeStyleOptions.includes(option)}
+                      onChange={handleHopeStyleToggle(option)}
+                    />
+                  }
+                  label={option}
+                />
+              ))}
+            </FormGroup>
           </Box>
 
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>

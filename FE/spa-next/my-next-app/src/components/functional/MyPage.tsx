@@ -26,6 +26,7 @@ type MypageEditState = {
   jerseyNumber: string;
   enthusiasm: string;
   hopeStyle: string;
+  strengths: string;
   remarks: string;
 };
 
@@ -48,6 +49,7 @@ const MyPage: React.FC = () => {
     jerseyNumber: "",
     enthusiasm: "",
     hopeStyle: "",
+    strengths: "",
     remarks: "",
   });
 
@@ -72,6 +74,7 @@ const MyPage: React.FC = () => {
           jerseyNumber: response.data.jerseyNumber?.toString() ?? "",
           enthusiasm: getValue(response.data.enthusiasm),
           hopeStyle: getValue(response.data.hopeStyle),
+          strengths: getValue(response.data.strengths),
           remarks: getValue(response.data.remarks),
         });
       } catch (error) {
@@ -160,8 +163,10 @@ const MyPage: React.FC = () => {
       field: keyof Pick<
         MypageEditState,
         "userName" | "userNameJpn" | "jerseyNumber" | "enthusiasm" | "hopeStyle" | "remarks"
+        | "strengths"
       >,
-      multiline = false
+      multiline = false,
+      disabled = false
     ) => (
       <TextField
         value={editState[field]}
@@ -176,6 +181,7 @@ const MyPage: React.FC = () => {
         fullWidth
         multiline={multiline}
         minRows={multiline ? 3 : undefined}
+        disabled={disabled}
       />
     );
 
@@ -185,11 +191,6 @@ const MyPage: React.FC = () => {
         label: "画像",
         value: isEditing ? imageNode : imagePreview,
         rowSx: { alignItems: "flex-start" },
-      },
-      {
-        key: "user_id",
-        label: "ユーザーID",
-        value: row.userId,
       },
       {
         key: "user_name",
@@ -213,8 +214,13 @@ const MyPage: React.FC = () => {
       },
       {
         key: "hope_style",
-        label: "目指すスタイル",
-        value: isEditing ? editableTextNode("hopeStyle") : getValue(row.hopeStyle),
+        label: "ポジション（管理者からの評価）",
+        value: isEditing ? editableTextNode("hopeStyle", false, true) : getValue(row.hopeStyle),
+      },
+      {
+        key: "strengths",
+        label: "強み",
+        value: isEditing ? editableTextNode("strengths", true) : getValue(row.strengths),
       },
       {
         key: "remarks",
@@ -241,6 +247,7 @@ const MyPage: React.FC = () => {
       jerseyNumber: row.jerseyNumber?.toString() ?? "",
       enthusiasm: getValue(row.enthusiasm),
       hopeStyle: getValue(row.hopeStyle),
+      strengths: getValue(row.strengths),
       remarks: getValue(row.remarks),
     });
     setSelectedImageName("");
@@ -272,6 +279,7 @@ const MyPage: React.FC = () => {
         jerseyNumber: editState.jerseyNumber.trim() ? Number(editState.jerseyNumber) : null,
         enthusiasm: editState.enthusiasm.trim() ? editState.enthusiasm : null,
         hopeStyle: editState.hopeStyle.trim() ? editState.hopeStyle : null,
+        strengths: editState.strengths.trim() ? editState.strengths : null,
         remarks: editState.remarks.trim() ? editState.remarks : null,
       };
 
@@ -285,6 +293,7 @@ const MyPage: React.FC = () => {
         jerseyNumber: response.data.jerseyNumber?.toString() ?? "",
         enthusiasm: getValue(response.data.enthusiasm),
         hopeStyle: getValue(response.data.hopeStyle),
+        strengths: getValue(response.data.strengths),
         remarks: getValue(response.data.remarks),
       });
       setSelectedImageName("");

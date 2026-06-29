@@ -315,7 +315,7 @@ const PlayerListPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 32px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
+      <Box sx={{ width: "min(100vw - 64px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
         <Box sx={{ gap: 0.5 }}>
           <Font20>選手一覧</Font20>
           <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 1 }}>

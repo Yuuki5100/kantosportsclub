@@ -150,11 +150,6 @@ const MyPage2: React.FC = () => {
         rowSx: { alignItems: "flex-start" },
       },
       {
-        key: "user_id",
-        label: "ユーザーID",
-        value: row.userId,
-      },
-      {
         key: "user_name",
         label: "ユーザー名",
         value: isEditing ? editableTextNode("userName") : getValue(row.userName),

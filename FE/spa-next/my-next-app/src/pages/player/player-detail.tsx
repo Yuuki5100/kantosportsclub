@@ -479,13 +479,14 @@ const PlayerDetailPage: React.FC = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      width: "100%",
                       minHeight: 38,
                       fontSize: 30,
                       fontWeight: 900,
                       color: "#000",
-                      lineHeight: 1.2,
+                      lineHeight: 1,
                       textAlign: "center",
-                      wordBreak: "break-word",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {player?.hopeStyle ?? "-"}
