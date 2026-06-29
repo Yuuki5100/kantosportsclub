@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import PageContainer from "@base/Layout/PageContainer";
 import apiClient from "@/api/apiClient";
-import { Box, Font14, Font20 } from "@/components/base";
+import { Box, Font14 } from "@/components/base";
 import ButtonBack from "@/components/base/Button/ButtonBack";
 import colors from "@/styles/colors";
 
@@ -83,7 +83,6 @@ const SectionTitle: React.FC<{ title: string }> = ({ title }) => (
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      gap: 0.4,
       textAlign: "center",
       boxSizing: "border-box",
     }}
@@ -358,16 +357,38 @@ const PlayerDetailPage: React.FC = () => {
                 py: 0.8,
                 minHeight: 58,
                 boxSizing: "border-box",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
               }}
             >
-              <Box sx={{ position: "absolute", left: 8, top: 10, fontSize: 30, fontWeight: 900, color: "#002b5c" }}>
+              <Box
+                sx={{
+                  position: "absolute",
+                  left: 8,
+                  top: 10,
+                  fontSize: 30,
+                  fontWeight: 900,
+                  color: "#002b5c",
+                }}
+              >
                 {player?.jerseyNumber ?? "-"}
               </Box>
 
               <Box sx={{ pl: "58px", pr: "120px", minWidth: 0 }}>
-                <Box sx={{ fontSize: 20, fontWeight: 900, color: "#002b5c", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <Box
+                  sx={{
+                    fontSize: 20,
+                    fontWeight: 900,
+                    color: "#002b5c",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
                   {player?.userNameJpn ?? "-"}
                 </Box>
+
                 <Box sx={{ mt: 0.4, fontSize: 14, fontWeight: 800 }}>
                   {player?.userName ?? "-"}
                 </Box>
@@ -396,97 +417,94 @@ const PlayerDetailPage: React.FC = () => {
                 display: "grid",
                 gridTemplateColumns: `${LEFT_IMAGE_WIDTH}px 1fr`,
                 columnGap: `${GAP}px`,
-                rowGap: "2px",
                 p: `${GAP}px`,
                 alignItems: "start",
                 boxSizing: "border-box",
               }}
             >
-              <Box
-                sx={{
-                  gridRow: "span 2",
-                  height: 340,
-                  border: `1px solid ${colors.commonBorderGray}`,
-                  overflow: "hidden",
-                  boxSizing: "border-box",
-                }}
-              >
-                {hasImage ? (
-                  <img
-                    src={toLinkHref(player?.imageUrl?.trim() ?? "")}
-                    alt={player?.userNameJpn || player?.userName || "player"}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center top",
-                      display: "block",
-                    }}
-                  />
-                ) : (
+              <Box sx={{ display: "grid", gap: `${GAP}px`, minWidth: 0 }}>
+                <Box
+                  sx={{
+                    height: 300,
+                    border: `1px solid ${colors.commonBorderGray}`,
+                    overflow: "hidden",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {hasImage ? (
+                    <img
+                      src={toLinkHref(player?.imageUrl?.trim() ?? "")}
+                      alt={player?.userNameJpn || player?.userName || "player"}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center top",
+                        display: "block",
+                      }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: colors.grayLight,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: colors.grayDark,
+                        fontSize: 12,
+                      }}
+                    >
+                      画像なし
+                    </Box>
+                  )}
+                </Box>
+
+                <InfoBox title="目標 / 意気込み" sx={{ minHeight: 87, width: "100%" }}>
+                  <Box sx={{ fontWeight: 900, fontSize: 13, lineHeight: 1.6, wordBreak: "break-word" }}>
+                    {player?.enthusiasm || "-"}
+                  </Box>
+                </InfoBox>
+              </Box>
+
+              <Box sx={{ display: "grid", gap: `${GAP}px`, minWidth: 0 }}>
+                <InfoBox title="能力チャート" sx={{ height: 204 }}>
+                  <PlayerRadarChart metrics={radarMetrics} />
+                </InfoBox>
+
+                <InfoBox title="POSITION" sx={{ minHeight: 85 }}>
                   <Box
                     sx={{
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: colors.grayLight,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: colors.grayDark,
-                      fontSize: 12,
+                      minHeight: 38,
+                      fontSize: 30,
+                      fontWeight: 900,
+                      color: "#000",
+                      lineHeight: 1.2,
+                      textAlign: "center",
+                      wordBreak: "break-word",
                     }}
                   >
-                    画像なし
+                    {player?.hopeStyle ?? "-"}
                   </Box>
-                )}
+                </InfoBox>
+
+                <InfoBox title="強み / 特技" sx={{ minHeight: 90 }}>
+                  <Box
+                    sx={{
+                      fontWeight: 900,
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {player?.strengths || "-"}
+                  </Box>
+                </InfoBox>
               </Box>
-
-              <InfoBox title="能力チャート" sx={{ height: 204 }}>
-                <PlayerRadarChart metrics={radarMetrics} />
-              </InfoBox>
-
-              <InfoBox title="POSITION" sx={{ height: 125 }}>
-                <Box
-                  sx={{
-                    mt: 0,
-                    display: "flex",
-                    alignItems: "flex-start",
-                    justifyContent: "center",
-                    fontSize: 20,
-                    fontWeight: 900,
-                    color: "#002b5c",
-                    lineHeight: 1.2,
-                    textAlign: "center",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {player?.hopeStyle ?? "-"}
-                </Box>
-              </InfoBox>
-
-              <InfoBox title="STRENGTHS" sx={{ minHeight: 82 }}>
-                <Box sx={{ fontWeight: 900, fontSize: 13, lineHeight: 1.6, wordBreak: "break-word" }}>
-                  {player?.strengths || "-"}
-                </Box>
-              </InfoBox>
-            </Box>
-
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "1fr",
-                gap: `${GAP}px`,
-                px: `${GAP}px`,
-                pb: `${GAP}px`,
-                boxSizing: "border-box",
-                width: "100%",
-              }}
-            >
-              <InfoBox title="目標 / 意気込み" sx={{ minHeight: 86, width: "100%" }}>
-                <Box sx={{ fontWeight: 900, fontSize: 13, lineHeight: 1.6, wordBreak: "break-word" }}>
-                  {player?.enthusiasm || "-"}
-                </Box>
-              </InfoBox>
             </Box>
 
             <Box sx={{ px: `${GAP}px`, pb: `${GAP}px`, boxSizing: "border-box", width: "100%" }}>

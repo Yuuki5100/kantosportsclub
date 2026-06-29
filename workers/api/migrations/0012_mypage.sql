@@ -13,3 +13,4 @@ CREATE TABLE IF NOT EXISTS mypage (
 
 ALTER TABLE mypage ADD COLUMN image_url TEXT;
 ALTER TABLE mypage ADD COLUMN user_name_jpn TEXT;
+ALTER TABLE mypage ADD COLUMN strengths TEXT;
