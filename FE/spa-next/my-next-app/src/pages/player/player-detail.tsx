@@ -38,9 +38,9 @@ type RadarMetric = {
   value: number;
 };
 
-const CARD_WIDTH = 360;
+const CARD_WIDTH = 340;
 const LEFT_IMAGE_WIDTH = 175;
-const GAP = 8;
+const GAP = 7;
 
 const toText = (value: string | string[] | undefined): string => {
   if (Array.isArray(value)) return value[0] ?? "";
@@ -313,7 +313,7 @@ const PlayerDetailPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Box sx={{ width: "min(100vw - 64px, 1280px)", mx: "auto", py: 0 }}>
+      <Box sx={{ width: "min(100vw - 32px, 1080px)", mx: "auto", py: 0 }}>
         <Box sx={{ mb: 2 }}>
           <Font14 sx={{ color: colors.grayDark }}>一覧から選択した選手の詳細を表示します。</Font14>
         </Box>
@@ -340,7 +340,8 @@ const PlayerDetailPage: React.FC = () => {
           <Box
             sx={{
               width: `${CARD_WIDTH}px`,
-              mx: "auto",
+              mr: "auto",
+              ml: 0,
               backgroundColor: colors.commonFontColorWhite,
               border: `1px solid ${colors.commonBorderGray}`,
               boxShadow: "0 4px 14px rgba(0,0,0,0.16)",
@@ -366,7 +367,6 @@ const PlayerDetailPage: React.FC = () => {
                 sx={{
                   position: "absolute",
                   left: 8,
-                  top: 10,
                   fontSize: 30,
                   fontWeight: 900,
                   color: "#002b5c",
@@ -375,10 +375,10 @@ const PlayerDetailPage: React.FC = () => {
                 {player?.jerseyNumber ?? "-"}
               </Box>
 
-              <Box sx={{ pl: "58px", pr: "120px", minWidth: 0 }}>
+              <Box sx={{ pl: "58px", pr: "150px", minWidth: 0 }}>
                 <Box
                   sx={{
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: 900,
                     color: "#002b5c",
                     whiteSpace: "nowrap",
@@ -386,10 +386,6 @@ const PlayerDetailPage: React.FC = () => {
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {player?.userNameJpn ?? "-"}
-                </Box>
-
-                <Box sx={{ mt: 0.4, fontSize: 14, fontWeight: 800 }}>
                   {player?.userName ?? "-"}
                 </Box>
               </Box>
@@ -398,17 +394,38 @@ const PlayerDetailPage: React.FC = () => {
                 sx={{
                   position: "absolute",
                   right: 8,
-                  top: 10,
-                  fontSize: 16,
-                  fontWeight: 900,
-                  color: "#002b5c",
-                  lineHeight: 1.2,
-                  textAlign: "right",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0,
                 }}
               >
-                SUPOKURA
-                <br />
-                BASKETBALL
+                <Box
+                  sx={{
+                    fontSize: 16,
+                    fontWeight: 900,
+                    color: "#002b5c",
+                    lineHeight: 1.2,
+                    textAlign: "right",
+                  }}
+                >
+                  SUPOKURA
+                  <br />
+                  BASKETBALL
+                </Box>
+
+                <Box sx={{ mt: 2, mr: -2.8 }}>
+                  <img
+                    src="/tranceLogo.png"
+                    alt="関東スポーツクラブ"
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: "contain",
+                    }}
+                  />
+                </Box>
               </Box>
             </Box>
 

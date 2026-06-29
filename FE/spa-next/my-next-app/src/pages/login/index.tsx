@@ -158,7 +158,7 @@ const LoginPage = () => {
           >
             <img
               src="/Logo.png"
-              alt="共通基盤テンプレート"
+              alt="関東スポーツクラブ"
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </FlexBox>
