@@ -68,7 +68,7 @@ const averageNullableNumbers = (values: Array<number | null | undefined>): numbe
   return Math.floor(validValues.reduce((sum, value) => sum + value, 0) / validValues.length);
 };
 
-const SectionTitle: React.FC<{ icon: string; title: string }> = ({ icon, title }) => (
+const SectionTitle: React.FC<{ title: string }> = ({ title }) => (
   <Box
     sx={{
       width: "100%",
@@ -87,17 +87,15 @@ const SectionTitle: React.FC<{ icon: string; title: string }> = ({ icon, title }
       boxSizing: "border-box",
     }}
   >
-    <span>{icon}</span>
     <span>{title}</span>
   </Box>
 );
 
 const InfoBox: React.FC<{
   title: string;
-  icon: string;
   children: React.ReactNode;
   sx?: object;
-}> = ({ title, icon, children, sx }) => (
+}> = ({ title, children, sx }) => (
   <Box
     sx={{
       border: `1px solid ${colors.commonBorderGray}`,
@@ -108,7 +106,7 @@ const InfoBox: React.FC<{
       ...sx,
     }}
   >
-    <SectionTitle icon={icon} title={title} />
+    <SectionTitle title={title} />
     <Box sx={{ p: 1, boxSizing: "border-box" }}>{children}</Box>
   </Box>
 );
@@ -396,7 +394,8 @@ const PlayerDetailPage: React.FC = () => {
               sx={{
                 display: "grid",
                 gridTemplateColumns: `${LEFT_IMAGE_WIDTH}px 1fr`,
-                gap: `${GAP}px`,
+                columnGap: `${GAP}px`,
+                rowGap: "2px",
                 p: `${GAP}px`,
                 alignItems: "start",
                 boxSizing: "border-box",
@@ -404,8 +403,8 @@ const PlayerDetailPage: React.FC = () => {
             >
               <Box
                 sx={{
-                  gridRow: "span 3",
-                  height: 365,
+                  gridRow: "span 2",
+                  height: 340,
                   border: `1px solid ${colors.commonBorderGray}`,
                   overflow: "hidden",
                   boxSizing: "border-box",
@@ -441,18 +440,18 @@ const PlayerDetailPage: React.FC = () => {
                 )}
               </Box>
 
-              <InfoBox title="能力チャート" icon="▥" sx={{ height: 218 }}>
+              <InfoBox title="能力チャート" sx={{ height: 204 }}>
                 <PlayerRadarChart metrics={radarMetrics} />
               </InfoBox>
 
-              <InfoBox title="POSITION" icon="●" sx={{ height: 76 }}>
+              <InfoBox title="POSITION" sx={{ height: 125 }}>
                 <Box
                   sx={{
-                    height: 36,
+                    mt: 0,
                     display: "flex",
-                    alignItems: "center",
+                    alignItems: "flex-start",
                     justifyContent: "center",
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: 900,
                     color: "#002b5c",
                     lineHeight: 1.2,
@@ -463,16 +462,12 @@ const PlayerDetailPage: React.FC = () => {
                   {player?.hopeStyle ?? "-"}
                 </Box>
               </InfoBox>
-
-              <InfoBox title="強み / 特技" icon="💪" sx={{ height: 63 }}>
-                <Box sx={{ fontWeight: 900, fontSize: 14 }}>開発中</Box>
-              </InfoBox>
             </Box>
 
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "1fr",
                 gap: `${GAP}px`,
                 px: `${GAP}px`,
                 pb: `${GAP}px`,
@@ -480,19 +475,15 @@ const PlayerDetailPage: React.FC = () => {
                 width: "100%",
               }}
             >
-              <InfoBox title="目標 / 意気込み" icon="⚑" sx={{ minHeight: 78, width: "100%" }}>
+              <InfoBox title="目標 / 意気込み" sx={{ minHeight: 86, width: "100%" }}>
                 <Box sx={{ fontWeight: 900, fontSize: 13, lineHeight: 1.6, wordBreak: "break-word" }}>
                   {player?.enthusiasm || "-"}
                 </Box>
               </InfoBox>
-
-              <InfoBox title="プレースタイル" icon="🏃" sx={{ minHeight: 78, width: "100%" }}>
-                <Box sx={{ fontWeight: 900, fontSize: 14 }}>開発中</Box>
-              </InfoBox>
             </Box>
 
             <Box sx={{ px: `${GAP}px`, pb: `${GAP}px`, boxSizing: "border-box", width: "100%" }}>
-              <InfoBox title="一言 / COMMENT" icon="💬" sx={{ minHeight: 80, width: "100%" }}>
+              <InfoBox title="一言 / COMMENT" sx={{ minHeight: 86, width: "100%" }}>
                 <Box sx={{ fontSize: 18, fontWeight: 900, lineHeight: 1.6, wordBreak: "break-word" }}>
                   {player?.remarks || "-"}
                 </Box>
