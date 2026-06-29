@@ -415,7 +415,7 @@ const PlayerDetailPage: React.FC = () => {
                   BASKETBALL
                 </Box>
 
-                <Box sx={{ mt: 2, mr: -2.8 }}>
+                <Box sx={{ mt: 2, mr: -2.8, ml: -2 }}>
                   <img
                     src="/tranceLogo.png"
                     alt="関東スポーツクラブ"
