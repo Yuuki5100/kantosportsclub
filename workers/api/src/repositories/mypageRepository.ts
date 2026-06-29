@@ -8,6 +8,7 @@ type MypageRow = {
   jersey_number: number | null;
   enthusiasm: string | null;
   hope_style: string | null;
+  strengths: string | null;
   remarks: string | null;
   image_url: string | null;
   create_at: string | null;
@@ -21,6 +22,7 @@ const toMypageItem = (row: MypageRow): MypageItem => ({
   jerseyNumber: row.jersey_number,
   enthusiasm: row.enthusiasm,
   hopeStyle: row.hope_style,
+  strengths: row.strengths,
   remarks: row.remarks,
   imageUrl: row.image_url,
   createAt: row.create_at,
@@ -48,6 +50,7 @@ export const findMypageByUserId = async (db: D1Database, userId: number): Promis
         jersey_number,
         enthusiasm,
         hope_style,
+        strengths,
         remarks,
         image_url,
         create_at,
@@ -93,6 +96,7 @@ export const findAllMypageWithPublicImageUrl = async (
         jersey_number,
         enthusiasm,
         hope_style,
+        strengths,
         remarks,
         image_url,
         create_at,
@@ -119,6 +123,7 @@ export const upsertMypage = async (
   const jerseyNumber = input.jerseyNumber;
   const enthusiasm = normalizeString(input.enthusiasm);
   const hopeStyle = normalizeString(input.hopeStyle);
+  const strengths = normalizeString(input.strengths);
   const remarks = normalizeString(input.remarks);
   const imageUrl = normalizeString(input.imageUrl);
 
@@ -132,24 +137,26 @@ export const upsertMypage = async (
         jersey_number,
         enthusiasm,
         hope_style,
+        strengths,
         remarks,
         image_url,
         create_at,
         update_at
       )
-      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       ON CONFLICT(user_id) DO UPDATE SET
         user_name = excluded.user_name,
         user_name_jpn = excluded.user_name_jpn,
         jersey_number = excluded.jersey_number,
         enthusiasm = excluded.enthusiasm,
         hope_style = excluded.hope_style,
+        strengths = excluded.strengths,
         remarks = excluded.remarks,
         image_url = excluded.image_url,
         update_at = CURRENT_TIMESTAMP
       `
     )
-    .bind(userId, userName, userNameJpn, jerseyNumber, enthusiasm, hopeStyle, remarks, imageUrl)
+    .bind(userId, userName, userNameJpn, jerseyNumber, enthusiasm, hopeStyle, strengths, remarks, imageUrl)
     .run();
 
   return findMypageByUserId(db, userId);

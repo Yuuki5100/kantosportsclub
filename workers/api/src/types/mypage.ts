@@ -5,6 +5,7 @@ export type MypageItem = {
   jerseyNumber: number | null;
   enthusiasm: string | null;
   hopeStyle: string | null;
+  strengths: string | null;
   remarks: string | null;
   imageUrl: string | null;
   createAt: string | null;
@@ -17,6 +18,7 @@ export type MypageUpsertInput = {
   jerseyNumber: number | null;
   enthusiasm: string | null;
   hopeStyle: string | null;
+  strengths: string | null;
   remarks: string | null;
   imageUrl: string | null;
 };

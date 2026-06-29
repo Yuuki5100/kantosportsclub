@@ -13,6 +13,7 @@ type PlayerDetailApiResponse = {
   imageUrl: string | null;
   enthusiasm: string | null;
   hopeStyle: string | null;
+  strengths: string | null;
   remarks: string | null;
 };
 
@@ -460,6 +461,12 @@ const PlayerDetailPage: React.FC = () => {
                   }}
                 >
                   {player?.hopeStyle ?? "-"}
+                </Box>
+              </InfoBox>
+
+              <InfoBox title="STRENGTHS" sx={{ minHeight: 82 }}>
+                <Box sx={{ fontWeight: 900, fontSize: 13, lineHeight: 1.6, wordBreak: "break-word" }}>
+                  {player?.strengths || "-"}
                 </Box>
               </InfoBox>
             </Box>
