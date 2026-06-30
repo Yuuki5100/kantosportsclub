@@ -401,19 +401,6 @@ const PlayerDetailPage: React.FC = () => {
                   gap: 0,
                 }}
               >
-                <Box
-                  sx={{
-                    fontSize: 11,
-                    fontWeight: 900,
-                    color: "#002b5c",
-                    lineHeight: 1.2,
-                    textAlign: "right",
-                  }}
-                >
-                  SUPOKURA
-                  <br />
-                  BASKETBALL
-                </Box>
 
                 <Box sx={{ mt: 2, mr: -2.8, ml: -2 }}>
                   <img

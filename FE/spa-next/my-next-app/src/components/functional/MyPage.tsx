@@ -198,11 +198,6 @@ const MyPage: React.FC = () => {
         value: isEditing ? editableTextNode("userName") : getValue(row.userName),
       },
       {
-        key: "user_name_jpn",
-        label: "ユーザー名（かな）",
-        value: isEditing ? editableTextNode("userNameJpn") : getValue(row.userNameJpn),
-      },
-      {
         key: "jersey_number",
         label: "背番号",
         value: isEditing ? editableTextNode("jerseyNumber") : row.jerseyNumber ?? "",

@@ -298,10 +298,7 @@ const PlayerListPage: React.FC = () => {
                 </Box>
 
                 <Box sx={{ textAlign: "left", minWidth: 0 }}>
-                  <Font14 sx={{ fontSize: 19, fontWeight: 700, lineHeight: 1.1 }}>
-                    {item.userNameJpn || "-"}
-                  </Font14>
-                  <Font14 sx={{ mt: 0.25, fontSize: 16, fontWeight: 700, lineHeight: 1.1 }}>
+                  <Font14 sx={{ ml: 0, mt: 1.5, fontSize: 22, fontWeight: 700, lineHeight: 1.1 }}>
                     {item.userName || "-"}
                   </Font14>
                 </Box>
