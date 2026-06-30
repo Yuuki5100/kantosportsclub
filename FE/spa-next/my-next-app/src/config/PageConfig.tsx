@@ -4,7 +4,7 @@ import ListIcon from "@mui/icons-material/List";
 import MovieIcon from "@mui/icons-material/Movie";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
-import ChecklistIcon  from "@mui/icons-material/MenuBook";
+import ChecklistIcon from "@mui/icons-material/MenuBook";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import TimelineIcon from "@mui/icons-material/Timeline";
@@ -167,14 +167,14 @@ const pageConfig: PageConfigType = [
     section: "activity",
     breadcrumb: { id: "summary", parentId: "top" },
   },
-  {
-    name: "ロスター",
-    resourceKey: "/roster ",
-    requiredPermission: 1,
-    icon: <GroupsIcon />,
-    section: "activity",
-    breadcrumb: { id: "roster", parentId: "top" },
-  },
+  // {
+  //   name: "ロスター",
+  //   resourceKey: "/roster ",
+  //   requiredPermission: 1,
+  //   icon: <GroupsIcon />,
+  //   section: "activity",
+  //   breadcrumb: { id: "roster", parentId: "top" },
+  // },
   {
     name: "選手一覧",
     resourceKey: "/player",
@@ -223,14 +223,14 @@ const pageConfig: PageConfigType = [
     section: "other",
     breadcrumb: { id: "myPageTrial", parentId: "top" },
   },
-    {
-    name: "体育館予約手順（開発中）",
-    resourceKey: "/",
-    requiredPermission: 1,
-    icon: <ChecklistIcon />,
-    section: "other",
-    breadcrumb: { id: "practiceMenu", parentId: "top" },
-  },
+  // {
+  //   name: "体育館予約手順（開発中）",
+  //   resourceKey: "/",
+  //   requiredPermission: 1,
+  //   icon: <ChecklistIcon />,
+  //   section: "other",
+  //   breadcrumb: { id: "practiceMenu", parentId: "top" },
+  // },
   {
     name: "お問い合わせ",
     resourceKey: "/contact",
