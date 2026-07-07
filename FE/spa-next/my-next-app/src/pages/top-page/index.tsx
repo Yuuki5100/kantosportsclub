@@ -23,11 +23,14 @@ type CurrentNoticeItem = {
   remarks: string | null;
   publicAt: string | null;
   closedAt: string | null;
+  startHour: string | null;
+  endHour: string | null;
   money: string | null;
 };
 
 const columns: ColumnDefinition[] = [
-  { id: "dateandtime", label: "開催", display: true, sortable: false, align: "center", widthPercent: 18 },
+  { id: "dateandtime", label: "開催日", display: true, sortable: false, align: "center", widthPercent: 18 },
+  { id: "time", label: "時間", display: true, sortable: false, align: "center", widthPercent: 18 },
   { id: "locationName", label: "場所", display: true, sortable: false, align: "center", widthPercent: 12 },
   { id: "peopleName", label: "参加者", display: true, sortable: false, align: "left", widthPercent: 22 },
   { id: "money", label: "参加費", display: true, sortable: false, align: "center", widthPercent: 18 },
@@ -53,6 +56,16 @@ const formatDateandtime = (value: string | null): string => {
 
   const [, , month, day] = match;
   return `${month}/${day}`;
+};
+
+const formatTimeRange = (startHour: string | null, endHour: string | null): string => {
+  if (!startHour && !endHour) {
+    return "-";
+  }
+  if (startHour && endHour) {
+    return `${startHour} ~ ${endHour}`;
+  }
+  return startHour ?? endHour ?? "-";
 };
 
 const sortNotices = (items: CurrentNoticeItem[], sortParams: TableState["sortParams"]): CurrentNoticeItem[] => {
@@ -133,6 +146,12 @@ const TopPageSimple: React.FC = () => {
             columnId: "dateandtime",
             cell: formatDateandtime(notice.dateandtime),
             value: notice.dateandtime ?? "",
+          },
+          {
+            id: `time-${notice.id}`,
+            columnId: "time",
+            cell: formatTimeRange(notice.startHour, notice.endHour),
+            value: `${notice.startHour ?? ""} ${notice.endHour ?? ""}`.trim(),
           },
           {
             id: `locationName-${notice.id}`,
