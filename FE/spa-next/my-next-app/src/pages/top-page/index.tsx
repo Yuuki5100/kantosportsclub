@@ -17,21 +17,20 @@ type CurrentNoticeItem = {
   station: string | null;
   locationId: number | null;
   locationName: string | null;
+  dateandtime: string | null;
   people: number | null;
   peopleName: string | null;
   remarks: string | null;
   publicAt: string | null;
   closedAt: string | null;
+  money: string | null;
 };
 
 const columns: ColumnDefinition[] = [
-  { id: "title", label: "タイトル", display: true, sortable: false, align: "left", widthPercent: 24 },
-  { id: "station", label: "駅", display: true, sortable: false, align: "center", widthPercent: 10 },
+  { id: "dateandtime", label: "開催", display: true, sortable: false, align: "center", widthPercent: 18 },
   { id: "locationName", label: "場所", display: true, sortable: false, align: "center", widthPercent: 12 },
-  { id: "people", label: "人数", display: true, sortable: false, align: "center", widthPercent: 8 },
   { id: "peopleName", label: "参加者", display: true, sortable: false, align: "left", widthPercent: 22 },
-  { id: "publicAt", label: "公開日時", display: true, sortable: true, align: "center", widthPercent: 18 },
-  { id: "closedAt", label: "終了日時", display: true, sortable: true, align: "center", widthPercent: 18 },
+  { id: "money", label: "参加費", display: true, sortable: false, align: "center", widthPercent: 18 },
 ];
 
 const getSortValue = (item: CurrentNoticeItem, columnId: string): string | number => {
@@ -40,6 +39,20 @@ const getSortValue = (item: CurrentNoticeItem, columnId: string): string | numbe
     return value;
   }
   return "";
+};
+
+const formatDateandtime = (value: string | null): string => {
+  if (!value) {
+    return "-";
+  }
+
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s.*)?$/);
+  if (!match) {
+    return value;
+  }
+
+  const [, , month, day] = match;
+  return `${month}/${day}`;
 };
 
 const sortNotices = (items: CurrentNoticeItem[], sortParams: TableState["sortParams"]): CurrentNoticeItem[] => {
@@ -116,28 +129,10 @@ const TopPageSimple: React.FC = () => {
         rowSx: { cursor: "pointer" },
         cells: [
           {
-            id: `title-${notice.id}`,
-            columnId: "title",
-            cell: notice.title ?? "-",
-            value: notice.title ?? "",
-          },
-          {
-            id: `station-${notice.id}`,
-            columnId: "station",
-            cell: notice.station ?? "-",
-            value: notice.station ?? "",
-          },
-          {
-            id: `people-${notice.id}`,
-            columnId: "people",
-            cell: notice.people === null ? "-" : `${notice.people}人`,
-            value: notice.people ?? "",
-          },
-          {
-            id: `peopleName-${notice.id}`,
-            columnId: "peopleName",
-            cell: notice.peopleName ?? "-",
-            value: notice.peopleName ?? "",
+            id: `dateandtime-${notice.id}`,
+            columnId: "dateandtime",
+            cell: formatDateandtime(notice.dateandtime),
+            value: notice.dateandtime ?? "",
           },
           {
             id: `locationName-${notice.id}`,
@@ -146,16 +141,16 @@ const TopPageSimple: React.FC = () => {
             value: notice.locationName ?? "",
           },
           {
-            id: `publicAt-${notice.id}`,
-            columnId: "publicAt",
-            cell: notice.publicAt ?? "-",
-            value: notice.publicAt ?? "",
+            id: `peopleName-${notice.id}`,
+            columnId: "peopleName",
+            cell: notice.peopleName ?? "-",
+            value: notice.peopleName ?? "",
           },
           {
-            id: `closedAt-${notice.id}`,
-            columnId: "closedAt",
-            cell: notice.closedAt ?? "-",
-            value: notice.closedAt ?? "",
+            id: `money-${notice.id}`,
+            columnId: "money",
+            cell: notice.money ?? "-",
+            value: notice.money ?? "",
           },
         ],
       })),
