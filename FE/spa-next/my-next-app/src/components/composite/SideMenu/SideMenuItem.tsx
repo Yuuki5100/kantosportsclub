@@ -12,11 +12,6 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { PageConfigItem } from "@/config/PageConfig";
 import { useSidebar } from "@/hooks/useSidebar";
-import {
-  sidebarTextColor,
-  sidebarSelectedBackgroundColor,
-  sidebarBackgroundColor,
-} from "@/components/color";
 import { useLanguage } from "@/hooks/useLanguage";
 import { pageLang } from "@/config/PageLang";
 import { useRouter } from "next/router";
@@ -55,10 +50,12 @@ export const SideMenuItem: React.FC<Props> = ({ item, depth = 0, sidebarOpen = t
   };
   const isSelected = selectedMenuKey === item.resourceKey;
 
+  const label = item.langKey ? l[item.langKey] : item.name;
+
   return (
     <>
       <TooltipWrapper
-        title={!sidebarOpen ? (item.langKey ? l[item.langKey] : item.name) : ''}
+        title={!sidebarOpen ? label : ''}
         placement="right"
         arrow
       >
@@ -67,23 +64,50 @@ export const SideMenuItem: React.FC<Props> = ({ item, depth = 0, sidebarOpen = t
           onClick={handleClick}
           selected={isSelected}
           sx={{
-            pl: sidebarOpen ? 2 + depth * 2 : 0,
-            pr: sidebarOpen ? undefined : 0,
-            justifyContent: 'center',
+            position: 'relative',
+            mx: sidebarOpen ? 1 : 0.5,
+            my: 0.25,
+            borderRadius: 2,
+            minHeight: 44,
+            pl: sidebarOpen ? 1.5 : 0,
+            pr: sidebarOpen ? 1.5 : 0,
+            justifyContent: sidebarOpen ? 'flex-start' : 'center',
             alignItems: 'center',
-            minHeight: 48,
-            bgcolor: isSelected
-              ? sidebarSelectedBackgroundColor
-              : sidebarBackgroundColor,
+            color: 'text.primary',
+            transition: 'background-color 0.15s ease',
+            // 選択中は左側に細いアクセントバーを表示
+            ...(isSelected && {
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                left: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 3,
+                height: '60%',
+                borderRadius: 4,
+                bgcolor: 'primary.main',
+              },
+            }),
+            '&:hover': {
+              bgcolor: 'action.hover',
+            },
+            '&.Mui-selected': {
+              bgcolor: 'action.selected',
+              '&:hover': {
+                bgcolor: 'action.selected',
+              },
+            },
           }}
         >
           {item.icon && (
             <ListItemIcon
               sx={{
-                color: sidebarTextColor,
+                color: isSelected ? 'primary.main' : 'text.secondary',
                 minWidth: 0,
-                mr: sidebarOpen ? 2 : 0,
+                mr: sidebarOpen ? 1.75 : 0,
                 justifyContent: 'center',
+                '& .MuiSvgIcon-root': { fontSize: 20 },
               }}
             >
               {item.icon}
@@ -91,11 +115,22 @@ export const SideMenuItem: React.FC<Props> = ({ item, depth = 0, sidebarOpen = t
           )}
           {sidebarOpen && (
             <ListItemText
-              primary={item.langKey ? l[item.langKey] : item.name}
-              sx={{ color: sidebarTextColor }}
+              primary={label}
+              slotProps={{
+                primary: {
+                  fontSize: 14,
+                  fontWeight: isSelected ? 600 : 500,
+                  noWrap: true,
+                },
+              }}
+              sx={{ my: 0, color: 'text.primary' }}
             />
           )}
-          {sidebarOpen && item.children && (open ? <ExpandLess /> : <ExpandMore />)}
+          {sidebarOpen && item.children && (
+            open
+              ? <ExpandLess sx={{ fontSize: 18, color: 'text.secondary' }} />
+              : <ExpandMore sx={{ fontSize: 18, color: 'text.secondary' }} />
+          )}
         </ListItemButton>
       </TooltipWrapper>
 
@@ -103,7 +138,20 @@ export const SideMenuItem: React.FC<Props> = ({ item, depth = 0, sidebarOpen = t
       {item.children && (
         <Collapse in={open} timeout="auto" unmountOnExit>
           {!sidebarOpen && <Divider />}
-          <List component="div" disablePadding>
+          <List
+            component="div"
+            disablePadding
+            sx={
+              sidebarOpen
+                ? {
+                    // 子メニューの階層を細いガイド線で表現
+                    ml: 2.75,
+                    borderLeft: '1px solid',
+                    borderColor: 'divider',
+                  }
+                : undefined
+            }
+          >
             {item.children.filter((child) => !child.hidden).map((child) => (
               <SideMenuItem key={child.resourceKey} item={child} depth={depth + 1} sidebarOpen={sidebarOpen} />
             ))}
