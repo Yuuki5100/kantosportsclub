@@ -6,6 +6,7 @@ import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import ChecklistIcon from "@mui/icons-material/MenuBook";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import RuleIcon from "@mui/icons-material/Rule";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import GroupsIcon from "@mui/icons-material/Settings";
@@ -158,6 +159,14 @@ const pageConfig: PageConfigType = [
     icon: <AccountTreeIcon />,
     section: "activity",
     breadcrumb: { id: "basketballOverview", parentId: "top" },
+  },
+  {
+    name: "試合ルール",
+    resourceKey: "/admin/game-rules",
+    requiredPermission: 1,
+    icon: <RuleIcon />,
+    section: "activity",
+    breadcrumb: { id: "gameRules", parentId: "top" },
   },
   {
     name: "活動サマリー",
