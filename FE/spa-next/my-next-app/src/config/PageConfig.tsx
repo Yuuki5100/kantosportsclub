@@ -152,7 +152,7 @@ const pageConfig: PageConfigType = [
   //   breadcrumb: { id: "systemSettings", parentId: "top" },
   // },
   {
-    name: "バスケ概要",
+    name: "参加ルール",
     resourceKey: "/admin/basketball-overview",
     requiredPermission: 1,
     icon: <AccountTreeIcon />,
