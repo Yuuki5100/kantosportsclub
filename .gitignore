@@ -8,3 +8,7 @@ node_modules/
 workers/**/node_modules/
 workers/**/.wrangler/
 
+
+# workers/api 直下の SQL ダンプ（本番データを含むためコミットしない）
+# migrations/ 配下のマイグレーションは対象外
+workers/api/*.sql
