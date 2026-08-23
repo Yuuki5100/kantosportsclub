@@ -24,6 +24,7 @@ const PLAYER_STATUS_LIST: PlayerStatusSummary[] = [
   { name: "oosawa", memberId: "14" },
   { name: "araki", memberId: "15" },
   { name: "orita", memberId: "16" },
+  { name: "hyuya", memberId: "17" },
 ];
 
 const PlayerStatusListPage: React.FC = () => {
