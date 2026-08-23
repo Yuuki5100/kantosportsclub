@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS mypage (
   remarks TEXT,
   image_url TEXT,
   create_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  update_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  update_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  strengths TEXT
 );
 
-ALTER TABLE mypage ADD COLUMN image_url TEXT;
-ALTER TABLE mypage ADD COLUMN user_name_jpn TEXT;
-ALTER TABLE mypage ADD COLUMN strengths TEXT;
+-- image_url / user_name_jpn は上の CREATE TABLE で定義済みのため重複 ALTER を削除し、
+-- 未定義だった strengths は CREATE TABLE 側に移した。

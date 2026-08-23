@@ -40,5 +40,6 @@ VALUES
   ('スプレンダー','不明',2,4,30,'https://hobbyjapan.games/splendor/','ラウンドの終了時に最も威信ポイントの高いプレイヤーが勝者', ''),
   ('まっぷたツートンソウル2！','不明',3,8,30,'https://yofukashiproject.com/mapputa/','前世の職業が一緒の相方を探すゲーム', '');
 
-ALTER TABLE boardgames ADD COLUMN image_url1 TEXT; ALTER TABLE boardgames ADD COLUMN image_url2 TEXT;
+-- image_url1 / image_url2 は上の CREATE TABLE で定義済みのため、
+-- 重複していた ALTER TABLE ADD COLUMN を削除した。
 UPDATE boardgames SET   image_url1 = 'boardgames_img/ito.jpg',   image_url2 = 'boardgames_img/ito2.jpg' WHERE id = 11;
