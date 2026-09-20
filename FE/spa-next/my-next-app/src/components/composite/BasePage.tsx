@@ -84,7 +84,7 @@ const BasePage = ({ children }: BasePageProps) => {
       {isMobile ? (
         <MobileHeader
           onLogoClick={() => router.push('#')}
-          onMenuClick={() => setMenuOpen(true)}
+          onMenuClick={() => setMenuOpen((current) => !current)}
           language={headerLanguage}
           userName={displayedUserName}
           isAuthenticated={isAuthenticated}
