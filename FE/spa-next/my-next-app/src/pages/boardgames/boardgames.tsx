@@ -11,6 +11,7 @@ import type { ColumnDefinition, RowDefinition } from "@/components/composite/Lis
 import { useFetch } from "@/hooks/useApi";
 import colors from "@/styles/colors";
 import type { ApiResponse } from "@/types/api";
+import { useAuth } from "@/hooks/useAuth";
 import {
   readSessionSearchCondition,
   removeSessionSearchCondition,
@@ -305,6 +306,7 @@ const sortBoardgameItems = (
 };
 
 const BoardgamePage: React.FC = () => {
+  const { isAuthenticated, roleLevel } = useAuth();
   const router = useRouter();
   const [searchCondition, setSearchCondition] = useState<BoardgameSearchCondition>(
     INITIAL_SEARCH_CONDITION
@@ -503,7 +505,17 @@ const BoardgamePage: React.FC = () => {
     <PageContainer>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Box>
-          <Font20>ボードゲーム一覧</Font20>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Font20>ボードゲーム一覧</Font20>
+            {isAuthenticated === true && (roleLevel ?? 0) >= 2 && (
+              <ButtonAction
+                label="作成"
+                onClick={() => void router.push("/boardgames/create")}
+                size="small"
+                sx={{ ml: "auto" }}
+              />
+            )}
+          </Box>
           <Font14 sx={{ color: colors.grayDark, mt: 0.5 }}>
             API: {BOARDGAME_LIST_ENDPOINT}
           </Font14>
