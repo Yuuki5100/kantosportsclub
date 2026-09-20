@@ -106,6 +106,11 @@ const BasePage = ({ children }: BasePageProps) => {
         )}
 
         <Box
+          onClick={() => {
+            if (isMobile && menuOpen) {
+              setMenuOpen(false);
+            }
+          }}
           sx={{
             flexGrow: 1,
             pt: `${HEADER_HEIGHT}px`,
