@@ -61,14 +61,20 @@ const getQueryValue = (value: string | string[] | undefined): string => {
 const PracticeMenuDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
-  const { name: loginUserName } = useAuth();
+  const { name: loginUserName, isAuthenticated } = useAuth();
   const [detail, setDetail] = useState<PracticeMenuDetail>(EMPTY_DETAIL);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (router.isReady && isAuthenticated === false) {
+      void router.replace("/403");
+    }
+  }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    if (!router.isReady || isAuthenticated !== true) return;
 
     const fetchDetail = async () => {
       const id = getQueryValue(router.query.id);
@@ -106,7 +112,7 @@ const PracticeMenuDetailPage: React.FC = () => {
     };
 
     void fetchDetail();
-  }, [router.isReady, router.query.id, showSnackbar]);
+  }, [isAuthenticated, router.isReady, router.query.id, showSnackbar]);
 
   const updateDetailField = (field: "title" | "remarks", value: string) => {
     setDetail((current) => ({ ...current, [field]: value }));
