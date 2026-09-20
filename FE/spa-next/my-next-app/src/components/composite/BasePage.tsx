@@ -27,7 +27,8 @@ const BasePage = ({ children }: BasePageProps) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const router = useRouter();
-  const { name } = useAuth();
+  const { name, isAuthenticated } = useAuth();
+  const displayedUserName = isAuthenticated === false ? "ゲスト" : name;
 
   const headerLanguageRecord = useLanguage(headerLang);
   const headerLanguage: HeaderLang = {
@@ -85,10 +86,10 @@ const BasePage = ({ children }: BasePageProps) => {
           onLogoClick={() => router.push('#')}
           onMenuClick={() => setMenuOpen(true)}
           language={headerLanguage}
-          userName={name}
+          userName={displayedUserName}
         />
       ) : (
-        <Header onLogoClick={() => router.push('#')} language={headerLanguage} userName={name} />
+        <Header onLogoClick={() => router.push('#')} language={headerLanguage} userName={displayedUserName} />
       )}
 
       <Box sx={{ display: 'flex', flexGrow: 1, minHeight: 0, minWidth: 0 }} flexDirection="row">
