@@ -169,7 +169,7 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "gameRules", parentId: "top" },
   },
   {
-    name: "活動サマリー",
+    name: "活動歴史",
     resourceKey: "/admin/summary",
     requiredPermission: 1,
     icon: <TimelineIcon />,
