@@ -6,6 +6,7 @@ import { apiService } from "@/api/apiService";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import PageContainer from "@base/Layout/PageContainer";
 import { useSnackbar } from "@/hooks/useSnackbar";
+import { useAuth } from "@/hooks/useAuth";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 
@@ -73,6 +74,7 @@ const isInvalidPositiveIntegerInput = (value: string): boolean => {
 
 const BoardgameCreatePage: React.FC = () => {
   const router = useRouter();
+  const { roleLevel } = useAuth();
   const { showSnackbar } = useSnackbar();
   const [form, setForm] = useState<BoardgameCreateState>(INITIAL_STATE);
   const [isSaving, setIsSaving] = useState(false);
@@ -86,8 +88,8 @@ const BoardgameCreatePage: React.FC = () => {
   );
 
   const handleBack = useCallback(() => {
-    router.push("/admin/menu");
-  }, [router]);
+    router.push((roleLevel ?? 0) <= 2 ? "/boardgames" : "/admin/menu");
+  }, [roleLevel, router]);
 
   const handleSave = useCallback(async () => {
     if (
