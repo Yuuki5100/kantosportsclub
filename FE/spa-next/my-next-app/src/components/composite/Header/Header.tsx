@@ -45,6 +45,7 @@ export type HeaderProps = {
    * @type {string}
    */
   userName?: string | null;
+  isAuthenticated?: boolean | null;
   /**
    * 設定ボタンがクリックされたときのコールバック関数
    *
@@ -81,11 +82,16 @@ const Header: React.FC<HeaderProps> = ({
   baseName: _baseName,
   organizationName: _organizationName,
   userName,
+  isAuthenticated,
   language,
 }) => {
   const dispatch = useAppDispatch();
 
   const handleLogout = async () => {
+    if (isAuthenticated === false) {
+      router.push({ pathname: '/login' });
+      return;
+    }
     dispatch(logout());
     router.push({
       pathname: '/login',
@@ -157,7 +163,7 @@ const Header: React.FC<HeaderProps> = ({
             }}
             onClick={handleLogout}
           >
-            <span>ログアウト</span>
+            <span>{isAuthenticated === false ? 'ログイン' : 'ログアウト'}</span>
           </Box>
           <Box sx={{ mr: 1 }} />
         </Box>

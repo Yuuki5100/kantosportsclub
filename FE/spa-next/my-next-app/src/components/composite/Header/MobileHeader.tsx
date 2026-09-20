@@ -19,10 +19,15 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
   language,
   onLogoClick,
   onMenuClick,
+  isAuthenticated,
 }) => {
   const dispatch = useAppDispatch();
 
   const handleLogout = async () => {
+    if (isAuthenticated === false) {
+      router.push({ pathname: '/login' });
+      return;
+    }
     dispatch(logout());
     router.push({
       pathname: '/login',

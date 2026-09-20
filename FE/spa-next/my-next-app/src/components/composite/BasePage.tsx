@@ -87,9 +87,15 @@ const BasePage = ({ children }: BasePageProps) => {
           onMenuClick={() => setMenuOpen(true)}
           language={headerLanguage}
           userName={displayedUserName}
+          isAuthenticated={isAuthenticated}
         />
       ) : (
-        <Header onLogoClick={() => router.push('#')} language={headerLanguage} userName={displayedUserName} />
+        <Header
+          onLogoClick={() => router.push('#')}
+          language={headerLanguage}
+          userName={displayedUserName}
+          isAuthenticated={isAuthenticated}
+        />
       )}
 
       <Box sx={{ display: 'flex', flexGrow: 1, minHeight: 0, minWidth: 0 }} flexDirection="row">
