@@ -33,6 +33,7 @@ const activityData = [
     { year: "2025", date: "12/14", title: "3年目の忘年会開催", detail: "" },
     { year: "2026", date: "1/24", title: "生太加入", detail: "11名 → 12名" },
     { year: "2026", date: "3/21", title: "あべちゃん加入", detail: "12名 → 13名" },
+    { year: "2026", date: "6/25", title: "ひゅうや加入", detail: "13名 → 14名" },
 ];
 
 type ActivityItem = {
