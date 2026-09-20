@@ -33,6 +33,7 @@ type MediaListPageProps = {
   endpoint: string;
   queryKey: string;
   enableTitleDescriptionSearch?: boolean;
+  showCreatedAt?: boolean;
   onItemClick?: (item: MediaItem) => void;
 };
 
@@ -241,6 +242,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   endpoint,
   queryKey,
   enableTitleDescriptionSearch = false,
+  showCreatedAt = true,
   onItemClick,
 }) => {
   const searchConditionStorageKey = `searchCondition:${queryKey}`;
@@ -311,6 +313,11 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
     return sortedMediaItems.slice(startIndex, startIndex + tableState.rowsPerPage);
   }, [sortedMediaItems, tableState.page, tableState.rowsPerPage]);
 
+  const visibleColumns = useMemo(
+    () => (showCreatedAt ? columns : columns.filter((column) => column.id !== "createdAt")),
+    [showCreatedAt]
+  );
+
   const rowData: RowDefinition[] = useMemo(
     () =>
       paginatedMediaItems.map((item) => ({
@@ -322,10 +329,12 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
           createCell("description", item.id, item.description ?? undefined),
           createUrlCell(item.id, item.url),
           createCell("locationName", item.id, item.locationName ?? undefined),
-          createCell("createdAt", item.id, item.createdAt ?? undefined),
+          ...(showCreatedAt
+            ? [createCell("createdAt", item.id, item.createdAt ?? undefined)]
+            : []),
         ],
       })),
-    [paginatedMediaItems, onItemClick]
+    [paginatedMediaItems, onItemClick, showCreatedAt]
   );
 
   const handleRowClick = useCallback(
@@ -442,7 +451,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
               topPaginationHidden={false}
               rowData={rowData}
               totalRowCount={mediaItems.length}
-              columns={columns}
+              columns={visibleColumns}
               onRowClick={onItemClick ? handleRowClick : undefined}
               searchOptions={{
                 title: enableTitleDescriptionSearch ? "検索条件" : "一覧情報",
