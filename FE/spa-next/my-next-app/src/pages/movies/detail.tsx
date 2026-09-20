@@ -12,6 +12,7 @@ import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 import type { MediaItem } from "@/components/functional/MediaListPage";
+import { useAuth } from "@/hooks/useAuth";
 
 type MovieDetail = {
   id: string;
@@ -74,10 +75,17 @@ const toLinkHref = (url: string): string => {
 
 const MovieDetailPage: React.FC = () => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const { showSnackbar } = useSnackbar();
   const [movie, setMovie] = useState<MovieDetail>(EMPTY_MOVIE);
   const [selectedLocationId, setSelectedLocationId] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (router.isReady && isAuthenticated === false) {
+      void router.replace("/403");
+    }
+  }, [isAuthenticated, router]);
   const {
     data: masterLocations,
     isLoading: isMasterLocationsLoading,

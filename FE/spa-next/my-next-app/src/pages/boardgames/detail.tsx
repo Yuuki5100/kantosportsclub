@@ -8,6 +8,7 @@ import PageContainer from "@base/Layout/PageContainer";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
+import { useAuth } from "@/hooks/useAuth";
 
 const BOARDGAME_DETAIL_ENDPOINT = "/api/boardgames";
 
@@ -144,9 +145,16 @@ const mergeBoardgameResponse = (
 
 const BoardgameDetailPage: React.FC = () => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const { showSnackbar } = useSnackbar();
   const [boardgame, setBoardgame] = useState<BoardgameDetail>(EMPTY_BOARDGAME);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (router.isReady && isAuthenticated === false) {
+      void router.replace("/403");
+    }
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     if (!router.isReady) {

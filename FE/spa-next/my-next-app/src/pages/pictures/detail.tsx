@@ -12,6 +12,7 @@ import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 import type { MediaItem } from "@/components/functional/MediaListPage";
+import { useAuth } from "@/hooks/useAuth";
 
 type PictureDetail = {
   id: string;
@@ -66,10 +67,17 @@ const getQueryValue = (value: string | string[] | undefined): string => {
 
 const PictureDetailPage: React.FC = () => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const { showSnackbar } = useSnackbar();
   const [picture, setPicture] = useState<PictureDetail>(EMPTY_PICTURE);
   const [selectedLocationId, setSelectedLocationId] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (router.isReady && isAuthenticated === false) {
+      void router.replace("/403");
+    }
+  }, [isAuthenticated, router]);
   const {
     data: masterLocations,
     isLoading: isMasterLocationsLoading,

@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSnackbar } from "@hooks/useSnackbar";
+import { ButtonBack } from "@/components/base";
 
 const ForbiddenPage = () => {
   const router = useRouter();
@@ -31,6 +32,7 @@ const ForbiddenPage = () => {
     <div>
       <h1>403 Forbidden</h1>
       <p>このページへのアクセス権限がありません。</p>
+      <ButtonBack onClick={() => void router.back()} />
     </div>
   );
 };
