@@ -109,7 +109,7 @@ const SummaryPage: React.FC = () => {
         rowsPerPage: 10,
         sortParams: {
             sortColumn: "year",
-            sortOrder: "asc",
+            sortOrder: "desc",
         },
     });
 
