@@ -100,8 +100,14 @@ export const findEndpointPermission = async (
   const requestPath = normalizePath(path);
   const entries = cachedPermissions?.entries ?? [];
 
-  const match = entries.find((entry) => {
-    if (entry.method !== requestMethod) {
+  const matchesMethod = (entry: EndpointAuthorityMappingRow): boolean =>
+    entry.method === requestMethod;
+
+  const exactMatch = entries.find(
+    (entry) => matchesMethod(entry) && entry.url === requestPath,
+  );
+  const match = exactMatch ?? entries.find((entry) => {
+    if (!matchesMethod(entry)) {
       return false;
     }
     return patternToRegExp(entry.url).test(requestPath);
