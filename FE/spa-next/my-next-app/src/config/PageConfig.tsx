@@ -193,14 +193,6 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "player", parentId: "top" },
   },
   {
-    name: "選手ステータス設定",
-    resourceKey: "/playerStatus/list",
-    requiredPermission: 3,
-    icon: <SpeedIcon />,
-    section: "activity",
-    breadcrumb: { id: "playerStatusList", parentId: "top" },
-  },
-  {
     name: "ボドゲ一覧",
     resourceKey: "/boardgames",
     requiredPermission: 1,
@@ -255,6 +247,14 @@ const pageConfig: PageConfigType = [
     icon: <AdminPanelSettingsIcon />,
     section: "other",
     breadcrumb: { id: "adminMenu", parentId: "top" },
+  },
+  {
+    name: "選手ステータス設定",
+    resourceKey: "/playerStatus/list",
+    requiredPermission: 3,
+    icon: <SpeedIcon />,
+    section: "other",
+    breadcrumb: { id: "playerStatusList", parentId: "top" },
   },
 ];
 
