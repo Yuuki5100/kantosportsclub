@@ -9,6 +9,7 @@ import { ControllableListView } from "@/components/composite";
 import type { TableState } from "@/components/composite/Listview/ControllableListView";
 import type { ColumnDefinition, RowDefinition } from "@/components/composite/Listview/ListView";
 import colors from "@/styles/colors";
+import { useAuth } from "@/hooks/useAuth";
 
 type PracticeMenuHeader = {
   id: number;
@@ -60,6 +61,7 @@ const sortPracticeMenuHeaders = (
 
 const PracticeMenuListPage: React.FC = () => {
   const router = useRouter();
+  const { isAuthenticated, roleLevel } = useAuth();
   const [headers, setHeaders] = useState<PracticeMenuHeader[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [tableState, setTableState] = useState<TableState>({
@@ -170,22 +172,24 @@ const PracticeMenuListPage: React.FC = () => {
               {isLoading ? "読み込み中です。" : `${headers.length} 件`}
             </Font14>
           </Box>
-          <ButtonAction
-            label="新規作成"
-            size="medium"
-            onClick={() => void router.push("/practiceMenu/create")}
-            width={140}
-            sx={{
-              backgroundColor: "commonTableHeader",
-              color: "#ffffff",
-              borderRadius: 2,
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              whiteSpace: "nowrap",
-              "&:hover": {
+          {isAuthenticated === true && (roleLevel ?? 0) >= 2 && (
+            <ButtonAction
+              label="新規作成"
+              size="medium"
+              onClick={() => void router.push("/practiceMenu/create")}
+              width={140}
+              sx={{
                 backgroundColor: "commonTableHeader",
-              },
-            }}
-          />
+                color: "#ffffff",
+                borderRadius: 2,
+                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                whiteSpace: "nowrap",
+                "&:hover": {
+                  backgroundColor: "commonTableHeader",
+                },
+              }}
+            />
+          )}
         </FlexBox>
 
         <ControllableListView
