@@ -153,7 +153,7 @@ const SummaryPage: React.FC = () => {
         <PageContainer>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <Box>
-                    <Font20>活動サマリー</Font20>
+                    <Font20>活動歴史</Font20>
                 </Box>
 
                 <ControllableListView
