@@ -154,6 +154,17 @@ const LoginPage = () => {
             sx={{
               width: 120,
               height: 120,
+              cursor: 'pointer',
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="TOPへ移動"
+            onClick={() => void router.push('/top-page')}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                void router.push('/top-page');
+              }
             }}
           >
             <img
@@ -230,7 +241,15 @@ const LoginPage = () => {
             <Spacer height={24} />
 
             {/* ログインボタン */}
-            <FlexBox>
+            <FlexBox gap={1.5}>
+              <ButtonAction
+                type="button"
+                color="secondary"
+                width={120}
+                label="TOP"
+                onClick={() => void router.push('/top-page')}
+                sx={{ py: 1 }}
+              />
               <ButtonAction
                 type="submit"
                 color="info"
