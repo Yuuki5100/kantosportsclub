@@ -29,7 +29,16 @@ const ButtonBack: React.FC<ButtonBackProps> = ({
       color={color}
       size={size}
       width={width}
-      sx={sx}
+      sx={{
+        color: "#000",
+        backgroundColor: "#fff",
+        border: "1px solid #000",
+        "&:hover": {
+          backgroundColor: "#f5f5f5",
+          borderColor: "#000",
+        },
+        ...sx,
+      }}
     />
   );
 };

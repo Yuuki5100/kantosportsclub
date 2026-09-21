@@ -1,4 +1,5 @@
 import { CRJButton } from '@/components/base/Button/CRJ/CRJButtonBase';
+import ButtonBack from '@/components/base/Button/ButtonBack';
 import { isApproveActionAllowed, isRegisterRemoveActionAllowed } from '@/components/CRJ/actionAllowed';
 import { Mode } from '@/types/CRJ/Mode';
 import { RegisterStatus } from '@/types/CRJ/RegisterStatus';
@@ -79,7 +80,7 @@ export const ButtonArea = (props: ButtonAreaProps) => {
     <>
       {props.children ?? (
         <>
-          <CRJButton label='戻る' onClick={props.onBackClick} />
+          <ButtonBack onClick={props.onBackClick ?? (() => undefined)} />
           {editButtonDisplay(props.role, props.registerStatus, props.mode, props.isTran, props.assignedToMe, props.isOnlyApprovedOrDeleted) && (
             <CRJButton label={'編集'} onClick={props.onEditClick} />
           )}

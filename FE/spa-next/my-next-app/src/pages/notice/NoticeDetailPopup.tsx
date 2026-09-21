@@ -8,6 +8,7 @@ import DatePicker from '@/components/base/Input/DatePicker';
 import FileUploader from '@/components/composite/FileUpload/FileUploader';
 import { FlexBox, Font14 } from '@/components/base';
 import ButtonAction from '@/components/base/Button/ButtonAction';
+import ButtonBack from '@/components/base/Button/ButtonBack';
 import { UploadedFile, FileUploaderEndpoints} from '@hooks/useFileUploader';
 import { downloadNoticeFileApi, uploadNoticeFilesApi } from '@/api/services/v1/noticeService';
 import { usePermission } from '@/hooks/usePermission';
@@ -161,17 +162,7 @@ const NoticeDetailPopup: React.FC<NoticeDetailPopupProps> = ({
 
   const footerContent = isCreateMode ? (
     <FlexBox justifyContent="space-between" width="100%">
-      <ButtonAction
-        label="戻る"
-        onClick={onClose}
-        color="info"
-        sx={{
-          backgroundColor: 'primary',
-          '&:hover': {
-            backgroundColor: 'primary',
-          },
-        }}
-      />
+      <ButtonBack onClick={onClose} />
       {canEditNotice && (
       <ButtonAction
         label="登録"

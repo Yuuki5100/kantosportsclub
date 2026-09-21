@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { Box, TextField } from "@mui/material";
 import PageContainer from "@base/Layout/PageContainer";
 import ButtonAction from "@/components/base/Button/ButtonAction";
+import ButtonBack from "@/components/base/Button/ButtonBack";
 import { Font14, Font20 } from "@/components/base";
 import colors from "@/styles/colors";
 import apiClient from "@/api/apiClient";
@@ -270,7 +271,7 @@ const ContactDetailPage: React.FC = () => {
               onClick={handleUpdate}
               disabled={isUpdating || isLoading}
             />
-            <ButtonAction label="戻る" color="secondary" onClick={handleBack} disabled={isUpdating} />
+            <ButtonBack onClick={handleBack} disabled={isUpdating} />
           </Box>
         </Box>
       </Box>

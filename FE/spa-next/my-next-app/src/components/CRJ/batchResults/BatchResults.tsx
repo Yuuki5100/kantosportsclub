@@ -3,6 +3,7 @@ import { BatchListRequest, BatchStatus, getBatchStatus } from '@/api/services/v1
 import { getBatchTypes } from '@/api/services/v1/crj/common/batchTypeService';
 import { AutoComplete, Box, DatePicker, FormRow } from '@/components/base';
 import { CRJButton } from '@/components/base/Button/CRJ/CRJButtonBase';
+import ButtonBack from '@/components/base/Button/ButtonBack';
 import { OptionInfo } from '@/components/base/Input/OptionInfo';
 import { Breadcrumb, ControllableListView } from '@/components/composite';
 import { TableState } from '@/components/composite/Listview/ControllableListView';
@@ -196,7 +197,7 @@ export const BatchResults = (props: BatchResultsProps) => {
       alignItems: 'center',
       width: '100%'
     }}>
-      <CRJButton label={'戻る'} onClick={() => router.push('/common/top-list')} />
+      <ButtonBack onClick={() => router.push('/common/top-list')} />
     </Box>
     <ControllableListView
       page={tableState.page + 1}

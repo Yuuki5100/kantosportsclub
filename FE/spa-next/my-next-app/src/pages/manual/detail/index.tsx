@@ -5,6 +5,7 @@ import TextBox from "@/components/base/Input/TextBox";
 import TextBoxMultiLine from "@/components/base/Input/TextBoxMultiLine";
 import CheckBox from "@/components/base/Input/CheckBox";
 import ButtonAction from "@/components/base/Button/ButtonAction";
+import ButtonBack from "@/components/base/Button/ButtonBack";
 import ModalWithButtons from "@/components/composite/ModalWindow";
 import FileUploader from "@/components/composite/FileUpload/FileUploader";
 import { UploadedFile, FileUploaderEndpoints, UploadedFileResponse } from "@hooks/useFileUploader";
@@ -197,17 +198,7 @@ const ManualDetailPopup: React.FC<ManualDetailPopupProps> = ({
 
   const footerContent = isCreateMode ? (
     <FlexBox justifyContent="space-between" width="100%">
-      <ButtonAction
-        label="戻る"
-        onClick={onClose}
-        color="info"
-        sx={{
-          backgroundColor: "primary",
-          "&:hover": {
-            backgroundColor: "primary",
-          },
-        }}
-      />
+      <ButtonBack onClick={onClose} />
       <ButtonAction
         label="登録"
         onClick={handleCreateClick}

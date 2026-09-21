@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { Box } from "@mui/material";
 import PageContainer from "@base/Layout/PageContainer";
 import ButtonAction from "@/components/base/Button/ButtonAction";
+import ButtonBack from "@/components/base/Button/ButtonBack";
 import { Font14, Font20 } from "@/components/base";
 import colors from "@/styles/colors";
 import apiClient from "@/api/apiClient";
@@ -164,7 +165,7 @@ const ContactCreatePage: React.FC = () => {
               onClick={handleCreate}
               disabled={isSaving || !isValid}
             />
-            <ButtonAction label="戻る" color="secondary" onClick={handleBack} disabled={isSaving} />
+            <ButtonBack onClick={handleBack} disabled={isSaving} />
           </Box>
         </Box>
       </Box>

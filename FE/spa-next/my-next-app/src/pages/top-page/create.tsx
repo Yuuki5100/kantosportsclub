@@ -6,6 +6,7 @@ import { apiService } from "@/api/apiService";
 import { API_ENDPOINTS } from "@/api/apiEndpoints";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
+import ButtonBack from "@/components/base/Button/ButtonBack";
 import AutoComplete from "@/components/base/Input/AutoComplete";
 import DatePicker from "@/components/base/Input/DatePicker";
 import PageContainer from "@base/Layout/PageContainer";
@@ -287,7 +288,7 @@ const NoticeCreatePage: React.FC = () => {
         </Box>
 
         <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
-          <ButtonAction label="戻る" color="secondary" onClick={handleBack} />
+          <ButtonBack onClick={handleBack} />
           <ButtonAction label={isSaving ? "登録中..." : "登録"} onClick={handleSave} disabled={isSaving} />
         </Box>
       </Box>

@@ -6,6 +6,7 @@ import FormRow from "@/components/base/Input/FormRow";
 import TextBox from "@/components/base/Input/TextBox";
 import TextArea from "@/components/base/Input/TextBoxMultiLine";
 import ButtonAction from "@/components/base/Button/ButtonAction";
+import ButtonBack from "@/components/base/Button/ButtonBack";
 import { Font16, Font20 } from "@/components/base";
 import { ModalWithButtons } from "@/components/composite/Modal/ModalWithButtons";
 import colors from "@/styles/colors";
@@ -294,15 +295,7 @@ const RoleDetailPage: React.FC = () => {
   return (
     <Box sx={{ p: 2, width: "100%", alignItems: "stretch" }}>
       <FlexBox justifyContent="flex-end" width="100%" mb={2} gap={2}>
-        <ButtonAction
-          label="戻る"
-          onClick={handleBack}
-          sx={{
-            backgroundColor: colors.primary,
-            color: colors.commonFontColorWhite,
-            "&:hover": { backgroundColor: colors.primary },
-          }}
-        />
+        <ButtonBack onClick={handleBack} />
         {canEditRole && !isCreateMode && !deletedFlag && (
           <ButtonAction
             label="削除"

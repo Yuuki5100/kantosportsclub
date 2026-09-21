@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { TextField } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
+import ButtonBack from "@/components/base/Button/ButtonBack";
 import PageContainer from "@base/Layout/PageContainer";
 import colors from "@/styles/colors";
 import { apiService } from "@/api/apiService";
@@ -74,7 +75,7 @@ const CommunitiesCreatePage: React.FC = () => {
           ))}
         </Box>
         <Box sx={{ display: "flex", gap: 1.5 }}>
-          <ButtonAction label="戻る" color="secondary" onClick={() => void router.push("/communities")} />
+          <ButtonBack onClick={() => void router.push("/communities")} />
           <ButtonAction label="登録" onClick={handleRegister} />
         </Box>
       </Box>
