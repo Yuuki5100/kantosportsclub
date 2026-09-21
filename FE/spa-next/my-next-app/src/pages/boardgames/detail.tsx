@@ -147,12 +147,14 @@ const mergeBoardgameResponse = (
 
 const BoardgameDetailPage: React.FC = () => {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, name } = useAuth();
   const { showSnackbar } = useSnackbar();
   const [boardgame, setBoardgame] = useState<BoardgameDetail>(EMPTY_BOARDGAME);
   const [isUpdating, setIsUpdating] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const canManageBoardgame =
+    isAuthenticated === true && Boolean(name) && boardgame.ownerName === name;
 
   useEffect(() => {
     if (router.isReady && isAuthenticated === false) {
@@ -231,6 +233,11 @@ const BoardgameDetailPage: React.FC = () => {
       return;
     }
 
+    if (!canManageBoardgame) {
+      showSnackbar("ボードゲームの所有者のみ更新できます。", "ERROR");
+      return;
+    }
+
     if (
       isInvalidPositiveIntegerInput(boardgame.peopleMin) ||
       isInvalidPositiveIntegerInput(boardgame.peopleMax) ||
@@ -266,13 +273,18 @@ const BoardgameDetailPage: React.FC = () => {
     } finally {
       setIsUpdating(false);
     }
-  }, [boardgame, showSnackbar]);
+  }, [boardgame, canManageBoardgame, showSnackbar]);
 
   const handleBack = useCallback(() => router.push("/boardgames"), [router]);
 
   const handleDelete = useCallback(async () => {
     if (boardgame.id === null) {
       showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
+      return;
+    }
+
+    if (!canManageBoardgame) {
+      showSnackbar("ボードゲームの所有者のみ削除できます。", "ERROR");
       return;
     }
 
@@ -288,7 +300,7 @@ const BoardgameDetailPage: React.FC = () => {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
     }
-  }, [boardgame.id, router, showSnackbar]);
+  }, [boardgame.id, canManageBoardgame, router, showSnackbar]);
 
   const fields: DetailField[] = useMemo(
     () => [
@@ -664,11 +676,16 @@ const BoardgameDetailPage: React.FC = () => {
 
         <Box sx={{ width: "100%", display: "flex", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
           <ButtonBack onClick={handleBack} />
-          <ButtonAction label="削除" color="secondary" onClick={() => setDeleteDialogOpen(true)} disabled={isDeleting || boardgame.id === null} />
+          <ButtonAction
+            label="削除"
+            color="secondary"
+            onClick={() => setDeleteDialogOpen(true)}
+            disabled={isDeleting || boardgame.id === null || !canManageBoardgame}
+          />
           <ButtonAction
             label="更新"
             onClick={handleUpdate}
-            disabled={isUpdating || boardgame.id === null}
+            disabled={isUpdating || boardgame.id === null || !canManageBoardgame}
           />
         </Box>
         <DeleteConfirmDialog

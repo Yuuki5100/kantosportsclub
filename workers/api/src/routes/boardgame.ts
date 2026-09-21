@@ -191,6 +191,29 @@ boardgameRoutes.put("/boardgames/:id", async (c) => {
     );
   }
 
+  const auth = c.get("auth");
+  const ownerName = auth?.user?.displayName?.trim() || auth?.user?.userId?.trim();
+  if (!auth?.authenticated || !ownerName) {
+    return c.json(
+      { error: { code: "UNAUTHORIZED", message: "Authentication required" }, requestId: c.get("requestId") },
+      401
+    );
+  }
+
+  const current = await findBoardgameById(getDb(c.env), id);
+  if (!current) {
+    return c.json(
+      { error: { code: "NOT_FOUND", message: "Boardgame not found" }, requestId: c.get("requestId") },
+      404
+    );
+  }
+  if (current.ownerName !== ownerName) {
+    return c.json(
+      { error: { code: "FORBIDDEN", message: "Only the owner can update this boardgame" }, requestId: c.get("requestId") },
+      403
+    );
+  }
+
   const body = await c.req.json().catch(() => null);
   const input = parseBoardgameUpdateInput(body);
   if (!input) {
@@ -235,6 +258,29 @@ boardgameRoutes.delete("/boardgames/:id", async (c) => {
         requestId: c.get("requestId")
       },
       400
+    );
+  }
+
+  const auth = c.get("auth");
+  const ownerName = auth?.user?.displayName?.trim() || auth?.user?.userId?.trim();
+  if (!auth?.authenticated || !ownerName) {
+    return c.json(
+      { error: { code: "UNAUTHORIZED", message: "Authentication required" }, requestId: c.get("requestId") },
+      401
+    );
+  }
+
+  const current = await findBoardgameById(getDb(c.env), id);
+  if (!current) {
+    return c.json(
+      { error: { code: "NOT_FOUND", message: "Boardgame not found" }, requestId: c.get("requestId") },
+      404
+    );
+  }
+  if (current.ownerName !== ownerName) {
+    return c.json(
+      { error: { code: "FORBIDDEN", message: "Only the owner can delete this boardgame" }, requestId: c.get("requestId") },
+      403
     );
   }
 
