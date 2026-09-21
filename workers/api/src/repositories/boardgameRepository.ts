@@ -205,6 +205,11 @@ export const updateBoardgame = async (
   return row ? toBoardgameItem(row) : null;
 };
 
+export const deleteBoardgame = async (db: D1Database, id: number): Promise<boolean> => {
+  const result = await db.prepare("DELETE FROM boardgames WHERE id = ?").bind(id).run();
+  return (result.meta.changes ?? 0) > 0;
+};
+
 const normalizeSearchText = (value: string | undefined): string | undefined => {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;

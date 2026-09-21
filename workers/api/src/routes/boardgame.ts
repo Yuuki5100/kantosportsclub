@@ -3,6 +3,7 @@ import { getDb, type AppVariables, type Bindings } from "../env";
 import { buildR2ImageUrls } from "../function/r2PublicUrl";
 import {
   createBoardgame,
+  deleteBoardgame,
   findAllBoardgames,
   findBoardgameById,
   findBoardgames,
@@ -220,6 +221,38 @@ boardgameRoutes.put("/boardgames/:id", async (c) => {
   }
 
   return c.json(boardgame);
+});
+
+boardgameRoutes.delete("/boardgames/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json(
+      {
+        error: {
+          code: "BAD_REQUEST",
+          message: "Boardgame id must be a positive integer"
+        },
+        requestId: c.get("requestId")
+      },
+      400
+    );
+  }
+
+  const deleted = await deleteBoardgame(getDb(c.env), id);
+  if (!deleted) {
+    return c.json(
+      {
+        error: {
+          code: "NOT_FOUND",
+          message: "Boardgame not found"
+        },
+        requestId: c.get("requestId")
+      },
+      404
+    );
+  }
+
+  return c.json({ success: true });
 });
 
 boardgameRoutes.get("/boardgames/search", async (c) => {
