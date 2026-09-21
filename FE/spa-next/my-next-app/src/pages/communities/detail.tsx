@@ -32,7 +32,7 @@ const COMMUNITY_PLACEHOLDERS: Record<string, string> = {
   タイトル: "例: バスケの練習動画",
   URL: "例: https://example.com",
   補足: "補足を入力してください",
-  ラベル: "検索でヒットさせやすいワードを入力します",
+  タグ: "検索でヒットさせやすいワードを入力します",
 };
 const CommunityDetailPage: React.FC = () => {
   const router = useRouter();
@@ -53,7 +53,7 @@ const CommunityDetailPage: React.FC = () => {
   if (!community) return <PageContainer><Font14>コミュニティが見つかりません。</Font14></PageContainer>;
   const canManageCommunity = isAuthenticated === true && Boolean(name) && community.author === name.trim();
   const fields = [
-    ["タイトル", form.title], ["URL", form.url], ["補足", form.note], ["ラベル", form.label],
+    ["タイトル", form.title], ["URL", form.url], ["補足", form.note], ["タグ", form.label],
   ];
   const handleUpdate = async () => {
     if (!canManageCommunity) {
@@ -96,7 +96,7 @@ const CommunityDetailPage: React.FC = () => {
   return <PageContainer><Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
     <Box sx={{ gap: 0.5, mb: 2 }}><Font20>コミュニティ詳細</Font20><Font14 sx={{ color: colors.grayDark }}>コミュニティの登録内容を確認・編集します。</Font14></Box>
     <Box sx={{ border: `1.5px solid ${colors.commonBorderGray}`, borderRadius: 1, overflow: "hidden" }}>
-      {fields.map(([fieldLabel, value]) => { const key = fieldLabel === "タイトル" ? "title" : fieldLabel === "URL" ? "url" : fieldLabel === "補足" ? "note" : "label"; return <Box key={fieldLabel} sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" }, borderBottom: `1.5px solid ${colors.commonBorderGray}` }}><Box sx={{ p: 1.5, bgcolor: colors.commonTableHeader, fontWeight: 600 }}>{fieldLabel}</Box><Box sx={{ p: 1.5 }}><CommunityFieldValue editable={canManageCommunity} fullWidth size="small" value={value} placeholder={COMMUNITY_PLACEHOLDERS[fieldLabel]} error={Boolean(errors[key])} helperText={errors[key]} multiline={fieldLabel === "ラベル" || fieldLabel === "補足"} minRows={fieldLabel === "ラベル" ? 2 : fieldLabel === "補足" ? 3 : undefined} onChange={(event) => { const next = event.target.value; setForm((current) => ({ ...current, [key]: next })); setErrors((current) => ({ ...current, [key]: "" })); }} />{fieldLabel === "ラベル" && canManageCommunity && <CommunityLabelSelector value={value} onChange={(next) => { setLabel(next); setForm((current) => ({ ...current, label: next })); setErrors((current) => ({ ...current, label: "" })); }} />}</Box></Box>; })}
+      {fields.map(([fieldLabel, value]) => { const key = fieldLabel === "タイトル" ? "title" : fieldLabel === "URL" ? "url" : fieldLabel === "補足" ? "note" : "label"; return <Box key={fieldLabel} sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" }, borderBottom: `1.5px solid ${colors.commonBorderGray}` }}><Box sx={{ p: 1.5, bgcolor: colors.commonTableHeader, fontWeight: 600 }}>{fieldLabel}</Box><Box sx={{ p: 1.5 }}><CommunityFieldValue editable={canManageCommunity} fullWidth size="small" value={value} placeholder={COMMUNITY_PLACEHOLDERS[fieldLabel]} error={Boolean(errors[key])} helperText={errors[key]} multiline={fieldLabel === "タグ" || fieldLabel === "補足"} minRows={fieldLabel === "タグ" ? 2 : fieldLabel === "補足" ? 3 : undefined} onChange={(event) => { const next = event.target.value; setForm((current) => ({ ...current, [key]: next })); setErrors((current) => ({ ...current, [key]: "" })); }} />{fieldLabel === "タグ" && canManageCommunity && <CommunityLabelSelector value={value} onChange={(next) => { setLabel(next); setForm((current) => ({ ...current, label: next })); setErrors((current) => ({ ...current, label: "" })); }} />}</Box></Box>; })}
     </Box>
     <Box sx={{ display: "flex", gap: 1.5 }}><ButtonBack onClick={() => void router.push("/communities/mine")} /><ButtonAction label="削除" color="secondary" onClick={() => setDeleteDialogOpen(true)} disabled={!canManageCommunity} /><ButtonAction label="更新" onClick={handleUpdate} disabled={!canManageCommunity} /></Box>
     <DeleteConfirmDialog open={deleteDialogOpen} title="コミュニティを削除しますか？" onClose={() => setDeleteDialogOpen(false)} onConfirm={handleDelete} />

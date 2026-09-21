@@ -16,7 +16,7 @@ const fields: { key: keyof CommunityForm; label: string; placeholder: string; mu
   { key: "title", label: "タイトル", placeholder: "例: バスケの練習動画" },
   { key: "url", label: "URL", placeholder: "例: https://example.com" },
   { key: "note", label: "補足", placeholder: "補足を入力してください", multiline: true },
-  { key: "label", label: "ラベル", placeholder: "検索でヒットさせやすいワードを入力します", },
+  { key: "label", label: "タグ", placeholder: "検索でヒットさせやすいワードを入力します", },
 ];
 
 const CommunitiesCreatePage: React.FC = () => {

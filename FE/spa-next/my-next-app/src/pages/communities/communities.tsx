@@ -92,7 +92,7 @@ const CommunitiesPage: React.FC = () => {
       <FormRow label="タイトル" labelAlignment="center" labelMinWidth="120px">
         <TextField fullWidth size="small" value={search.title} onChange={(e) => setSearch({ ...search, title: e.target.value })} />
       </FormRow>
-      <FormRow label="ラベル" labelAlignment="center" labelMinWidth="120px">
+      <FormRow label="タグ" labelAlignment="center" labelMinWidth="120px">
         <TextField fullWidth size="small" value={search.label} onChange={(e) => setSearch({ ...search, label: e.target.value })} />
       </FormRow>
       <Box

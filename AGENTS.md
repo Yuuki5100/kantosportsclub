@@ -273,9 +273,8 @@ workers/api/src/index.ts
 - response 形式をフロント互換性なしに変更する。
 - `.env.local` 以外の環境ファイルを不用意に変更する。
 - secrets を `.dev.vars` や Markdown に書く。
-- Git の操作を行うこと。
-- `git add`
-- `git commit`
+- ユーザーが明示的に依頼・許可した場合を除き、Git の操作を行わない。
+- ユーザーが明示的に依頼・許可した場合は、必要な範囲で `git add` と `git commit` を実行してよい。
 - `git push`
 - `git pull`
 - `git merge`
