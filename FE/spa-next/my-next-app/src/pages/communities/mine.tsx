@@ -18,6 +18,7 @@ type CommunityItem = {
   title: string | null;
   url: string | null;
   note: string | null;
+  label: string | null;
   author: string | null;
 };
 
@@ -65,7 +66,7 @@ const MyCommunitiesPage: React.FC = () => {
             <Font14>{isLoading ? "読み込み中です。" : `${items.length} 件のデータを表示しています。`}</Font14>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               {items.map((item) => item.url?.trim() ? (
-                <CommunityPreviewCard key={item.id} title={item.title} note={item.note} author={item.author} url={item.url.trim()} preview={previews[item.url.trim()] ?? null} onClick={() => void router.push(`/communities/detail?id=${item.id}`)} />
+                <CommunityPreviewCard key={item.id} title={item.title} note={item.note} label={item.label} author={item.author} url={item.url.trim()} preview={previews[item.url.trim()] ?? null} onClick={() => void router.push(`/communities/detail?id=${item.id}`)} />
               ) : null)}
             </Box>
           </>
