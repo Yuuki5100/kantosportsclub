@@ -4,11 +4,13 @@ import { useRouter } from "next/router";
 import { Box, Font14, Font20 } from "@/components/base";
 import { apiService } from "@/api/apiService";
 import ButtonAction from "@/components/base/Button/ButtonAction";
+import ButtonBack from "@/components/base/Button/ButtonBack";
 import PageContainer from "@base/Layout/PageContainer";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 import { useAuth } from "@/hooks/useAuth";
+import DeleteConfirmDialog from "@/components/functional/DeleteConfirmDialog";
 
 const BOARDGAME_DETAIL_ENDPOINT = "/api/boardgames";
 
@@ -149,6 +151,8 @@ const BoardgameDetailPage: React.FC = () => {
   const { showSnackbar } = useSnackbar();
   const [boardgame, setBoardgame] = useState<BoardgameDetail>(EMPTY_BOARDGAME);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (router.isReady && isAuthenticated === false) {
@@ -265,6 +269,26 @@ const BoardgameDetailPage: React.FC = () => {
   }, [boardgame, showSnackbar]);
 
   const handleBack = useCallback(() => router.push("/boardgames"), [router]);
+
+  const handleDelete = useCallback(async () => {
+    if (boardgame.id === null) {
+      showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await apiService.delete(`${BOARDGAME_DETAIL_ENDPOINT}/${boardgame.id}`);
+      showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "ボードゲームを削除"), "SUCCESS");
+      await router.push("/boardgames");
+    } catch (error) {
+      console.error("Delete boardgame failed:", error);
+      showSnackbar(getMessage(MessageCodes.ACTION_FAILED, "ボードゲームの削除"), "ERROR");
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  }, [boardgame.id, router, showSnackbar]);
 
   const fields: DetailField[] = useMemo(
     () => [
@@ -638,14 +662,21 @@ const BoardgameDetailPage: React.FC = () => {
           </Box>
         ))}
 
-        <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
-          <ButtonAction label="戻る" color="secondary" onClick={handleBack} />
+        <Box sx={{ width: "100%", display: "flex", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
+          <ButtonBack onClick={handleBack} />
+          <ButtonAction label="削除" color="secondary" onClick={() => setDeleteDialogOpen(true)} disabled={isDeleting || boardgame.id === null} />
           <ButtonAction
             label="更新"
             onClick={handleUpdate}
             disabled={isUpdating || boardgame.id === null}
           />
         </Box>
+        <DeleteConfirmDialog
+          open={deleteDialogOpen}
+          title="ボードゲームを削除しますか？"
+          onClose={() => setDeleteDialogOpen(false)}
+          onConfirm={handleDelete}
+        />
       </Box>
     </PageContainer>
   );
