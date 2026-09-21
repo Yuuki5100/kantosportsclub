@@ -170,7 +170,7 @@ const BoardgameDetailPage: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const canManageBoardgame =
-    isAuthenticated === true && Boolean(name) && boardgame.ownerName === name;
+    isAuthenticated === true && Boolean(name) && boardgame.ownerName === name.trim();
 
   useEffect(() => {
     if (router.isReady && isAuthenticated === false) {
