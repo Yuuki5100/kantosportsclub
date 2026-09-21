@@ -32,6 +32,11 @@ WHERE username = 'hyuya'
   AND password NOT LIKE 'pbkdf2-sha256$%';
 
 -- 3) user_role_permissions: 不足しているリソースのみ追加する
+WITH hyuya_resources(resource) AS (
+  VALUES
+    ('101'), ('102'), ('103'), ('201'), ('202'), ('203'),
+    ('204'), ('205'), ('206'), ('207'), ('208')
+)
 INSERT INTO user_role_permissions
   (user_id, resource, permission_level, created_at, updated_at)
 SELECT
@@ -41,19 +46,7 @@ SELECT
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 FROM users u
-CROSS JOIN (
-  SELECT '101' AS resource
-  UNION ALL SELECT '102'
-  UNION ALL SELECT '103'
-  UNION ALL SELECT '201'
-  UNION ALL SELECT '202'
-  UNION ALL SELECT '203'
-  UNION ALL SELECT '204'
-  UNION ALL SELECT '205'
-  UNION ALL SELECT '206'
-  UNION ALL SELECT '207'
-  UNION ALL SELECT '208'
-) r
+CROSS JOIN hyuya_resources r
 WHERE u.username = 'hyuya'
   AND NOT EXISTS (
     SELECT 1
