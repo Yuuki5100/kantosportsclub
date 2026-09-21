@@ -18,6 +18,7 @@ export const filterPageConfig = (
     "/player",
     "/playerStatus/list",
     "/myPage",
+    "/communities/mine",
     "/contact",
     "/admin/menu",
   ]);
