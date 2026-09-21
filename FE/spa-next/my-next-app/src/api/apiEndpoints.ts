@@ -108,6 +108,12 @@ export const API_ENDPOINTS = {
   PICTURE: {
     LIST: '/api/pictures',
   },
+  COMMUNITY: {
+    LIST: '/api/communities',
+    PREVIEW: '/api/communities/preview',
+    CREATE: '/api/communities',
+    MINE: '/api/communities/mine',
+  },
   PRACTICE_MENU: {
     HEADER_LIST: '/api/practice-menu/headers',
   },
