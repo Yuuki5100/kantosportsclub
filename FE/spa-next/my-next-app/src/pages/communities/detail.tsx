@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { TextField } from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
 import PageContainer from "@base/Layout/PageContainer";
@@ -26,6 +26,7 @@ const CommunityDetailPage: React.FC = () => {
   const [label, setLabel] = useState("");
   const [form, setForm] = useState({ title: "", url: "", note: "", label: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const id = Array.isArray(router.query.id) ? router.query.id[0] : router.query.id;
@@ -53,12 +54,29 @@ const CommunityDetailPage: React.FC = () => {
       showSnackbar("コミュニティの更新に失敗しました。", "ERROR");
     }
   };
+  const handleDelete = async () => {
+    if (!community?.id) return;
+    try {
+      await apiService.delete(`${API_ENDPOINTS.COMMUNITY.DELETE}/${community.id}`);
+      showSnackbar("コミュニティを削除しました。", "SUCCESS");
+      await router.push("/communities/mine");
+    } catch {
+      showSnackbar("コミュニティの削除に失敗しました。", "ERROR");
+    } finally {
+      setDeleteDialogOpen(false);
+    }
+  };
   return <PageContainer><Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
     <Box sx={{ gap: 0.5, mb: 2 }}><Font20>コミュニティ詳細</Font20><Font14 sx={{ color: colors.grayDark }}>コミュニティの登録内容を確認・編集します。</Font14></Box>
     <Box sx={{ border: `1.5px solid ${colors.commonBorderGray}`, borderRadius: 1, overflow: "hidden" }}>
       {fields.map(([fieldLabel, value]) => { const key = fieldLabel === "タイトル" ? "title" : fieldLabel === "URL" ? "url" : fieldLabel === "補足" ? "note" : "label"; return <Box key={fieldLabel} sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" }, borderBottom: `1.5px solid ${colors.commonBorderGray}` }}><Box sx={{ p: 1.5, bgcolor: colors.commonTableHeader, fontWeight: 600 }}>{fieldLabel}</Box><Box sx={{ p: 1.5 }}><TextField fullWidth size="small" value={value} placeholder={COMMUNITY_PLACEHOLDERS[fieldLabel]} error={Boolean(errors[key])} helperText={errors[key]} multiline={fieldLabel === "ラベル" || fieldLabel === "補足"} minRows={fieldLabel === "ラベル" ? 2 : fieldLabel === "補足" ? 3 : undefined} onChange={(event) => { const next = event.target.value; setForm((current) => ({ ...current, [key]: next })); setErrors((current) => ({ ...current, [key]: "" })); }} />{fieldLabel === "ラベル" && <CommunityLabelSelector value={value} onChange={(next) => { setLabel(next); setForm((current) => ({ ...current, label: next })); setErrors((current) => ({ ...current, label: "" })); }} />}</Box></Box>; })}
     </Box>
-    <Box sx={{ display: "flex", gap: 1.5 }}><ButtonAction label="戻る" color="secondary" onClick={() => void router.push("/communities/mine")} /><ButtonAction label="更新" onClick={handleUpdate} disabled={(roleLevel ?? 0) < 2} /></Box>
+    <Box sx={{ display: "flex", gap: 1.5 }}><ButtonAction label="戻る" variant="outlined" color="secondary" sx={{ color: "#000", backgroundColor: "#fff", borderColor: "#000", "&:hover": { backgroundColor: "#fff", borderColor: "#000" } }} onClick={() => void router.push("/communities/mine")} /><ButtonAction label="削除" color="secondary" onClick={() => setDeleteDialogOpen(true)} /><ButtonAction label="更新" onClick={handleUpdate} /></Box>
+    <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <DialogTitle>コミュニティを削除しますか？</DialogTitle>
+      <DialogContent>この操作は取り消せません。</DialogContent>
+      <DialogActions><ButtonAction label="いいえ" color="secondary" onClick={() => setDeleteDialogOpen(false)} /><ButtonAction label="はい" onClick={handleDelete} /></DialogActions>
+    </Dialog>
   </Box></PageContainer>;
 };
 export default CommunityDetailPage;

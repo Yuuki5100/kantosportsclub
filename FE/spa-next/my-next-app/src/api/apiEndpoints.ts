@@ -113,6 +113,7 @@ export const API_ENDPOINTS = {
     PREVIEW: '/api/communities/preview',
     CREATE: '/api/communities',
     MINE: '/api/communities/mine',
+    DELETE: '/api/communities',
   },
   PRACTICE_MENU: {
     HEADER_LIST: '/api/practice-menu/headers',

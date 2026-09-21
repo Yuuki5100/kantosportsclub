@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { getDb, type AppVariables, type Bindings } from "../env";
-import { createCommunity, findAllCommunities, findCommunityById, updateCommunity } from "../repositories/communityRepository";
+import { createCommunity, deleteCommunity, findAllCommunities, findCommunityById, updateCommunity } from "../repositories/communityRepository";
 import type { CommunityCreateInput } from "../types/community";
 
 export const communityRoutes = new Hono<{
@@ -57,6 +57,20 @@ communityRoutes.put("/communities/:id", async (c) => {
   if (!title || !url || !label) return c.json({ error: { code: "BAD_REQUEST", message: "title, url and label are required" } }, 400);
   const updated = await updateCommunity(getDb(c.env), id, { title, url, note, label });
   return updated ? c.json(updated) : c.json({ error: { code: "NOT_FOUND", message: "Community not found" } }, 404);
+});
+
+communityRoutes.delete("/communities/:id", async (c) => {
+  const auth = c.get("auth");
+  const author = auth?.user?.displayName?.trim() || auth?.user?.userId?.trim() || null;
+  const id = parseId(c.req.param("id"));
+  if (!auth?.authenticated || !author) return c.json({ error: { code: "UNAUTHORIZED", message: "Authentication required" } }, 401);
+  if ((auth.roleLevel ?? 0) < 2) return c.json({ error: { code: "FORBIDDEN", message: "Insufficient permission" } }, 403);
+  if (id === null) return c.json({ error: { code: "BAD_REQUEST", message: "Invalid community id" } }, 400);
+  const current = await findCommunityById(getDb(c.env), id);
+  if (!current) return c.json({ error: { code: "NOT_FOUND", message: "Community not found" } }, 404);
+  if (current.author !== author) return c.json({ error: { code: "FORBIDDEN", message: "Only the author can delete this community" } }, 403);
+  await deleteCommunity(getDb(c.env), id);
+  return c.json({ success: true });
 });
 
 communityRoutes.post("/communities", async (c) => {

@@ -83,3 +83,8 @@ export const updateCommunity = async (db: D1Database, id: number, input: Omit<Co
   ).bind(input.title, input.url, input.note, input.label, id).first<{ id: number }>();
   return result ? findCommunityById(db, result.id) : null;
 };
+
+export const deleteCommunity = async (db: D1Database, id: number): Promise<boolean> => {
+  const result = await db.prepare("DELETE FROM communities WHERE id = ?").bind(id).run();
+  return (result.meta.changes ?? 0) > 0;
+};
