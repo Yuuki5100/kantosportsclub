@@ -25,12 +25,12 @@ const CommunityPreviewCard: React.FC<CommunityPreviewCardProps> = ({ title, note
     <Card component={onClick ? "div" : "a"} href={onClick ? undefined : displayUrl} target={onClick ? undefined : "_blank"} rel={onClick ? undefined : "noopener noreferrer"} onClick={onClick} sx={{ display: "flex", flexDirection: "column", textDecoration: "none", color: "inherit", cursor: onClick ? "pointer" : "default" }}>
       <Box sx={{ position: "relative", width: "100%", height: { xs: 180, sm: 240 }, bgcolor: "grey.100" }}>
         {preview?.image ? <CardMedia component="img" image={preview.image} alt="" sx={{ width: "100%", height: "100%", objectFit: "cover" }} /> : null}
-        {tags.length > 0 && <Box sx={{ position: "absolute", left: 1, bottom: 1, display: "flex", flexWrap: "wrap", gap: 0.5, maxWidth: "calc(100% - 8px)", p: 0.5 }}>
-          {tags.map((tag) => <Chip key={tag} label={tag} size="small" sx={{ bgcolor: "rgba(255, 255, 255, 0.9)" }} />)}
-        </Box>}
       </Box>
       <CardContent sx={{ minWidth: 0 }}>
         <Typography variant="subtitle1" fontWeight={600} noWrap>{title ?? ""}</Typography>
+        {tags.length > 0 && <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 0.75 }}>
+          {tags.map((tag) => <Chip key={tag} label={tag} size="small" />)}
+        </Box>}
         <Typography variant="body2" noWrap>{preview?.title ?? displayUrl}</Typography>
         {note && <Typography variant="body2" color="text.secondary" noWrap>{note}</Typography>}
         {author && <Typography variant="caption" display="block" color="text.secondary" noWrap>投稿者: {author}</Typography>}
