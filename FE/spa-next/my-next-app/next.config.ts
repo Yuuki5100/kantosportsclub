@@ -68,6 +68,7 @@ const imgSrc = uniqueSources([
   "blob:",
   "https://www.j-ems.jp",
   "https://pub-98d15c06f9fc4194a7766aa3e4313e17.r2.dev",
+  "https://i.ytimg.com",
 ]);
 
 const scriptSrc = uniqueSources([

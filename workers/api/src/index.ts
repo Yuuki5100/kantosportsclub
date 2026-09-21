@@ -67,8 +67,8 @@ app.route("/api", contactRoutes);
 app.route("/api", masterLocationRoutes);
 app.route("/api", practiceMenuRoutes);
 app.route("/api", playerStatusRoutes);
-app.route("/api", communityRoutes);
 app.route("/api", communityPreviewRoutes);
+app.route("/api", communityRoutes);
 app.route('/api/auth', auth);
 
 app.notFound((c) =>

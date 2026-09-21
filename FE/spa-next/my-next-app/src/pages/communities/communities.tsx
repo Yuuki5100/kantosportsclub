@@ -20,6 +20,7 @@ type CommunityItem = {
   url: string | null;
   note: string | null;
   label: string | null;
+  author: string | null;
 };
 
 type CommunityPreview = {
@@ -84,7 +85,7 @@ const CommunitiesPage: React.FC = () => {
     const url = item.url?.trim();
     if (!url) return null;
     const preview = previews[url];
-    return <CommunityPreviewCard key={`preview-${item.id}`} title={item.title} note={item.note} url={url} preview={preview ?? null} />;
+    return <CommunityPreviewCard key={`preview-${item.id}`} title={item.title} note={item.note} author={item.author} url={url} preview={preview ?? null} />;
   }).filter(Boolean);
   const searchElements = (
     <Box sx={{ p: 2, width: "100%" }}>

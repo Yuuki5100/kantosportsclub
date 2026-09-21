@@ -11,6 +11,33 @@ const MAX_HTML_BYTES = 1024 * 1024;
 const FETCH_TIMEOUT_MS = 5000;
 const PRIVATE_HOSTS = new Set(["localhost", "metadata.google.internal", "169.254.169.254"]);
 
+const getYoutubeVideoId = (value: string): string | null => {
+  try {
+    const url = new URL(value);
+    if (url.hostname === "youtu.be") return url.pathname.slice(1).split("/")[0] || null;
+    if (url.hostname.endsWith("youtube.com")) {
+      if (url.pathname === "/watch") return url.searchParams.get("v");
+      const match = url.pathname.match(/^\/(?:shorts|embed)\/([^/?]+)/);
+      return match?.[1] ?? null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
+
+const createYoutubeFallback = (value: string): CommunityPreview | null => {
+  const videoId = getYoutubeVideoId(value);
+  if (!videoId || !/^[A-Za-z0-9_-]{6,}$/.test(videoId)) return null;
+  return {
+    url: value,
+    title: null,
+    description: null,
+    image: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    siteName: "YouTube",
+  };
+};
+
 const isPrivateIpv4 = (host: string): boolean => {
   const parts = host.split(".").map(Number);
   if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
@@ -95,8 +122,15 @@ communityPreviewRoutes.get("/communities/preview", async (c) => {
   if (!requestedUrl) return c.json({ error: { code: "BAD_REQUEST", message: "url is required" } }, 400);
   try {
     const preview = await fetchPreview(validateUrl(requestedUrl));
-    return c.json(preview);
+    const youtubeFallback = createYoutubeFallback(requestedUrl);
+    return c.json({
+      ...preview,
+      image: preview.image ?? youtubeFallback?.image ?? null,
+      siteName: preview.siteName ?? youtubeFallback?.siteName ?? null,
+    });
   } catch {
+    const youtubeFallback = createYoutubeFallback(requestedUrl);
+    if (youtubeFallback) return c.json(youtubeFallback);
     return c.json({ error: { code: "PREVIEW_UNAVAILABLE", message: "Preview could not be loaded" } }, 422);
   }
 });
