@@ -287,7 +287,7 @@ const NoticeCreatePage: React.FC = () => {
           ))}
         </Box>
 
-        <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
+        <Box sx={{ display: "flex", width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
           <ButtonBack onClick={handleBack} />
           <ButtonAction label={isSaving ? "登録中..." : "登録"} onClick={handleSave} disabled={isSaving} />
         </Box>

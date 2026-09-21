@@ -402,7 +402,7 @@ const BoardgameCreatePage: React.FC = () => {
           </Box>
         </Box>
 
-        <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
+        <Box sx={{ display: "flex", width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
           <ButtonBack onClick={handleBack} />
           <ButtonAction label="登録" onClick={handleSave} disabled={isSaving} />
         </Box>
