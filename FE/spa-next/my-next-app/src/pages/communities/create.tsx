@@ -55,18 +55,22 @@ const CommunitiesCreatePage: React.FC = () => {
             <Box key={field.key} sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" }, borderBottom: `1.5px solid ${colors.commonBorderGray}` }}>
               <Box sx={{ p: 1.5, bgcolor: colors.commonTableHeader, fontWeight: 600 }}>{field.label}</Box>
               <Box sx={{ p: 1.5 }}>
-                <TextField
+                {field.key === "label" ? (
+                  <Box sx={{ minHeight: 40, display: "flex", alignItems: "center", px: 1.5, py: 0.75, border: 1, borderColor: errors[field.key] ? "error.main" : "divider", borderRadius: 1, color: form.label ? "text.primary" : "text.disabled", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+                    {form.label || field.placeholder}
+                  </Box>
+                ) : <TextField
                   fullWidth
                   size="small"
                   value={form[field.key]}
                   placeholder={field.placeholder}
-                  required={field.key === "title" || field.key === "url" || field.key === "label"}
-                  multiline={field.multiline || field.key === "label"}
-                  minRows={field.multiline ? 3 : field.key === "label" ? 2 : undefined}
+                  required={field.key === "title" || field.key === "url"}
+                  multiline={field.multiline}
+                  minRows={field.multiline ? 3 : undefined}
                   error={Boolean(errors[field.key])}
                   helperText={errors[field.key]}
                   onChange={handleChange(field.key)}
-                />
+                />}
                 {field.key === "label" && (
                   <CommunityLabelSelector value={form.label} onChange={(label) => setForm((current) => ({ ...current, label }))} />
                 )}
