@@ -28,12 +28,12 @@ const CommunityPreviewCard: React.FC<CommunityPreviewCardProps> = ({ title, note
       </Box>
       <CardContent sx={{ minWidth: 0 }}>
         <Typography variant="subtitle1" fontWeight={600} noWrap>{title ?? ""}</Typography>
-        {tags.length > 0 && <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 0.75 }}>
-          {tags.map((tag) => <Chip key={tag} label={tag} size="small" />)}
-        </Box>}
         <Typography variant="body2" noWrap>{preview?.title ?? displayUrl}</Typography>
         {note && <Typography variant="body2" color="text.secondary" noWrap>{note}</Typography>}
         {author && <Typography variant="caption" display="block" color="text.secondary" noWrap>投稿者: {author}</Typography>}
+        {tags.length > 0 && <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.75 }}>
+          {tags.map((tag) => <Chip key={tag} label={tag} size="small" />)}
+        </Box>}
       </CardContent>
     </Card>
   );
