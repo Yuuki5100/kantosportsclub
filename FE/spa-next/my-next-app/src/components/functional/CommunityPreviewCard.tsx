@@ -17,18 +17,15 @@ export type CommunityPreviewCardProps = {
   onClick?: () => void;
 };
 
-const getDomain = (url: string): string => {
-  try { return new URL(url).hostname; } catch { return url; }
-};
-
 const CommunityPreviewCard: React.FC<CommunityPreviewCardProps> = ({ title, note, author, url, preview, onClick }) => {
   const displayUrl = preview?.url ?? url;
   return (
     <Card component={onClick ? "div" : "a"} href={onClick ? undefined : displayUrl} target={onClick ? undefined : "_blank"} rel={onClick ? undefined : "noopener noreferrer"} onClick={onClick} sx={{ display: "flex", flexDirection: "column", textDecoration: "none", color: "inherit", cursor: onClick ? "pointer" : "default" }}>
       {preview?.image ? <CardMedia component="img" image={preview.image} alt="" sx={{ width: "100%", height: { xs: 180, sm: 240 }, objectFit: "cover" }} /> : <Box sx={{ width: "100%", height: { xs: 180, sm: 240 }, bgcolor: "grey.100" }} />}
       <CardContent sx={{ minWidth: 0 }}>
-        <Typography variant="subtitle1" fontWeight={600} noWrap>{preview?.title ?? title ?? displayUrl}</Typography>
-        <Typography variant="caption" color="text.secondary" noWrap>{preview?.siteName ?? getDomain(displayUrl)}</Typography>
+        <Typography variant="subtitle1" fontWeight={600} noWrap>{title ?? ""}</Typography>
+        <Typography variant="body2" noWrap>{preview?.title ?? displayUrl}</Typography>
+        {note && <Typography variant="body2" color="text.secondary" noWrap>{note}</Typography>}
         {author && <Typography variant="caption" display="block" color="text.secondary" noWrap>投稿者: {author}</Typography>}
       </CardContent>
     </Card>
