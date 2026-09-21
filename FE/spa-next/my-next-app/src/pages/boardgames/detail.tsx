@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { TextField } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { Box, Font14, Font20 } from "@/components/base";
 import { apiService } from "@/api/apiService";
@@ -62,6 +62,22 @@ type BoardgameUpdateRequest = {
   imageUrl2: string | null;
   howToPlay: string | null;
   remarks: string | null;
+};
+
+type BoardgameFieldValueProps = React.ComponentProps<typeof TextField> & {
+  editable: boolean;
+};
+
+const BoardgameFieldValue: React.FC<BoardgameFieldValueProps> = ({ editable, value, ...props }) => {
+  if (!editable) {
+    return (
+      <Typography sx={{ minHeight: 40, display: "flex", alignItems: "center", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+        {String(value ?? "") || "-"}
+      </Typography>
+    );
+  }
+
+  return <TextField {...props} value={value} />;
 };
 
 const EMPTY_BOARDGAME: BoardgameDetail = {
@@ -305,10 +321,8 @@ const BoardgameDetailPage: React.FC = () => {
   const fields: DetailField[] = useMemo(
     () => [
       { label: "ID", value: boardgame.id === null ? "" : String(boardgame.id) },
-      { label: "作成日時", value: boardgame.createdAt },
-      { label: "更新日時", value: boardgame.updatedAt },
     ],
-    [boardgame.createdAt, boardgame.id, boardgame.updatedAt]
+    [boardgame.id]
   );
 
   return (
@@ -347,7 +361,7 @@ const BoardgameDetailPage: React.FC = () => {
               ゲーム名
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="boardgameName"
                 value={boardgame.boardgameName}
                 size="small"
@@ -377,7 +391,7 @@ const BoardgameDetailPage: React.FC = () => {
               所有者
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="ownerName"
                 value={boardgame.ownerName}
                 size="small"
@@ -407,7 +421,7 @@ const BoardgameDetailPage: React.FC = () => {
               人数最小
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="peopleMin"
                 value={boardgame.peopleMin}
                 size="small"
@@ -439,7 +453,7 @@ const BoardgameDetailPage: React.FC = () => {
               人数最大
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="peopleMax"
                 value={boardgame.peopleMax}
                 size="small"
@@ -471,7 +485,7 @@ const BoardgameDetailPage: React.FC = () => {
               目安時間
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="needTime"
                 value={boardgame.needTime}
                 size="small"
@@ -503,7 +517,7 @@ const BoardgameDetailPage: React.FC = () => {
               URL
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="urlStr"
                 value={boardgame.urlStr}
                 size="small"
@@ -533,7 +547,7 @@ const BoardgameDetailPage: React.FC = () => {
               画像URL1
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="imageUrl1"
                 value={boardgame.imageUrl1}
                 size="small"
@@ -563,7 +577,7 @@ const BoardgameDetailPage: React.FC = () => {
               画像URL2
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="imageUrl2"
                 value={boardgame.imageUrl2}
                 size="small"
@@ -593,7 +607,7 @@ const BoardgameDetailPage: React.FC = () => {
               遊び方
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="howToPlay"
                 value={boardgame.howToPlay}
                 size="small"
@@ -624,7 +638,7 @@ const BoardgameDetailPage: React.FC = () => {
               備考
             </Box>
             <Box sx={{ width: "100%", minWidth: 0, p: 1.5 }}>
-              <TextField
+              <BoardgameFieldValue editable={canManageBoardgame}
                 name="remarks"
                 value={boardgame.remarks}
                 size="small"
