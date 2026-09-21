@@ -387,7 +387,7 @@ const MovieDetailPage: React.FC = () => {
           })}
         </Box>
 
-        <Box sx={{ width: "100%", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
+        <Box sx={{ width: "100%", display: "flex", flexDirection: "row", gap: 1.5, alignItems: "center" }}>
           <ButtonBack onClick={handleBack} />
           <ButtonAction label="更新" onClick={handleUpdate} disabled={isUpdating || !movie.id} />
         </Box>
