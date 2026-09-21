@@ -193,6 +193,14 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "player", parentId: "top" },
   },
   {
+    name: "コミュニティ",
+    resourceKey: "/communities",
+    requiredPermission: 1,
+    icon: <GroupsIcon />,
+    section: "assets",
+    breadcrumb: { id: "communities", parentId: "top" },
+  },
+  {
     name: "ボドゲ一覧",
     resourceKey: "/boardgames",
     requiredPermission: 1,
@@ -224,6 +232,14 @@ const pageConfig: PageConfigType = [
     section: "other",
     breadcrumb: { id: "myPageTrial", parentId: "top" },
   },
+  {
+    name: "作成したコミュニティ",
+    resourceKey: "/communities/mine",
+    requiredPermission: 1,
+    icon: <GroupsIcon />,
+    section: "other",
+    breadcrumb: { id: "myCommunities", parentId: "top" },
+  },
   // {
   //   name: "体育館予約手順（開発中）",
   //   resourceKey: "/",
@@ -232,14 +248,6 @@ const pageConfig: PageConfigType = [
   //   section: "other",
   //   breadcrumb: { id: "practiceMenu", parentId: "top" },
   // },
-  {
-    name: "お問い合わせ",
-    resourceKey: "/contact",
-    requiredPermission: 1,
-    icon: <AdminPanelSettingsIcon />,
-    section: "other",
-    breadcrumb: { id: "contact", parentId: "  " },
-  },
   {
     name: "管理者ページ",
     resourceKey: "/admin/menu",
@@ -255,6 +263,14 @@ const pageConfig: PageConfigType = [
     icon: <SpeedIcon />,
     section: "other",
     breadcrumb: { id: "playerStatusList", parentId: "top" },
+  },
+  {
+    name: "お問い合わせ",
+    resourceKey: "/contact",
+    requiredPermission: 1,
+    icon: <AdminPanelSettingsIcon />,
+    section: "other",
+    breadcrumb: { id: "contact", parentId: "top" },
   },
 ];
 
