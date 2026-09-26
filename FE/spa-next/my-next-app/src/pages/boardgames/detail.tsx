@@ -173,12 +173,6 @@ const BoardgameDetailPage: React.FC = () => {
     isAuthenticated === true && Boolean(name) && boardgame.ownerName === name.trim();
 
   useEffect(() => {
-    if (router.isReady && isAuthenticated === false) {
-      void router.replace("/403");
-    }
-  }, [isAuthenticated, router]);
-
-  useEffect(() => {
     if (!router.isReady) {
       return;
     }
