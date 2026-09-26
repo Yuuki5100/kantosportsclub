@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { getDb, type AppVariables, type Bindings } from "../env";
+import { buildR2PublicObjectUrl } from "../function/r2PublicUrl";
 import { createNotice, findNoticeById, findNoticesByCurrentWindow, updateNotice } from "../repositories/noticeRepository";
 import type { NoticeCreateInput, NoticeUpdateInput } from "../types/notice";
 
@@ -10,7 +11,10 @@ export const noticeRoutes = new Hono<{
 
 noticeRoutes.get("/notices/current", async (c) => {
   const notices = await findNoticesByCurrentWindow(getDb(c.env));
-  return c.json(notices);
+  return c.json(notices.map((notice) => ({
+    ...notice,
+    imageUrl1: buildR2PublicObjectUrl(notice.imageUrl1, c.env.R2_PUBLIC_BASE_URL),
+  })));
 });
 
 const parseNoticeId = (value: string | undefined): number | null => {
@@ -101,7 +105,10 @@ noticeRoutes.get("/notice/notice_id", async (c) => {
     return c.json({ error: { code: "NOT_FOUND", message: "Notice not found" } }, 404);
   }
 
-  return c.json(notice);
+  return c.json({
+    ...notice,
+    imageUrl1: buildR2PublicObjectUrl(notice.imageUrl1, c.env.R2_PUBLIC_BASE_URL),
+  });
 });
 
 noticeRoutes.put("/notice/notice_id", async (c) => {

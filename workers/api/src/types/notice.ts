@@ -4,6 +4,7 @@ export type NoticeItem = {
   station: string | null;
   locationId: number | null;
   locationName: string | null;
+  imageUrl1: string | null;
   dateandtime: string | null;
   people: number | null;
   peopleName: string | null;

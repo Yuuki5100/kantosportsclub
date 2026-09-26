@@ -6,6 +6,7 @@ type NoticeRow = {
   station: string | null;
   location_id: number | null;
   location_name: string | null;
+  image_url1: string | null;
   dateandtime: string | null;
   people: number | null;
   people_name: string | null;
@@ -23,6 +24,7 @@ const toNoticeItem = (row: NoticeRow): NoticeItem => ({
   station: row.station,
   locationId: row.location_id,
   locationName: row.location_name,
+  imageUrl1: row.image_url1,
   dateandtime: row.dateandtime,
   people: row.people,
   peopleName: row.people_name,
@@ -49,6 +51,7 @@ export const findNoticeById = async (db: D1Database, id: number): Promise<Notice
          station,
          n.location_id AS location_id,
          ml.location_name AS location_name,
+         ml.image_url1 AS image_url1,
          n.dateandtime AS dateandtime,
          people,
          people_name,
@@ -196,6 +199,7 @@ export const findNoticesByCurrentWindow = async (db: D1Database): Promise<Notice
          station,
          n.location_id,
          ml.location_name AS location_name,
+         ml.image_url1 AS image_url1,
          n.dateandtime AS dateandtime,
          people,
          people_name,
