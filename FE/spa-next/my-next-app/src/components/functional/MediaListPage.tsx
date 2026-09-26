@@ -33,6 +33,7 @@ type MediaListPageProps = {
   endpoint: string;
   queryKey: string;
   enableTitleDescriptionSearch?: boolean;
+  enableTitleSorting?: boolean;
   showCreatedAt?: boolean;
   onItemClick?: (item: MediaItem) => void;
 };
@@ -242,6 +243,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   endpoint,
   queryKey,
   enableTitleDescriptionSearch = false,
+  enableTitleSorting = false,
   showCreatedAt = true,
   onItemClick,
 }) => {
@@ -314,8 +316,13 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
   }, [sortedMediaItems, tableState.page, tableState.rowsPerPage]);
 
   const visibleColumns = useMemo(
-    () => (showCreatedAt ? columns : columns.filter((column) => column.id !== "createdAt")),
-    [showCreatedAt]
+    () => {
+      const mediaColumns = showCreatedAt ? columns : columns.filter((column) => column.id !== "createdAt");
+      return mediaColumns.map((column) =>
+        column.id === "title" ? { ...column, sortable: enableTitleSorting } : column
+      );
+    },
+    [enableTitleSorting, showCreatedAt]
   );
 
   const rowData: RowDefinition[] = useMemo(

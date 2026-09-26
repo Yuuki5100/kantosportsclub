@@ -32,6 +32,7 @@ const MoviesPage: React.FC = () => {
       endpoint={API_ENDPOINTS.MOVIE.LIST}
       queryKey="movies"
       enableTitleDescriptionSearch
+      enableTitleSorting
       showCreatedAt={false}
       onItemClick={handleItemClick}
     />
