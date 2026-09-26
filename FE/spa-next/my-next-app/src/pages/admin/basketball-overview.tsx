@@ -24,7 +24,6 @@ import {
   docTableHeadRowSx,
   docTextSx,
 } from "@/components/composite/DocSection";
-import BackToTopButton from "@/components/composite/BackToTopButton";
 
 const schedule: { date: string; content: string }[] = [
   { date: "12日", content: "体育館抽選結果の発表" },
@@ -132,9 +131,6 @@ const InfoPage: React.FC = () => {
           </DocCallout>
         </DocSectionCard>
       </Stack>
-      <Box sx={{ mt: { xs: 3, sm: 4 } }}>
-        <BackToTopButton />
-      </Box>
     </DocPageContainer>
   );
 };

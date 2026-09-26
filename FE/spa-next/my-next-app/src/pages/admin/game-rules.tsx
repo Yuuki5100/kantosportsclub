@@ -24,7 +24,6 @@ import {
   docTableHeadRowSx,
   docTextSx,
 } from "@/components/composite/DocSection";
-import BackToTopButton from "@/components/composite/BackToTopButton";
 
 const timeTable: { label: string; time: string }[] = [
   { label: "1Q", time: "3分間" },
@@ -192,9 +191,6 @@ const GameRulesPage: React.FC = () => {
           </Stack>
         </DocSectionCard>
       </Stack>
-      <Box sx={{ mt: { xs: 3, sm: 4 } }}>
-        <BackToTopButton />
-      </Box>
     </DocPageContainer>
   );
 };
