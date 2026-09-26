@@ -103,12 +103,13 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
           sx={{
             color: 'inherit',
             minWidth: 0,
-            width: 76,
-            height: 40,
-            px: 1,
+            width: 48,
+            height: 32,
+            px: 0,
             border: '1px solid currentColor',
             borderRadius: 1,
-            fontSize: '0.875rem',
+            fontSize: '0.6rem',
+            lineHeight: 1,
             whiteSpace: 'nowrap',
           }}
         >
