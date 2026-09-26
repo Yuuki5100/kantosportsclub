@@ -13,6 +13,7 @@ import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 import type { MediaItem } from "@/components/functional/MediaListPage";
+import { useProtectedAccess } from "@/components/functional/ProtectedRoute";
 
 type MovieDetail = {
   id: string;
@@ -75,6 +76,7 @@ const toLinkHref = (url: string): string => {
 
 const MovieDetailPage: React.FC = () => {
   const router = useRouter();
+  const { isAllowed: canAccessDetail } = useProtectedAccess({ requireAuthentication: true });
   const { showSnackbar } = useSnackbar();
   const [movie, setMovie] = useState<MovieDetail>(EMPTY_MOVIE);
   const [selectedLocationId, setSelectedLocationId] = useState("");
@@ -88,7 +90,7 @@ const MovieDetailPage: React.FC = () => {
     "masterLocations",
     API_ENDPOINTS.MASTER_LOCATION.LIST,
     undefined,
-    { useCache: true }
+    { useCache: true, enabled: canAccessDetail }
   );
 
   const locationOptions: LocationOption[] = useMemo(

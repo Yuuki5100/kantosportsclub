@@ -13,6 +13,7 @@ import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import colors from "@/styles/colors";
 import type { MediaItem } from "@/components/functional/MediaListPage";
+import { useProtectedAccess } from "@/components/functional/ProtectedRoute";
 
 type PictureDetail = {
   id: string;
@@ -67,6 +68,7 @@ const getQueryValue = (value: string | string[] | undefined): string => {
 
 const PictureDetailPage: React.FC = () => {
   const router = useRouter();
+  const { isAllowed: canAccessDetail } = useProtectedAccess({ requireAuthentication: true });
   const { showSnackbar } = useSnackbar();
   const [picture, setPicture] = useState<PictureDetail>(EMPTY_PICTURE);
   const [selectedLocationId, setSelectedLocationId] = useState("");
@@ -80,7 +82,7 @@ const PictureDetailPage: React.FC = () => {
     "masterLocations",
     API_ENDPOINTS.MASTER_LOCATION.LIST,
     undefined,
-    { useCache: true }
+    { useCache: true, enabled: canAccessDetail }
   );
 
   const locationOptions: LocationOption[] = useMemo(

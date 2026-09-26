@@ -9,28 +9,42 @@ interface ProtectedRouteProps {
   requireAuthentication?: boolean;
 }
 
+type ProtectedAccessOptions = Pick<ProtectedRouteProps, "requiredRoleLevel" | "requireAuthentication">;
+
+export const useProtectedAccess = ({
+  requiredRoleLevel,
+  requireAuthentication = false,
+}: ProtectedAccessOptions = {}) => {
+  const { isAuthenticated, roleLevel } = useAuth();
+  const isProtected = requiredRoleLevel !== undefined || requireAuthentication;
+  const isChecking = isProtected && (
+    isAuthenticated === null ||
+    (requiredRoleLevel !== undefined && isAuthenticated === true && roleLevel === null)
+  );
+  const lacksRequiredRole = requiredRoleLevel !== undefined && (roleLevel ?? 0) < requiredRoleLevel;
+  const isAllowed = !isProtected || (!isChecking && isAuthenticated === true && !lacksRequiredRole);
+
+  return { isAllowed, isChecking };
+};
+
 const ProtectedRoute = ({ children, requiredRoleLevel, requireAuthentication = false }: ProtectedRouteProps) => {
   const router = useRouter();
   const { isAuthenticated, roleLevel } = useAuth();
+  const { isAllowed, isChecking } = useProtectedAccess({ requiredRoleLevel, requireAuthentication });
   const hasRedirected = useRef(false);
 
   useEffect(() => {
     if (!router.isReady || hasRedirected.current) return;
 
-    if (requiredRoleLevel === undefined && !requireAuthentication) return;
+    if ((requiredRoleLevel === undefined && !requireAuthentication) || isChecking) return;
 
-    // 認証状態の初期取得が終わるまで判定しない。
-    if (isAuthenticated === null || (requiredRoleLevel !== undefined && isAuthenticated === true && roleLevel === null)) return;
-
-    const lacksRequiredRole = requiredRoleLevel !== undefined && (roleLevel ?? 0) < requiredRoleLevel;
-    if (isAuthenticated !== true || lacksRequiredRole) {
+    if (!isAllowed) {
       hasRedirected.current = true;
       void router.push("/403");
     }
-  }, [isAuthenticated, roleLevel, requiredRoleLevel, requireAuthentication, router]);
+  }, [isAuthenticated, roleLevel, requiredRoleLevel, requireAuthentication, isAllowed, isChecking, router]);
 
-  if ((requiredRoleLevel !== undefined || requireAuthentication) &&
-    (isAuthenticated === null || (requiredRoleLevel !== undefined && isAuthenticated === true && roleLevel === null))) {
+  if (isChecking || !isAllowed) {
     return null;
   }
 

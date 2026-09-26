@@ -15,6 +15,7 @@ import colors from "@/styles/colors";
 import { useFetch } from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermission } from "@/hooks/usePermission";
+import { useProtectedAccess } from "@/components/functional/ProtectedRoute";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { getMessage, MessageCodes } from "@/message";
 import type { NoticeDetailEditRequest, NoticeDetailResponse } from "@/types/notice";
@@ -122,7 +123,8 @@ const normalizeNoticeResponse = (response: NoticeApiResponse): NoticeDetailRespo
 const NoticeDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
-  const { isAuthenticated, refreshAuth } = useAuth();
+  const { refreshAuth } = useAuth();
+  const { isAllowed: canAccessDetail } = useProtectedAccess({ requireAuthentication: true });
   const { canViewNotice, canEditNotice, rolePermissions } = usePermission();
   const [notice, setNotice] = useState<NoticeDetailResponse>(EMPTY_NOTICE);
   const [editState, setEditState] = useState<NoticeEditState>({
@@ -152,7 +154,7 @@ const NoticeDetailPage: React.FC = () => {
     "masterLocations",
     API_ENDPOINTS.MASTER_LOCATION.LIST,
     undefined,
-    { useCache: true, enabled: isAuthenticated === true }
+    { useCache: true, enabled: canAccessDetail }
   );
 
   const locationOptions = useMemo(
@@ -165,7 +167,7 @@ const NoticeDetailPage: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!router.isReady || isAuthenticated !== true) {
+    if (!router.isReady || !canAccessDetail) {
       return;
     }
 
@@ -221,7 +223,7 @@ const NoticeDetailPage: React.FC = () => {
     };
 
     void fetchNotice();
-  }, [isAuthenticated, refreshAuth, router, showSnackbar]);
+  }, [canAccessDetail, refreshAuth, router, showSnackbar]);
 
   const handleBack = useCallback(() => {
     void router.push("/top-page");
