@@ -32,7 +32,7 @@ const ForbiddenPage = () => {
     <div>
       <h1>403 Forbidden</h1>
       <p>このページへのアクセス権限がありません。</p>
-      <ButtonBack onClick={() => void router.back()} />
+      <ButtonBack onClick={() => void router.push("/top-page")} />
     </div>
   );
 };

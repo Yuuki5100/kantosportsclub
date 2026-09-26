@@ -122,7 +122,7 @@ const normalizeNoticeResponse = (response: NoticeApiResponse): NoticeDetailRespo
 const NoticeDetailPage: React.FC = () => {
   const router = useRouter();
   const { showSnackbar } = useSnackbar();
-  const { refreshAuth } = useAuth();
+  const { isAuthenticated, refreshAuth } = useAuth();
   const { canViewNotice, canEditNotice, rolePermissions } = usePermission();
   const [notice, setNotice] = useState<NoticeDetailResponse>(EMPTY_NOTICE);
   const [editState, setEditState] = useState<NoticeEditState>({
@@ -143,6 +143,7 @@ const NoticeDetailPage: React.FC = () => {
   const [selectedLocationId, setSelectedLocationId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
   const {
     data: masterLocations,
     isLoading: isMasterLocationsLoading,
@@ -151,7 +152,7 @@ const NoticeDetailPage: React.FC = () => {
     "masterLocations",
     API_ENDPOINTS.MASTER_LOCATION.LIST,
     undefined,
-    { useCache: true }
+    { useCache: true, enabled: isAuthenticated === true }
   );
 
   const locationOptions = useMemo(
@@ -164,7 +165,7 @@ const NoticeDetailPage: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!router.isReady) {
+    if (!router.isReady || isAuthenticated !== true) {
       return;
     }
 
@@ -220,7 +221,7 @@ const NoticeDetailPage: React.FC = () => {
     };
 
     void fetchNotice();
-  }, [refreshAuth, router, showSnackbar]);
+  }, [isAuthenticated, refreshAuth, router, showSnackbar]);
 
   const handleBack = useCallback(() => {
     void router.push("/top-page");

@@ -150,6 +150,7 @@ function AppContent({ Component, pageProps }: AppContentProps) {
   const isCurrentPublicPath = isPublicPath(router.pathname);
   const shouldRunAuthInitializer = !shouldSkipAuthCheck(router.pathname);
   const requiresCreatePermission = router.pathname.endsWith("/create");
+  const requiresAuthentication = ["/top-page/detail", "/movies/detail", "/pictures/detail"].includes(router.pathname);
 
   // useMemo にして pathname が変わったときに再評価
   const PageContent = useMemo(() => {
@@ -160,11 +161,14 @@ function AppContent({ Component, pageProps }: AppContentProps) {
 
     // それ以外のページも、ProtectedRoute 側で開発確認用に通過させる
     return (
-      <ProtectedRoute requiredRoleLevel={requiresCreatePermission ? 2 : undefined}>
+      <ProtectedRoute
+        requiredRoleLevel={requiresCreatePermission ? 2 : undefined}
+        requireAuthentication={requiresAuthentication}
+      >
         <Component {...pageProps} />
       </ProtectedRoute>
     );
-  }, [Component, pageProps, isCurrentPublicPath]);
+  }, [Component, pageProps, isCurrentPublicPath, requiresCreatePermission, requiresAuthentication]);
 
   // グローバルエラーハンドラ登録（console 出力）
   useEffect(() => {
