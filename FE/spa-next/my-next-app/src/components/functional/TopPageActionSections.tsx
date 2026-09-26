@@ -54,7 +54,7 @@ const TopPageActionSections: React.FC = () => {
                 textAlign: "center",
                 transition: "background-color 0.15s ease, transform 0.15s ease",
                 "&:hover": {
-                  backgroundColor: colors.commonTableHover,
+                  backgroundColor: colors.grayLight,
                 },
                 "&:active": {
                   transform: "scale(0.98)",
