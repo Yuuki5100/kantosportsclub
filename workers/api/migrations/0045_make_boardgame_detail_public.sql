@@ -1,7 +1,17 @@
--- ボードゲーム詳細は未ログインでも閲覧できるようにする。
+-- メディア・お知らせ・ボードゲーム詳細は未ログインでも閲覧できるようにする。
 UPDATE endpoint_authority_mapping
 SET required_level = 0
 WHERE url = '/api/boardgames/*'
+  AND method = 'GET';
+
+UPDATE endpoint_authority_mapping
+SET required_level = 0
+WHERE url = '/api/movies/*'
+  AND method = 'GET';
+
+UPDATE endpoint_authority_mapping
+SET required_level = 0
+WHERE url = '/api/notice/notice_id'
   AND method = 'GET';
 
 UPDATE app_metadata
