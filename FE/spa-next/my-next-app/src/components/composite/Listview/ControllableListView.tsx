@@ -55,7 +55,7 @@ const ControllableListView: React.FC<ListViewProps> = (props) => {
     rowsPerPageOptions,
     searchOptions,
     showSearchOptions = true,
-    topPaginationHidden,
+    topPaginationHidden = true,
     bottomPaginationHidden,
     onRowClick,
   } = props;
@@ -92,6 +92,7 @@ const ControllableListView: React.FC<ListViewProps> = (props) => {
       {showSearchOptions && (
         <CommonAccordion
           title={searchOptions?.title ?? '検索条件'}
+          defaultExpanded={searchOptions?.defaultExpanded}
           sx={searchOptions?.accordionSx}
         >
           {searchOptions?.elements}

@@ -533,7 +533,6 @@ const BoardgamePage: React.FC = () => {
               rowsPerPage={tableState.rowsPerPage}
               onTableStateChange={setTableState}
               rowsPerPageOptions={[10, 20, 50]}
-              topPaginationHidden={false}
               rowData={rowData}
               totalRowCount={boardgames.length}
               columns={columns}
@@ -542,6 +541,7 @@ const BoardgamePage: React.FC = () => {
                 title: "検索条件",
                 elements: searchElements,
                 accordionSx: { width: "100%" },
+                defaultExpanded: false,
               }}
               sx={{
                 width: "100%",

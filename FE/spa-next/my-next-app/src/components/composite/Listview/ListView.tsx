@@ -100,6 +100,7 @@ export type SearchDefinition = {
   title?: string,
   elements: ReactNode,
   accordionSx?: SxProps<Theme>;
+  defaultExpanded?: boolean;
 };
 
 /**
