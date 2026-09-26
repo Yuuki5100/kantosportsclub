@@ -150,7 +150,7 @@ function AppContent({ Component, pageProps }: AppContentProps) {
   const isCurrentPublicPath = isPublicPath(router.pathname);
   const shouldRunAuthInitializer = !shouldSkipAuthCheck(router.pathname);
   const requiresCreatePermission = router.pathname.endsWith("/create");
-  const requiresAuthentication = ["/top-page/detail", "/movies/detail", "/pictures/detail"].includes(router.pathname);
+  const requiresAuthentication = ["/pictures/detail"].includes(router.pathname);
 
   // useMemo にして pathname が変わったときに再評価
   const PageContent = useMemo(() => {
