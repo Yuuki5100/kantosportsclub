@@ -1,0 +1,117 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import apiClient from "@/api/apiClient";
+import { Box, Font14, Font20, FlexBox } from "@/components/base";
+import PageContainer from "@base/Layout/PageContainer";
+import { ControllableListView } from "@/components/composite";
+import type { TableState } from "@/components/composite/Listview/ControllableListView";
+import type { ColumnDefinition, RowDefinition } from "@/components/composite/Listview/ListView";
+import colors from "@/styles/colors";
+import { useSnackbar } from "@/hooks/useSnackbar";
+import { getMessage, MessageCodes } from "@/message";
+
+type CurrentNoticeItem = {
+  id: number; title: string | null; station: string | null; locationId: number | null;
+  locationName: string | null; dateandtime: string | null; people: number | null;
+  peopleName: string | null; remarks: string | null; publicAt: string | null;
+  closedAt: string | null; startHour: string | null; endHour: string | null; money: string | null;
+};
+
+const columns: ColumnDefinition[] = [
+  { id: "dateandtime", label: "開催日", display: true, sortable: false, align: "center", widthPercent: 18 },
+  { id: "time", label: "時間", display: true, sortable: false, align: "center", widthPercent: 18 },
+  { id: "locationName", label: "場所", display: true, sortable: false, align: "center", widthPercent: 12 },
+  { id: "peopleName", label: "参加者", display: true, sortable: false, align: "left", widthPercent: 22 },
+  { id: "money", label: "参加費", display: true, sortable: false, align: "center", widthPercent: 18 },
+];
+
+const getSortValue = (item: CurrentNoticeItem, columnId: string): string | number => {
+  const value = item[columnId as keyof CurrentNoticeItem];
+  return typeof value === "number" || typeof value === "string" ? value : "";
+};
+const formatDateandtime = (value: string | null): string => {
+  if (!value) return "-";
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s.*)?$/);
+  if (!match) return value;
+  const [, , month, day] = match;
+  return `${month}/${day}`;
+};
+const formatTimeRange = (startHour: string | null, endHour: string | null): string => {
+  if (!startHour && !endHour) return "-";
+  if (startHour && endHour) return `${startHour} ~ ${endHour}`;
+  return startHour ?? endHour ?? "-";
+};
+const sortNotices = (items: CurrentNoticeItem[], sortParams: TableState["sortParams"]): CurrentNoticeItem[] => {
+  const { sortColumn, sortOrder } = sortParams;
+  if (!sortColumn || sortOrder === false) return items;
+  const direction = sortOrder === "asc" ? 1 : -1;
+  return [...items].sort((a, b) => {
+    const aValue = getSortValue(a, sortColumn); const bValue = getSortValue(b, sortColumn);
+    if (typeof aValue === "number" && typeof bValue === "number") return (aValue - bValue) * direction;
+    return String(aValue).localeCompare(String(bValue), "ja", { numeric: true }) * direction;
+  });
+};
+
+const CurrentNoticeList: React.FC = () => {
+  const router = useRouter();
+  const { showSnackbar } = useSnackbar();
+  const [notices, setNotices] = useState<CurrentNoticeItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tableState, setTableState] = useState<TableState>({ page: 1, rowsPerPage: 10, sortParams: { sortColumn: "publicAt", sortOrder: "asc" } });
+
+  const fetchNotices = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.get<CurrentNoticeItem[]>("/api/notices/current");
+      setNotices(response.data);
+    } catch (error) {
+      console.error("Failed to fetch current notices:", error);
+      showSnackbar(getMessage(MessageCodes.FETCH_FAILED, "お知らせ一覧"), "ERROR");
+    } finally { setIsLoading(false); }
+  }, [showSnackbar]);
+  useEffect(() => { void fetchNotices(); }, [fetchNotices]);
+
+  const sortedNotices = useMemo(() => sortNotices(notices, tableState.sortParams), [notices, tableState.sortParams]);
+  const handleRowClick = useCallback((notice: CurrentNoticeItem) => {
+    void router.push({ pathname: "/top-page/detail", query: { id: String(notice.id) } });
+  }, [router]);
+  const rowData: RowDefinition[] = useMemo(() => sortedNotices.map((notice) => ({
+    rowSx: { cursor: "pointer" },
+    cells: [
+      { id: `dateandtime-${notice.id}`, columnId: "dateandtime", cell: formatDateandtime(notice.dateandtime), value: notice.dateandtime ?? "" },
+      { id: `time-${notice.id}`, columnId: "time", cell: formatTimeRange(notice.startHour, notice.endHour), value: `${notice.startHour ?? ""} ${notice.endHour ?? ""}`.trim() },
+      { id: `locationName-${notice.id}`, columnId: "locationName", cell: notice.locationName ?? "-", value: notice.locationName ?? "" },
+      { id: `peopleName-${notice.id}`, columnId: "peopleName", cell: notice.peopleName ?? "-", value: notice.peopleName ?? "" },
+      { id: `money-${notice.id}`, columnId: "money", cell: notice.money ?? "-", value: notice.money ?? "" },
+    ],
+  })), [sortedNotices]);
+  const searchOptions = useMemo(() => ({
+    title: "お知らせ",
+    elements: <Box sx={{ p: 2, color: colors.grayDark, lineHeight: 1.8 }}><Font14 sx={{ color: colors.grayDark }}>現在公開中のお知らせを表示しています。</Font14></Box>,
+    accordionSx: { width: "100%" },
+  }), []);
+
+  return <PageContainer><Box sx={{ width: "min(100vw - 32px, 1152px)", maxWidth: "95%", py: 2 }}>
+    <FlexBox justifyContent="space-between" width="100%" sx={{ mb: 2, gap: 2 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Font20>お知らせ一覧</Font20>
+        <Font14 sx={{ color: colors.grayDark }}>公開中のお知らせを表示しています。</Font14>
+        <Font14 sx={{ color: colors.grayDark }}>{isLoading ? "読み込み中です。" : `${notices.length} 件`}</Font14>
+      </Box>
+    </FlexBox>
+    <ControllableListView
+      page={tableState.page} rowsPerPage={tableState.rowsPerPage} sortParams={tableState.sortParams}
+      onTableStateChange={setTableState} rowsPerPageOptions={[10, 20, 50]} rowData={rowData}
+      totalRowCount={rowData.length} columns={columns} searchOptions={searchOptions} showSearchOptions={false}
+      onRowClick={(_, rowIndex) => { const notice = sortedNotices[rowIndex]; if (notice) handleRowClick(notice); }}
+      topPaginationHidden bottomPaginationHidden
+      sx={{ width: "100%", tableLayout: "fixed", "& table": { tableLayout: "fixed", width: "100%" },
+        "& .MuiTableCell-root": { whiteSpace: "normal !important", overflowWrap: "anywhere", wordBreak: "break-word", lineHeight: 1.4, verticalAlign: "top" },
+        "& .MuiTableHead-root .MuiTableCell-root": { backgroundColor: colors.commonTableHeader, color: colors.commonFontColorBlack, fontWeight: 600 },
+        "& .MuiTableBody-root .MuiTableCell-root": { backgroundColor: colors.commonFontColorWhite, color: colors.commonFontColorBlack, borderBottom: `1.5px solid ${colors.commonBorderGray}` },
+        "& .MuiTableRow-root:hover .MuiTableCell-root": { backgroundColor: colors.commonTableHover }, }}
+    />
+  </Box></PageContainer>;
+};
+
+export default CurrentNoticeList;
