@@ -9,7 +9,6 @@ export const publicPathPrefixes = [
 ] as const;
 
 export const authCheckExcludedPaths = [
-  "/top-page",
   "admin/basketball-overview",
   "/boardgames",
   "/movies",
