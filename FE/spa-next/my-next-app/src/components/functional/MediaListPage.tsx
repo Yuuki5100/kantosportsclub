@@ -70,10 +70,10 @@ const extractMediaItems = (
 const columns: ColumnDefinition[] = [
   { id: "imageUrls", label: "", display: true, headerCellDisplay: false, sortable: false, align: "left" },
   { id: "createdAt", label: "開催日時", display: true, sortable: true, align: "center", widthPercent: 10 },
-  { id: "locationName", label: "場所", display: true, sortable: true, align: "center", widthPercent: 10 },
-  { id: "title", label: "タイトル", display: true, sortable: true, align: "left", widthPercent: 16 },
-  { id: "description", label: "説明", display: true, sortable: true, align: "left", widthPercent: 24 },
-  { id: "url", label: "URL", display: true, sortable: true, align: "left", widthPercent: 22 },
+  { id: "locationName", label: "場所", display: true, sortable: false, align: "center", widthPercent: 10 },
+  { id: "title", label: "タイトル", display: true, sortable: false, align: "left", widthPercent: 16 },
+  { id: "description", label: "説明", display: true, sortable: false, align: "left", widthPercent: 24 },
+  { id: "url", label: "URL", display: true, sortable: false, align: "left", widthPercent: 22 },
 ];
 
 const createCell = (
@@ -448,7 +448,6 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
               rowsPerPage={tableState.rowsPerPage}
               onTableStateChange={setTableState}
               rowsPerPageOptions={[10, 20, 50]}
-              topPaginationHidden={false}
               rowData={rowData}
               totalRowCount={mediaItems.length}
               columns={visibleColumns}
@@ -457,6 +456,7 @@ const MediaListPage: React.FC<MediaListPageProps> = ({
                 title: enableTitleDescriptionSearch ? "検索条件" : "一覧情報",
                 elements: searchElements,
                 accordionSx: { width: "100%" },
+                defaultExpanded: false,
               }}
               sx={{
                 width: "100%",
