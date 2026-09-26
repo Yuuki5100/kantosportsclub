@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import MenuIcon from '@mui/icons-material/Menu';
-import LogoutIcon from '@mui/icons-material/Logout';
+import { Button } from '@mui/material';
 import { Box, Font20, AppBar, Toolbar } from '@/components/base';
 import IconButtonBase from '@/components/base/Button/IconButtonBase';
 import { useAppDispatch } from '@/hooks';
@@ -24,7 +24,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
   const dispatch = useAppDispatch();
 
   const handleLogout = async () => {
-    if (isAuthenticated === false) {
+    if (isAuthenticated !== true) {
       router.push({ pathname: '/login' });
       return;
     }
@@ -96,14 +96,24 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
           </Font20>
         </Box>
 
-        <IconButtonBase
-          aria-label="ログアウト"
+        <Button
+          aria-label={isAuthenticated === true ? 'ログアウト' : 'ログイン'}
           data-testid="mobile-logout-button"
           onClick={handleLogout}
-          sx={{ color: 'inherit' }}
+          sx={{
+            color: 'inherit',
+            minWidth: 0,
+            width: 76,
+            height: 40,
+            px: 1,
+            border: '1px solid currentColor',
+            borderRadius: 1,
+            fontSize: '0.875rem',
+            whiteSpace: 'nowrap',
+          }}
         >
-          <LogoutIcon />
-        </IconButtonBase>
+          {isAuthenticated === true ? 'ログアウト' : 'ログイン'}
+        </Button>
       </Toolbar>
     </AppBar>
   );
