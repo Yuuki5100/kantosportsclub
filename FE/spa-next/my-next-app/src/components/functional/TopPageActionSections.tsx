@@ -4,6 +4,7 @@ import { Button } from "@mui/material";
 import { Box, Font20 } from "@/components/base";
 import PageContainer from "@base/Layout/PageContainer";
 import colors from "@/styles/colors";
+import { useAuth } from "@/hooks/useAuth";
 
 const ACTIONS = [
   { label: "コミュニティ作成", path: "/communities/create", backgroundColor: "#dbe7f8", hoverColor: "#c8d9f2" },
@@ -14,6 +15,8 @@ const ACTIONS = [
 
 const TopPageActionSections: React.FC = () => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const visibleActions = isAuthenticated === true ? ACTIONS : ACTIONS.slice(2);
 
   return (
     <PageContainer>
@@ -35,7 +38,7 @@ const TopPageActionSections: React.FC = () => {
             mx: "auto",
           }}
         >
-          {ACTIONS.map((action) => (
+          {visibleActions.map((action) => (
             <Button
               key={action.path}
               type="button"
