@@ -59,16 +59,6 @@ const toRadarValue = (value: number | null | undefined): number => {
   return clampRadarValue(Math.round(value));
 };
 
-const averageNullableNumbers = (values: Array<number | null | undefined>): number | null => {
-  const validValues = values.filter(
-    (value): value is number => typeof value === "number" && Number.isFinite(value)
-  );
-
-  if (validValues.length === 0) return null;
-
-  return Math.floor(validValues.reduce((sum, value) => sum + value, 0) / validValues.length);
-};
-
 const SectionTitle: React.FC<{ title: string }> = ({ title }) => (
   <Box
     sx={{
@@ -270,11 +260,11 @@ const PlayerDetailPage: React.FC = () => {
           id: statusRecords[0].id,
           userId: statusRecords[0].userId,
           reviewUserId: statusRecords[0].reviewUserId,
-          shooting: averageNullableNumbers(statusRecords.map((item) => item.shooting)),
-          dribbling: averageNullableNumbers(statusRecords.map((item) => item.dribbling)),
-          passing: averageNullableNumbers(statusRecords.map((item) => item.passing)),
-          defense: averageNullableNumbers(statusRecords.map((item) => item.defense)),
-          stamina: averageNullableNumbers(statusRecords.map((item) => item.stamina)),
+          shooting: statusRecords[0].shooting,
+          dribbling: statusRecords[0].dribbling,
+          passing: statusRecords[0].passing,
+          defense: statusRecords[0].defense,
+          stamina: statusRecords[0].stamina,
           remarks: statusRecords[0].remarks,
           created_at: statusRecords[0].created_at,
           updated_at: statusRecords[0].updated_at,
