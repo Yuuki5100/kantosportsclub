@@ -1,265 +1,80 @@
 import React, { useEffect, useState } from "react";
+import { TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { Box, Font14, Font20 } from "@/components/base";
-import PageContainer from "@base/Layout/PageContainer";
-import colors from "@/styles/colors";
 import ButtonAction from "@/components/base/Button/ButtonAction";
-import { TextField } from "@mui/material";
+import ButtonBack from "@/components/base/Button/ButtonBack";
+import PageContainer from "@base/Layout/PageContainer";
+import CommunityLabelSelector from "@/components/functional/CommunityLabelSelector";
+import DeleteConfirmDialog from "@/components/functional/DeleteConfirmDialog";
 import { apiService } from "@/api/apiService";
 import { API_ENDPOINTS } from "@/api/apiEndpoints";
-import { useSnackbar } from "@/hooks/useSnackbar";
-import { getMessage, MessageCodes } from "@/message";
 import { useAuth } from "@/hooks/useAuth";
-import { PracticeMenuSortableList, type PracticeMenuRowItem } from "@/components/practiceMenu/PracticeMenuSortableList";
+import { useSnackbar } from "@/hooks/useSnackbar";
+import colors from "@/styles/colors";
 
-type PracticeMenuDetail = {
-  id: string;
-  title: string;
-  remarks: string;
-  updater: string;
-};
-
-type MenuItem = {
-  id: string;
-  name: string;
-  time: string;
-  startTime: string;
-  endTime: string;
-};
-
-type PracticeMenuHeaderWithDetailsResponse = {
-  id: number;
-  title: string | null;
-  remarks: string | null;
-  updater: string | null;
-  details: Array<{
-    id: number;
-    menuName: string;
-    menuTime: number | null;
-    startTime: string | null;
-    endTime: string | null;
-  }>;
-};
-
-type PracticeMenuDetailUpdateRequest = {
-  category: string | null;
-  menuName: string;
-  menuTime: number | null;
-  startTime: string | null;
-  endTime: string | null;
-  sortNo: number;
-  updater: string | null;
-};
-
-const EMPTY_DETAIL: PracticeMenuDetail = { id: "", title: "", remarks: "", updater: "" };
-
-const getQueryValue = (value: string | string[] | undefined): string => {
-  if (Array.isArray(value)) return value[0] ?? "";
-  return value ?? "";
-};
+type PracticeMovie = { id: number; title: string | null; url: string | null; note: string | null; label: string | null; author: string | null; createdAt: string | null; updatedAt: string | null };
+type Form = { title: string; url: string; note: string; label: string };
+const placeholders = { title: "例: ドリブル練習動画", url: "例: https://example.com", note: "補足を入力してください", label: "検索でヒットさせやすいワードを入力します" };
 
 const PracticeMenuDetailPage: React.FC = () => {
   const router = useRouter();
+  const { isAuthenticated, name } = useAuth();
   const { showSnackbar } = useSnackbar();
-  const { name: loginUserName, isAuthenticated } = useAuth();
-  const [detail, setDetail] = useState<PracticeMenuDetail>(EMPTY_DETAIL);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [item, setItem] = useState<PracticeMovie | null>(null);
+  const [form, setForm] = useState<Form>({ title: "", url: "", note: "", label: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
-    if (router.isReady && isAuthenticated === false) {
-      void router.replace("/403");
-    }
-  }, [isAuthenticated, router]);
+    const id = Array.isArray(router.query.id) ? router.query.id[0] : router.query.id;
+    if (!router.isReady || !id) return;
+    void apiService.get<PracticeMovie>(`${API_ENDPOINTS.PRACTICE_MOVIE.LIST}/${id}`).then((result) => {
+      setItem(result);
+      setForm({ title: result.title ?? "", url: result.url ?? "", note: result.note ?? "", label: result.label ?? "" });
+    }).finally(() => setLoading(false));
+  }, [router.isReady, router.query.id]);
 
-  useEffect(() => {
-    if (!router.isReady || isAuthenticated !== true) return;
+  if (loading) return <PageContainer><Font14>読み込み中です。</Font14></PageContainer>;
+  if (!item) return <PageContainer><Font14>練習メニューが見つかりません。</Font14></PageContainer>;
 
-    const fetchDetail = async () => {
-      const id = getQueryValue(router.query.id);
-      if (!id) {
-        showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const response = await apiService.get<PracticeMenuHeaderWithDetailsResponse>(
-          `${API_ENDPOINTS.PRACTICE_MENU.HEADER_LIST}/${id}`
-        );
-        setDetail({
-          id: String(response.id),
-          title: response.title ?? "",
-          remarks: response.remarks ?? "",
-          updater: response.updater ?? "",
-        });
-        setMenuItems(
-          (response.details ?? []).map((item) => ({
-            id: String(item.id),
-            name: item.menuName,
-            time: item.menuTime === null ? "" : String(item.menuTime),
-            startTime: item.startTime ?? "",
-            endTime: item.endTime ?? "",
-          }))
-        );
-      } catch (error) {
-        console.error("Failed to fetch practice menu detail:", error);
-        showSnackbar(getMessage(MessageCodes.FETCH_FAILED, "練習メニュー詳細"), "ERROR");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void fetchDetail();
-  }, [isAuthenticated, router.isReady, router.query.id, showSnackbar]);
-
-  const updateDetailField = (field: "title" | "remarks", value: string) => {
-    setDetail((current) => ({ ...current, [field]: value }));
-  };
-
-  const updateMenuItem = (index: number, field: keyof MenuItem, value: string) => {
-    setMenuItems((current) => current.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
-  };
-
-  const addMenuItem = () => {
-    setMenuItems((current) => [
-      ...current,
-      {
-        id: `new-${Date.now()}-${current.length}`,
-        name: "",
-        time: "",
-        startTime: "",
-        endTime: "",
-      },
-    ]);
-  };
-
-  const removeMenuItem = (index: number) => {
-    setMenuItems((current) => current.filter((_, i) => i !== index));
-  };
-
-  const handleSave = async () => {
-    if (!detail.id || isSaving) return;
-
-    setIsSaving(true);
+  const canManage = isAuthenticated === true && Boolean(name) && item.author === name?.trim();
+  const update = async () => {
+    if (!canManage) { showSnackbar("練習メニューの作成者のみ更新できます。", "ERROR"); return; }
+    const next: Record<string, string> = {};
+    if (!form.title.trim()) next.title = "入力必須です。";
+    if (!form.url.trim()) next.url = "入力必須です。";
+    if (!form.label.trim()) next.label = "入力必須です。";
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
     try {
-      const payload: { title: string; remarks: string | null; updater: string | null; details: PracticeMenuDetailUpdateRequest[] } = {
-        title: detail.title.trim(),
-        remarks: detail.remarks.trim() || null,
-        updater: loginUserName ?? null,
-        details: menuItems
-          .filter((item) => item.name.trim())
-          .map((item, index) => ({
-            category: null,
-            menuName: item.name.trim(),
-            menuTime: item.time.trim() ? Number(item.time) : null,
-            startTime: item.startTime.trim() || null,
-            endTime: item.endTime.trim() || null,
-            sortNo: index + 1,
-            updater: loginUserName ?? null,
-          })),
-      };
-
-      await apiService.put(`${API_ENDPOINTS.PRACTICE_MENU.HEADER_LIST}/${detail.id}`, payload);
-      showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "練習メニューを更新"), "SUCCESS");
-    } catch (error) {
-      console.error("Failed to update practice menu:", error);
-      showSnackbar(getMessage(MessageCodes.ACTION_FAILED, "練習メニューの更新"), "ERROR");
-    } finally {
-      setIsSaving(false);
-    }
+      const updated = await apiService.put<PracticeMovie>(`${API_ENDPOINTS.PRACTICE_MOVIE.LIST}/${item.id}`, { ...form, note: form.note.trim() || null });
+      setItem(updated);
+      setForm({ title: updated.title ?? "", url: updated.url ?? "", note: updated.note ?? "", label: updated.label ?? "" });
+      showSnackbar("練習メニューを更新しました。", "SUCCESS");
+    } catch { showSnackbar("練習メニューの更新に失敗しました。", "ERROR"); }
   };
+  const remove = async () => {
+    if (!canManage) { showSnackbar("練習メニューの作成者のみ削除できます。", "ERROR"); return; }
+    try {
+      await apiService.delete(`${API_ENDPOINTS.PRACTICE_MOVIE.DELETE}/${item.id}`);
+      showSnackbar("練習メニューを削除しました。", "SUCCESS");
+      await router.push("/practiceMenu/mine");
+    } catch { showSnackbar("練習メニューの削除に失敗しました。", "ERROR"); }
+    finally { setDeleteOpen(false); }
+  };
+  const setField = (key: keyof Form, value: string) => { setForm((current) => ({ ...current, [key]: value })); setErrors((current) => ({ ...current, [key]: "" })); };
+  const fields: Array<[string, keyof Form]> = [["タイトル", "title"], ["URL", "url"], ["補足", "note"], ["タグ", "label"]];
 
-  return (
-    <PageContainer>
-      <Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", py: 2 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, mb: 2 }}>
-          <Box sx={{ width: "100%", gap: 0.5 }}>
-            <Font20>練習メニュー詳細</Font20>
-            <Font14 sx={{ color: colors.grayDark }}>一覧で選択した練習メニュー</Font14>
-            <Font14 sx={{ color: colors.grayDark }}>{isLoading ? "読み込み中です。" : detail.title || "-"}</Font14>
-          </Box>
-          <ButtonAction
-            label="一覧へ戻る"
-            size="medium"
-            onClick={() => void router.push("/practiceMenu")}
-            width={120}
-            sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2, boxShadow: "0 2px 4px rgba(0,0,0,0.2)", "&:hover": { backgroundColor: "commonTableHeader" } }}
-          />
-        </Box>
-
-        <Box sx={{ width: "100%", border: `1.5px solid ${colors.commonBorderGray}`, borderRadius: 1, overflow: "hidden", mb: 3 }}>
-          {[
-            { label: "タイトル", value: detail.title, field: "title" as const },
-            { label: "練習メニュー", value: "", isMenu: true as const },
-            { label: "備考", value: detail.remarks, field: "remarks" as const },
-            { label: "更新者", value: detail.updater, isLabel: true as const },
-          ].map((item) => (
-            <Box
-              key={item.label}
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" },
-                width: "100%",
-                borderBottom: `1.5px solid ${colors.commonBorderGray}`,
-                "&:last-of-type": { borderBottom: "none" },
-              }}
-            >
-              <Box sx={{ width: "100%", p: 1.25, bgcolor: colors.commonTableHeader, color: colors.commonFontColorBlack, fontWeight: 600 }}>
-                {item.label}
-              </Box>
-              <Box sx={{ width: "100%", minWidth: 0, p: 1.25 }}>
-                {"isLabel" in item && item.isLabel ? (
-                  <Font14 sx={{ minHeight: 40, display: "flex", alignItems: "center" }}>{item.value || "-"}</Font14>
-                ) : "isMenu" in item && item.isMenu ? (
-                  <Box>
-                    <PracticeMenuSortableList
-                      items={menuItems as PracticeMenuRowItem[]}
-                      onChange={(nextItems) => setMenuItems(nextItems)}
-                      onRemove={removeMenuItem}
-                      onNameChange={(index, value) => updateMenuItem(index, "name", value)}
-                      onTimeChange={(index, value) => updateMenuItem(index, "time", value)}
-                      onStartTimeChange={(index, value) => updateMenuItem(index, "startTime", value)}
-                      onEndTimeChange={(index, value) => updateMenuItem(index, "endTime", value)}
-                      emptyMessage="メニューはまだ登録されていません。"
-                    />
-                    <Box sx={{ display: "flex", gap: 1, mt: 2, justifyContent: "flex-start" }}>
-                      <ButtonAction
-                        label="追加"
-                        size="medium"
-                        onClick={addMenuItem}
-                        width={80}
-                        sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2 }}
-                      />
-                    </Box>
-                  </Box>
-                ) : (
-                  <TextField
-                    value={item.value}
-                    size="small"
-                    fullWidth
-                    onChange={(event) => updateDetailField(item.field, event.target.value)}
-                  />
-                )}
-              </Box>
-            </Box>
-          ))}
-        </Box>
-
-        <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
-          <ButtonAction
-            label={isSaving ? "更新中" : "更新"}
-            size="medium"
-            onClick={() => void handleSave()}
-            width={100}
-            sx={{ backgroundColor: "commonTableHeader", color: "#ffffff", borderRadius: 2, whiteSpace: "norwap  " }}
-          />
-        </Box>
-
-      </Box>
-    </PageContainer>
-  );
+  return <PageContainer><Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}>
+    <Box sx={{ gap: 0.5, mb: 2 }}><Font20>練習メニュー詳細</Font20><Font14 sx={{ color: colors.grayDark }}>練習メニューの登録内容を確認・編集します。</Font14></Box>
+    <Box sx={{ border: `1.5px solid ${colors.commonBorderGray}`, borderRadius: 1, overflow: "hidden" }}>
+      {fields.map(([label, key]) => <Box key={key} sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" }, borderBottom: `1.5px solid ${colors.commonBorderGray}` }}><Box sx={{ p: 1.5, bgcolor: colors.commonTableHeader, fontWeight: 600 }}>{label}</Box><Box sx={{ p: 1.5 }}>{key === "label" ? <><Box sx={{ minHeight: 40, display: "flex", alignItems: "center", px: 1.5, py: 0.75, border: 1, borderColor: errors[key] ? "error.main" : "divider", borderRadius: 1, color: form[key] ? "text.primary" : "text.disabled", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{form[key] || placeholders[key]}</Box>{canManage && <CommunityLabelSelector value={form.label} onChange={(value) => setField("label", value)} />}</> : canManage ? <TextField fullWidth size="small" value={form[key]} placeholder={placeholders[key]} error={Boolean(errors[key])} helperText={errors[key]} multiline={key === "note"} minRows={key === "note" ? 3 : undefined} onChange={(event) => setField(key, event.target.value)} /> : <Typography sx={{ minHeight: 40, display: "flex", alignItems: "center", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{form[key] || "-"}</Typography>}</Box></Box>)}
+    </Box>
+    <Box sx={{ display: "flex", gap: 1.5 }}><ButtonBack onClick={() => void router.push("/practiceMenu/mine")} /><ButtonAction label="削除" color="secondary" onClick={() => setDeleteOpen(true)} disabled={!canManage} /><ButtonAction label="更新" onClick={() => void update()} disabled={!canManage} /></Box>
+    <DeleteConfirmDialog open={deleteOpen} title="練習メニューを削除しますか？" onClose={() => setDeleteOpen(false)} onConfirm={remove} />
+  </Box></PageContainer>;
 };
 
 export default PracticeMenuDetailPage;
