@@ -14,6 +14,16 @@ type PlayerStatusRow = {
   updated_at: string;
 };
 
+export type PlayerStatusExportRow = {
+  player_name: string | null;
+  position: string | null;
+  shooting: number | null;
+  dribbling: number | null;
+  passing: number | null;
+  defense: number | null;
+  stamina: number | null;
+};
+
 const toPlayerStatusItem = (row: PlayerStatusRow): PlayerStatusItem => ({
   id: row.id,
   userId: row.user_id,
@@ -84,6 +94,32 @@ export const findAllPlayerStatuses = async (db: D1Database): Promise<PlayerStatu
     .all<PlayerStatusRow>();
 
   return result.results.map(toPlayerStatusItem);
+};
+
+export const findPlayerStatusExportRows = async (db: D1Database): Promise<PlayerStatusExportRow[]> => {
+  const result = await db.prepare(
+    `SELECT
+       COALESCE(NULLIF(TRIM(m.user_name_jpn), ''), m.user_name) AS player_name,
+       m.hope_style AS position,
+       latest.shooting,
+       latest.dribbling,
+       latest.passing,
+       latest.defense,
+       latest.stamina
+     FROM mypage m
+     LEFT JOIN playerStatus latest
+       ON latest.user_id = m.user_id
+      AND NOT EXISTS (
+        SELECT 1 FROM playerStatus newer
+        WHERE newer.user_id = latest.user_id
+          AND (newer.updated_at > latest.updated_at
+            OR (newer.updated_at = latest.updated_at AND newer.id > latest.id))
+      )
+     WHERE m.user_id NOT IN (1, 2, 3)
+     ORDER BY m.user_id ASC`
+  ).all<PlayerStatusExportRow>();
+
+  return result.results;
 };
 
 export const findPlayerStatusById = async (db: D1Database, id: number): Promise<PlayerStatusItem | null> => {

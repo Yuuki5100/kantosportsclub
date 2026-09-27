@@ -1,9 +1,13 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import PageContainer from "@base/Layout/PageContainer";
 import { Box, Font14, Font20 } from "@/components/base";
 import ButtonBack from "@/components/base/Button/ButtonBack";
 import colors from "@/styles/colors";
+import ButtonAction from "@/components/base/Button/ButtonAction";
+import apiClient from "@/api/apiClient";
+import { API_ENDPOINTS } from "@/api/apiEndpoints";
+import { useSnackbar } from "@/hooks/useSnackbar";
 
 type PlayerStatusSummary = {
   name: string;
@@ -29,15 +33,41 @@ const PLAYER_STATUS_LIST: PlayerStatusSummary[] = [
 
 const PlayerStatusListPage: React.FC = () => {
   const router = useRouter();
+  const { showSnackbar } = useSnackbar();
+  const [isExporting, setIsExporting] = useState(false);
 
   const rows = useMemo(() => PLAYER_STATUS_LIST, []);
+
+  const handleExport = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const response = await apiClient.get<Blob>(API_ENDPOINTS.PLAYER_STATUS.EXPORT, { responseType: "blob" });
+      const url = URL.createObjectURL(response.data);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "player-status.csv";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      showSnackbar("CSVを出力しました。", "SUCCESS");
+    } catch {
+      showSnackbar("CSVの出力に失敗しました。", "ERROR");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <PageContainer>
       <Box sx={{ width: "min(100vw - 64px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
-        <Box sx={{ gap: 0.5 }}>
-          <Font20>個人ステータス設定</Font20>
-          <Font14 sx={{ color: colors.grayDark }}>選手を選択して、個人ステータスを確認・編集します。</Font14>
+        <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 2 }}>
+          <Box sx={{ gap: 0.5 }}>
+            <Font20>個人ステータス設定</Font20>
+            <Font14 sx={{ color: colors.grayDark }}>選手を選択して、個人ステータスを確認・編集します。</Font14>
+          </Box>
+          <ButtonAction label={isExporting ? "出力中" : "出力"} size="small" onClick={() => void handleExport()} disabled={isExporting} />
         </Box>
 
         <Box sx={{ display: "flex", justifyContent: "flex-start" }}>

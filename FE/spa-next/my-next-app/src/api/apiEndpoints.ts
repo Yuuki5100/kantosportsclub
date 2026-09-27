@@ -125,6 +125,9 @@ export const API_ENDPOINTS = {
   PRACTICE_MENU: {
     HEADER_LIST: '/api/practice-menu/headers',
   },
+  PLAYER_STATUS: {
+    EXPORT: '/api/player-status/export',
+  },
   MASTER_LOCATION: {
     LIST: '/api/master_locations',
   },

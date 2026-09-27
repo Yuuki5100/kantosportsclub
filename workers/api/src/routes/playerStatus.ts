@@ -6,6 +6,7 @@ import {
   findPlayerStatusById,
   findPlayerStatusByUserIdAndReviewUserId,
   findPlayerStatusesByUserId,
+  findPlayerStatusExportRows,
   updatePlayerStatusByUserIdAndReviewUserId,
 } from "../repositories/playerStatusRepository";
 import type { PlayerStatusCreateInput, PlayerStatusUpdateInput } from "../types/playerStatus";
@@ -119,6 +120,26 @@ const getCurrentAuthUserId = (c: { get: (key: "auth") => { user?: { userId?: str
 playerStatusRoutes.get("/player-status", async (c) => {
   const items = await findAllPlayerStatuses(getDb(c.env));
   return c.json(items);
+});
+
+playerStatusRoutes.get("/player-status/export", async (c) => {
+  const rows = await findPlayerStatusExportRows(getDb(c.env));
+  const headers = ["選手", "ポジション", "シュート", "ドリブル", "パス", "ディフェンス", "スタミナ"];
+  const escapeCsv = (value: unknown): string => {
+    const text = value === null || value === undefined ? "" : String(value);
+    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  };
+  const csv = [
+    headers,
+    ...rows.map((row) => [row.player_name, row.position, row.shooting, row.dribbling, row.passing, row.defense, row.stamina]),
+  ].map((line) => line.map(escapeCsv).join(",")).join("\r\n");
+
+  return new Response(`\uFEFF${csv}\r\n`, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="player-status.csv"',
+    },
+  });
 });
 
 playerStatusRoutes.get("/player-status/:id", async (c) => {
