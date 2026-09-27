@@ -28,11 +28,11 @@ const SECTION_ORDER: MenuSectionKey[] = ["activity", "assets", "other"];
 
 const SideMenu: React.FC<SideMenuProps> = ({ open, setOpen }) => {
   const router = useRouter();
-  const { roleLevel, isAuthenticated } = useAuth();
+  const { roleLevel, isAuthenticated, userId } = useAuth();
   const { selectMenu } = useSidebar();
   const filteredMenu = useMemo(
-    () => filterPageConfig(getPageConfig(), roleLevel ?? null, isAuthenticated),
-    [isAuthenticated, roleLevel]
+    () => filterPageConfig(getPageConfig(), roleLevel ?? null, isAuthenticated, userId ?? null),
+    [isAuthenticated, roleLevel, userId]
   );
 
   const sectionedMenu = useMemo(

@@ -27,10 +27,10 @@ type MobileSideMenuProps = {
 
 const MobileSideMenu: React.FC<MobileSideMenuProps> = ({ open, setOpen }) => {
   const router = useRouter();
-  const { roleLevel, isAuthenticated } = useAuth();
+  const { roleLevel, isAuthenticated, userId } = useAuth();
   const filteredMenu = useMemo(
-    () => filterPageConfig(getPageConfig(), roleLevel ?? null, isAuthenticated),
-    [isAuthenticated, roleLevel]
+    () => filterPageConfig(getPageConfig(), roleLevel ?? null, isAuthenticated, userId ?? null),
+    [isAuthenticated, roleLevel, userId]
   );
 
   const sectionedMenu = useMemo(() => {

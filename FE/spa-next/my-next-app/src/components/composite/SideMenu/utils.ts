@@ -12,8 +12,10 @@ export const isAccessible = (
 export const filterPageConfig = (
   config: PageConfigItem[],
   roleLevel: number | null,
-  isAuthenticated: boolean | null = true
+  isAuthenticated: boolean | null = true,
+  userId: string | null = null
 ): PageConfigItem[] => {
+  const playerStatusAllowedUserIds = new Set(["1", "5"]);
   const loginRequiredMenuKeys = new Set([
     "/player",
     "/playerStatus/list",
@@ -26,8 +28,11 @@ export const filterPageConfig = (
   const filtered = config
     .filter((item) => !item.hidden)
     .map((item): PageConfigItem | null => {
+      if (item.resourceKey === "/playerStatus/list" && !playerStatusAllowedUserIds.has(userId ?? "")) {
+        return null;
+      }
       const children = item.children
-        ? filterPageConfig(item.children, roleLevel, isAuthenticated)
+        ? filterPageConfig(item.children, roleLevel, isAuthenticated, userId)
         : undefined;
 
       // 未ログインでも公開メニューは表示する。ただし一部メニューはログイン必須。
