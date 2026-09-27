@@ -99,7 +99,7 @@ export const findAllPlayerStatuses = async (db: D1Database): Promise<PlayerStatu
 export const findPlayerStatusExportRows = async (db: D1Database): Promise<PlayerStatusExportRow[]> => {
   const result = await db.prepare(
     `SELECT
-       COALESCE(NULLIF(TRIM(m.user_name_jpn), ''), m.user_name) AS player_name,
+       m.user_name AS player_name,
        m.hope_style AS position,
        latest.shooting,
        latest.dribbling,

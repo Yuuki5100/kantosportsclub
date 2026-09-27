@@ -62,16 +62,13 @@ const PlayerStatusListPage: React.FC = () => {
   return (
     <PageContainer>
       <Box sx={{ width: "min(100vw - 64px, 1280px)", mx: "auto", py: 2, gap: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 2 }}>
-          <Box sx={{ gap: 0.5 }}>
-            <Font20>個人ステータス設定</Font20>
-            <Font14 sx={{ color: colors.grayDark }}>選手を選択して、個人ステータスを確認・編集します。</Font14>
-          </Box>
-          <ButtonAction label={isExporting ? "出力中" : "出力"} size="small" onClick={() => void handleExport()} disabled={isExporting} />
+        <Box>
+          <Font20>個人ステータス設定</Font20>
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, mt: 1 }}>
           <ButtonBack onClick={() => void router.push("/")} />
+          <ButtonAction label={isExporting ? "出力中" : "出力"} size="small" onClick={() => void handleExport()} disabled={isExporting} />
         </Box>
 
         <Box
