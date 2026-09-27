@@ -19,6 +19,7 @@ export const filterPageConfig = (
   const loginRequiredMenuKeys = new Set([
     "/player",
     "/playerStatus/list",
+    "/practiceMenu/mine",
     "/myPage",
     "/communities/mine",
     "/contact",

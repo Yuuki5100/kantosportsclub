@@ -233,6 +233,14 @@ const pageConfig: PageConfigType = [
     breadcrumb: { id: "myPageTrial", parentId: "top" },
   },
   {
+    name: "作成した練習メニュー",
+    resourceKey: "/practiceMenu/mine",
+    requiredPermission: 1,
+    icon: <ChecklistIcon />,
+    section: "other",
+    breadcrumb: { id: "myPracticeMenus", parentId: "top" },
+  },
+  {
     name: "作成したコミュニティ",
     resourceKey: "/communities/mine",
     requiredPermission: 1,
