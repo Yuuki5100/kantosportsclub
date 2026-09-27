@@ -115,6 +115,13 @@ export const API_ENDPOINTS = {
     MINE: '/api/communities/mine',
     DELETE: '/api/communities',
   },
+  PRACTICE_MOVIE: {
+    LIST: '/api/practicemovies',
+    PREVIEW: '/api/practicemovies/preview',
+    CREATE: '/api/practicemovies',
+    MINE: '/api/practicemovies/mine',
+    DELETE: '/api/practicemovies',
+  },
   PRACTICE_MENU: {
     HEADER_LIST: '/api/practice-menu/headers',
   },

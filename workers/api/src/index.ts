@@ -17,6 +17,7 @@ import { practiceMenuRoutes } from "./routes/practiceMenu";
 import { playerStatusRoutes } from "./routes/playerStatus";
 import { communityRoutes } from "./routes/community";
 import { communityPreviewRoutes } from "./routes/communityPreview";
+import { practiceMoviesRoutes } from "./routes/practiceMovies";
 
 const app = new Hono<{
   Bindings: Bindings;
@@ -69,6 +70,7 @@ app.route("/api", practiceMenuRoutes);
 app.route("/api", playerStatusRoutes);
 app.route("/api", communityPreviewRoutes);
 app.route("/api", communityRoutes);
+app.route("/api", practiceMoviesRoutes);
 app.route('/api/auth', auth);
 
 app.notFound((c) =>

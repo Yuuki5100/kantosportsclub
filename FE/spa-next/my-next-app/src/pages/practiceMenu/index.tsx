@@ -1,247 +1,54 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/router";
-import apiClient from "@/api/apiClient";
-import { API_ENDPOINTS } from "@/api/apiEndpoints";
+import React, { useEffect, useMemo, useState } from "react";
+import { TextField } from "@mui/material";
+import { Box, Font14, Font20 } from "@/components/base";
 import ButtonAction from "@/components/base/Button/ButtonAction";
-import { Box, Font14, Font20, FlexBox } from "@/components/base";
+import FormRow from "@/components/base/Input/FormRow";
 import PageContainer from "@base/Layout/PageContainer";
-import { ControllableListView } from "@/components/composite";
-import type { TableState } from "@/components/composite/Listview/ControllableListView";
-import type { ColumnDefinition, RowDefinition } from "@/components/composite/Listview/ListView";
+import { useFetch } from "@/hooks/useApi";
+import type { ApiResponse } from "@/types/api";
+import { API_ENDPOINTS } from "@/api/apiEndpoints";
+import apiClient from "@/api/apiClient";
+import CommunityPreviewCard from "@/components/functional/CommunityPreviewCard";
+import CommonAccordion from "@/components/base/utils/CommonAccordion";
 import colors from "@/styles/colors";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/router";
 
-type PracticeMenuHeader = {
-  id: number;
-  title: string | null;
-  remarks: string | null;
-  updater: string | null;
-  created_at: string;
-  updated_at: string;
-};
+type PracticeMovieItem = { id: number; title: string | null; url: string | null; note: string | null; label: string | null; author: string | null };
+type PracticeMoviePreview = { url: string; title: string | null; description: string | null; image: string | null; siteName: string | null };
+type SearchCondition = { title: string; label: string };
+const INITIAL_SEARCH: SearchCondition = { title: "", label: "" };
+const previewCache = new Map<string, PracticeMoviePreview | null>();
+const extractItems = (data: PracticeMovieItem[] | ApiResponse<PracticeMovieItem[]> | null | undefined): PracticeMovieItem[] => Array.isArray(data) ? data : data?.data && Array.isArray(data.data) ? data.data : [];
 
-const columns: ColumnDefinition[] = [
-  { id: "title", label: "タイトル", display: true, sortable: true, align: "left", widthPercent: 26 },
-  { id: "remarks", label: "備考", display: true, sortable: false, align: "left", widthPercent: 34 },
-  { id: "updater", label: "更新者", display: true, sortable: true, align: "center", widthPercent: 12 },
-  { id: "created_at", label: "作成日時", display: true, sortable: true, align: "center", widthPercent: 14 },
-  { id: "updated_at", label: "更新日時", display: true, sortable: true, align: "center", widthPercent: 14 },
-];
-
-const getSortValue = (item: PracticeMenuHeader, columnId: string): string | number => {
-  const value = item[columnId as keyof PracticeMenuHeader];
-  if (typeof value === "number" || typeof value === "string") {
-    return value;
-  }
-  return "";
-};
-
-const sortPracticeMenuHeaders = (
-  items: PracticeMenuHeader[],
-  sortParams: TableState["sortParams"]
-): PracticeMenuHeader[] => {
-  const { sortColumn, sortOrder } = sortParams;
-  if (!sortColumn || sortOrder === false) {
-    return items;
-  }
-
-  const direction = sortOrder === "asc" ? 1 : -1;
-
-  return [...items].sort((a, b) => {
-    const aValue = getSortValue(a, sortColumn);
-    const bValue = getSortValue(b, sortColumn);
-
-    if (typeof aValue === "number" && typeof bValue === "number") {
-      return (aValue - bValue) * direction;
-    }
-
-    return String(aValue).localeCompare(String(bValue), "ja", { numeric: true }) * direction;
-  });
-};
-
-const PracticeMenuListPage: React.FC = () => {
+const PracticeMenuPage: React.FC = () => {
   const router = useRouter();
-  const { isAuthenticated, roleLevel } = useAuth();
-  const [headers, setHeaders] = useState<PracticeMenuHeader[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [tableState, setTableState] = useState<TableState>({
-    page: 1,
-    rowsPerPage: 10,
-    sortParams: {
-      sortColumn: "updated_at",
-      sortOrder: "desc",
-    },
-  });
-
-  const fetchPracticeMenuHeaders = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.get<PracticeMenuHeader[]>(
-        API_ENDPOINTS.PRACTICE_MENU.HEADER_LIST
-      );
-      setHeaders(response.data);
-    } catch (error) {
-      console.error("Failed to fetch practice menu headers:", error);
-      setHeaders([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { roleLevel } = useAuth();
+  const [search, setSearch] = useState(INITIAL_SEARCH);
+  const [appliedSearch, setAppliedSearch] = useState(INITIAL_SEARCH);
+  const params = useMemo(() => { const result: Record<string, string> = {}; if (appliedSearch.title.trim()) result.title = appliedSearch.title.trim(); if (appliedSearch.label.trim()) result.label = appliedSearch.label.trim(); return Object.keys(result).length ? result : undefined; }, [appliedSearch]);
+  const { data, isLoading, isError } = useFetch<PracticeMovieItem[] | ApiResponse<PracticeMovieItem[]>>("practice-movies", API_ENDPOINTS.PRACTICE_MOVIE.LIST, params);
+  const items = useMemo(() => extractItems(data), [data]);
+  const [previews, setPreviews] = useState<Record<string, PracticeMoviePreview | null>>({});
 
   useEffect(() => {
-    void fetchPracticeMenuHeaders();
-  }, [fetchPracticeMenuHeaders]);
+    const urls = [...new Set(items.map((item) => item.url?.trim()).filter((url): url is string => Boolean(url)))];
+    let cancelled = false;
+    const loadPreviews = async () => {
+      const pending = urls.filter((url) => !previewCache.has(url));
+      for (let index = 0; index < pending.length; index += 3) {
+        await Promise.all(pending.slice(index, index + 3).map(async (url) => { try { const response = await apiClient.get<PracticeMoviePreview>(API_ENDPOINTS.PRACTICE_MOVIE.PREVIEW, { params: { url } }); previewCache.set(url, response.data); } catch { previewCache.set(url, null); } }));
+        if (!cancelled) setPreviews(Object.fromEntries(urls.map((url) => [url, previewCache.get(url) ?? null])));
+      }
+      if (!cancelled) setPreviews(Object.fromEntries(urls.map((url) => [url, previewCache.get(url) ?? null])));
+    };
+    void loadPreviews();
+    return () => { cancelled = true; };
+  }, [items]);
 
-  const sortedHeaders = useMemo(
-    () => sortPracticeMenuHeaders(headers, tableState.sortParams),
-    [headers, tableState.sortParams]
-  );
+  const searchElements = <Box sx={{ p: 2, width: "100%" }}><FormRow label="タイトル" labelAlignment="center" labelMinWidth="120px"><TextField fullWidth size="small" value={search.title} onChange={(e) => setSearch({ ...search, title: e.target.value })} /></FormRow><FormRow label="タグ" labelAlignment="center" labelMinWidth="120px"><TextField fullWidth size="small" value={search.label} onChange={(e) => setSearch({ ...search, label: e.target.value })} /></FormRow><Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1.5, width: "100%", alignItems: { xs: "stretch", sm: "center" }, mt: 1 }}><ButtonAction label="検索" onClick={() => setAppliedSearch(search)} /><ButtonAction label="クリア" color="secondary" onClick={() => { setSearch(INITIAL_SEARCH); setAppliedSearch(INITIAL_SEARCH); }} /><Font14 sx={{ color: colors.grayDark }}>{isLoading ? "読み込み中です。" : `${items.length} 件のデータを表示しています。`}</Font14></Box></Box>;
 
-  const paginatedHeaders = useMemo(() => {
-    const startIndex = (tableState.page - 1) * tableState.rowsPerPage;
-    return sortedHeaders.slice(startIndex, startIndex + tableState.rowsPerPage);
-  }, [sortedHeaders, tableState.page, tableState.rowsPerPage]);
-
-  const rowData: RowDefinition[] = useMemo(
-    () =>
-      paginatedHeaders.map((header) => ({
-        rowSx: { cursor: "pointer" },
-        cells: [
-          {
-            id: `title-${header.id}`,
-            columnId: "title",
-            cell: header.title ?? "-",
-            value: header.title ?? "",
-          },
-          {
-            id: `remarks-${header.id}`,
-            columnId: "remarks",
-            cell: header.remarks ?? "-",
-            value: header.remarks ?? "",
-          },
-          {
-            id: `updater-${header.id}`,
-            columnId: "updater",
-            cell: header.updater ?? "-",
-            value: header.updater ?? "",
-          },
-          {
-            id: `created_at-${header.id}`,
-            columnId: "created_at",
-            cell: header.created_at ?? "-",
-            value: header.created_at ?? "",
-          },
-          {
-            id: `updated_at-${header.id}`,
-            columnId: "updated_at",
-            cell: header.updated_at ?? "-",
-            value: header.updated_at ?? "",
-          },
-        ],
-      })),
-    [paginatedHeaders]
-  );
-
-  const handleRowClick = useCallback(
-    (header: PracticeMenuHeader) => {
-      void router.push({
-        pathname: "/practiceMenu/detail",
-        query: {
-          id: String(header.id),
-          title: header.title ?? "",
-          remarks: header.remarks ?? "",
-          updater: header.updater ?? "",
-          created_at: header.created_at ?? "",
-          updated_at: header.updated_at ?? "",
-        },
-      });
-    },
-    [router]
-  );
-
-  return (
-    <PageContainer>
-      <Box sx={{ width: "min(100vw - 32px, 1152px)", maxWidth: "95%", py: 2 }}>
-        <FlexBox justifyContent="space-between" width="100%" sx={{ mb: 2, gap: 2 }}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Font20>練習メニュー一覧</Font20>
-            <Font14 sx={{ color: colors.grayDark }}>
-              practiceMenuHeader テーブルの一覧を表示しています。
-            </Font14>
-            <Font14 sx={{ color: colors.grayDark }}>
-              {isLoading ? "読み込み中です。" : `${headers.length} 件`}
-            </Font14>
-          </Box>
-          {isAuthenticated === true && (roleLevel ?? 0) >= 2 && (
-            <ButtonAction
-              label="新規作成"
-              size="medium"
-              onClick={() => void router.push("/practiceMenu/create")}
-              width={140}
-              sx={{
-                backgroundColor: "commonTableHeader",
-                color: "#ffffff",
-                borderRadius: 2,
-                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                whiteSpace: "nowrap",
-                "&:hover": {
-                  backgroundColor: "commonTableHeader",
-                },
-              }}
-            />
-          )}
-        </FlexBox>
-
-        <ControllableListView
-          page={tableState.page}
-          rowsPerPage={tableState.rowsPerPage}
-          sortParams={tableState.sortParams}
-          onTableStateChange={setTableState}
-          rowsPerPageOptions={[10, 20, 50]}
-          rowData={rowData}
-          totalRowCount={headers.length}
-          columns={columns}
-          showSearchOptions={false}
-          topPaginationHidden
-          bottomPaginationHidden
-          onRowClick={(_, rowIndex) => {
-            const header = paginatedHeaders[rowIndex];
-            if (header) {
-              handleRowClick(header);
-            }
-          }}
-          sx={{
-            width: "100%",
-            tableLayout: "fixed",
-            "& table": {
-              tableLayout: "fixed",
-              width: "100%",
-            },
-            "& .MuiTableCell-root": {
-              whiteSpace: "normal !important",
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-              lineHeight: 1.4,
-              verticalAlign: "top",
-            },
-            "& .MuiTableHead-root .MuiTableCell-root": {
-              backgroundColor: colors.commonTableHeader,
-              color: colors.commonFontColorBlack,
-              fontWeight: 600,
-            },
-            "& .MuiTableBody-root .MuiTableCell-root": {
-              backgroundColor: colors.commonFontColorWhite,
-              color: colors.commonFontColorBlack,
-              borderBottom: `1.5px solid ${colors.commonBorderGray}`,
-            },
-            "& .MuiTableRow-root:hover .MuiTableCell-root": {
-              backgroundColor: colors.commonTableHover,
-            },
-          }}
-        />
-      </Box>
-    </PageContainer>
-  );
+  return <PageContainer><Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}><Box sx={{ display: "flex", alignItems: "center" }}><Font20>練習メニュー</Font20>{(roleLevel ?? 0) >= 2 && <ButtonAction label="作成" size="small" sx={{ ml: "auto" }} onClick={() => void router.push("/practiceMenu/create")} />}</Box>{isError ? <Box>データの取得に失敗しました。</Box> : <><CommonAccordion title="検索条件" defaultExpanded={false} sx={{ width: "100%" }}>{searchElements}</CommonAccordion><Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>{items.map((item) => { const url = item.url?.trim(); return url ? <CommunityPreviewCard key={`practice-movie-${item.id}`} title={item.title} note={item.note} label={item.label} author={item.author} url={url} preview={previews[url] ?? null} /> : null; })}</Box></>}</Box></PageContainer>;
 };
 
-export default PracticeMenuListPage;
+export default PracticeMenuPage;

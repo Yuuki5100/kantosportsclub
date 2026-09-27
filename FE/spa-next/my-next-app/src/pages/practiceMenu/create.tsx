@@ -1,147 +1,42 @@
-import { useCallback, useState } from "react";
-import { Box, Button, Paper, Typography, TextField } from "@mui/material";
+import React, { useCallback, useState } from "react";
+import { useRouter } from "next/router";
+import { TextField } from "@mui/material";
+import { Box, Font14, Font20 } from "@/components/base";
+import ButtonAction from "@/components/base/Button/ButtonAction";
+import ButtonBack from "@/components/base/Button/ButtonBack";
+import PageContainer from "@base/Layout/PageContainer";
+import colors from "@/styles/colors";
 import { apiService } from "@/api/apiService";
 import { API_ENDPOINTS } from "@/api/apiEndpoints";
-import { useSnackbar } from "@/hooks/useSnackbar";
-import { getMessage, MessageCodes } from "@/message";
-import { useAuth } from "@/hooks/useAuth";
-import { PracticeMenuSortableList, type PracticeMenuRowItem } from "@/components/practiceMenu/PracticeMenuSortableList";
+import CommunityLabelSelector from "@/components/functional/CommunityLabelSelector";
 
-type MenuItem = {
-  id: string;
-  name: string;
-  time: string;
-  startTime: string;
-  endTime: string;
-};
+type PracticeMovieForm = { title: string; url: string; note: string; label: string };
+const INITIAL_FORM: PracticeMovieForm = { title: "", url: "", note: "", label: "" };
+const fields: { key: keyof PracticeMovieForm; label: string; placeholder: string; multiline?: boolean }[] = [
+  { key: "title", label: "タイトル", placeholder: "例: ドリブル練習動画" },
+  { key: "url", label: "URL", placeholder: "例: https://example.com" },
+  { key: "note", label: "補足", placeholder: "補足を入力してください", multiline: true },
+  { key: "label", label: "タグ", placeholder: "検索でヒットさせやすいワードを入力します" },
+];
 
-type PracticeMenuHeaderCreateResponse = {
-  id: number;
-  title: string | null;
-  remarks: string | null;
-  updater: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type PracticeMenuDetailCreateRequest = {
-  category: string | null;
-  menuName: string;
-  menuTime: number | null;
-  sortNo: number;
-  updater: string | null;
-};
-
-export default function PracticeMenuBuilder() {
-  const { showSnackbar } = useSnackbar();
-  const { name: loginUserName } = useAuth();
-  const [menu, setMenu] = useState<MenuItem[]>([]);
-  const [inputName, setInputName] = useState("");
-  const [title, setTitle] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-
-  const addMenu = () => {
-    if (!inputName.trim()) return;
-    setMenu((prev) => [
-      ...prev,
-      { id: `new-${Date.now()}-${prev.length}`, name: inputName.trim(), time: "", startTime: "", endTime: "" },
-    ]);
-    setInputName("");
-  };
-
-  const removeMenu = (index: number) => setMenu((prev) => prev.filter((_, i) => i !== index));
-
-  const updateTime = (index: number, time: string) => {
-    setMenu((prev) => prev.map((item, i) => (i === index ? { ...item, time } : item)));
-  };
-
-  const handleSave = useCallback(async () => {
-    if (!title.trim() || menu.length === 0 || isSaving) return;
-
-    setIsSaving(true);
-    try {
-      const details: PracticeMenuDetailCreateRequest[] = menu.map((item, index) => ({
-        category: null,
-        menuName: item.name.trim(),
-        menuTime: item.time.trim() ? Number(item.time) : null,
-        sortNo: index + 1,
-        updater: loginUserName ?? null,
-      }));
-
-      await apiService.post<PracticeMenuHeaderCreateResponse>(API_ENDPOINTS.PRACTICE_MENU.HEADER_LIST, {
-        title: title.trim(),
-        remarks: remarks.trim() || null,
-        updater: loginUserName ?? null,
-        details,
-      });
-
-      showSnackbar(getMessage(MessageCodes.ACTION_SUCCESS, "練習メニューを追加"), "SUCCESS");
-      setMenu([]);
-      setInputName("");
-      setTitle("");
-      setRemarks("");
-    } catch (error) {
-      console.error("Failed to create practice menu header:", error);
-      showSnackbar(getMessage(MessageCodes.ACTION_FAILED, "練習メニューの追加"), "ERROR");
-    } finally {
-      setIsSaving(false);
+const PracticeMovieCreatePage: React.FC = () => {
+  const router = useRouter();
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [errors, setErrors] = useState<Partial<Record<keyof PracticeMovieForm, string>>>({});
+  const handleChange = useCallback((key: keyof PracticeMovieForm) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((current) => ({ ...current, [key]: event.target.value }));
+    setErrors((current) => ({ ...current, [key]: undefined }));
+  }, []);
+  const handleRegister = useCallback(() => {
+    const nextErrors: Partial<Record<keyof PracticeMovieForm, string>> = {};
+    for (const key of ["title", "url", "label"] as const) if (!form[key].trim()) nextErrors[key] = "入力必須です。";
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length === 0) {
+      void apiService.post(API_ENDPOINTS.PRACTICE_MOVIE.CREATE, { title: form.title.trim(), url: form.url.trim(), note: form.note.trim() || null, label: form.label.trim() }).then(() => router.push("/practiceMenu"));
     }
-  }, [isSaving, loginUserName, menu, remarks, showSnackbar, title]);
+  }, [form, router]);
 
-  return (
-    <Box sx={{ maxWidth: 420, mx: "auto", p: 2 }}>
-      <Typography variant="h6" fontWeight="bold" mb={2}>
-        練習メニューを作る
-      </Typography>
+  return <PageContainer><Box sx={{ width: "min(100vw - 60px, 1200px)", maxWidth: "100%", mx: "auto", gap: 2 }}><Box sx={{ gap: 0.5, mb: 2 }}><Font20>練習メニュー追加</Font20><Font14 sx={{ color: colors.grayDark }}>練習メニュー情報を入力します。</Font14></Box><Box sx={{ border: `1.5px solid ${colors.commonBorderGray}`, borderRadius: 1, overflow: "hidden" }}>{fields.map((field) => <Box key={field.key} sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "180px minmax(0, 1fr)" }, borderBottom: `1.5px solid ${colors.commonBorderGray}` }}><Box sx={{ p: 1.5, bgcolor: colors.commonTableHeader, fontWeight: 600 }}>{field.label}</Box><Box sx={{ p: 1.5 }}>{field.key === "label" ? <Box sx={{ minHeight: 40, display: "flex", alignItems: "center", px: 1.5, py: 0.75, border: 1, borderColor: errors[field.key] ? "error.main" : "divider", borderRadius: 1, color: form.label ? "text.primary" : "text.disabled", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{form.label || field.placeholder}</Box> : <TextField fullWidth size="small" value={form[field.key]} placeholder={field.placeholder} required={field.key === "title" || field.key === "url"} multiline={field.multiline} minRows={field.multiline ? 3 : undefined} error={Boolean(errors[field.key])} helperText={errors[field.key]} onChange={handleChange(field.key)} />}{field.key === "label" && <CommunityLabelSelector value={form.label} onChange={(label) => setForm((current) => ({ ...current, label }))} />}</Box></Box>)}</Box><Box sx={{ display: "flex", gap: 1.5 }}><ButtonBack onClick={() => void router.push("/practiceMenu")} /><ButtonAction label="登録" onClick={handleRegister} /></Box></Box></PageContainer>;
+};
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 3 }}>
-        <TextField fullWidth size="small" label="タイトル" value={title} onChange={(e) => setTitle(e.target.value)} />
-      </Box>
-
-      <Paper variant="outlined" sx={{ minHeight: 140, p: 2, mb: 3, borderRadius: 3 }}>
-        <Typography fontWeight="bold" mb={1}>
-          練習メニュー
-        </Typography>
-        <PracticeMenuSortableList
-          items={menu as PracticeMenuRowItem[]}
-          onChange={(nextItems) => setMenu(nextItems)}
-          onRemove={removeMenu}
-          onNameChange={(index, value) =>
-            setMenu((prev) => prev.map((item, i) => (i === index ? { ...item, name: value } : item)))
-          }
-          onTimeChange={updateTime}
-          onStartTimeChange={(index, value) =>
-            setMenu((prev) => prev.map((item, i) => (i === index ? { ...item, startTime: value } : item)))
-          }
-          onEndTimeChange={(index, value) =>
-            setMenu((prev) => prev.map((item, i) => (i === index ? { ...item, endTime: value } : item)))
-          }
-          emptyMessage="下の入力欄からメニューを追加してください"
-        />
-        <Typography fontWeight="bold" mt={2} mb={1}>
-          メニューを追加
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <TextField fullWidth size="small" value={inputName} onChange={(e) => setInputName(e.target.value)} placeholder="例：レイアップシュート" />
-          <Button variant="contained" onClick={addMenu} disabled={!inputName.trim()} sx={{ fontSize: 14, whiteSpace: "nowrap" }}>
-            追加
-          </Button>
-        </Box>
-      </Paper>
-
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 3 }}>
-        <TextField fullWidth size="small" label="備考" value={remarks} onChange={(e) => setRemarks(e.target.value)} multiline minRows={3} />
-      </Box>
-
-      <Box sx={{ display: "flex", gap: 1 }}>
-        <Button fullWidth variant="outlined" onClick={() => setMenu([])} sx={{ fontSize: 14 }}>
-          リセット
-        </Button>
-        <Button fullWidth variant="contained" onClick={() => void handleSave()} disabled={menu.length === 0 || !title.trim() || isSaving} sx={{ fontSize: 14 }}>
-          追加する
-        </Button>
-      </Box>
-    </Box>
-  );
-}
+export default PracticeMovieCreatePage;

@@ -134,3 +134,16 @@ communityPreviewRoutes.get("/communities/preview", async (c) => {
     return c.json({ error: { code: "PREVIEW_UNAVAILABLE", message: "Preview could not be loaded" } }, 422);
   }
 });
+communityPreviewRoutes.get("/practicemovies/preview", async (c) => {
+  const requestedUrl = c.req.query("url");
+  if (!requestedUrl) return c.json({ error: { code: "BAD_REQUEST", message: "url is required" } }, 400);
+  try {
+    const preview = await fetchPreview(validateUrl(requestedUrl));
+    const youtubeFallback = createYoutubeFallback(requestedUrl);
+    return c.json({ ...preview, image: preview.image ?? youtubeFallback?.image ?? null, siteName: preview.siteName ?? youtubeFallback?.siteName ?? null });
+  } catch {
+    const youtubeFallback = createYoutubeFallback(requestedUrl);
+    if (youtubeFallback) return c.json(youtubeFallback);
+    return c.json({ error: { code: "PREVIEW_UNAVAILABLE", message: "Preview could not be loaded" } }, 422);
+  }
+});
