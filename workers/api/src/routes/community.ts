@@ -79,7 +79,7 @@ communityRoutes.post("/communities", async (c) => {
   if (!auth?.authenticated || !author) {
     return c.json({ error: { code: "UNAUTHORIZED", message: "Authentication required" }, requestId: c.get("requestId") }, 401);
   }
-  if ((auth.roleLevel ?? 0) < 2) {
+  if ((auth.roleLevel ?? 0) < 1) {
     return c.json({ error: { code: "FORBIDDEN", message: "Insufficient permission" }, requestId: c.get("requestId") }, 403);
   }
 

@@ -116,7 +116,7 @@ const CommunitiesPage: React.FC = () => {
   return <PageContainer><Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
     <Box sx={{ display: "flex", alignItems: "center" }}>
       <Font20>コミュニティ</Font20>
-      {(roleLevel ?? 0) >= 2 && <ButtonAction label="作成" size="small" sx={{ ml: "auto" }} onClick={() => void router.push("/communities/create")} />}
+      {(roleLevel ?? 0) >= 1 && <ButtonAction label="作成" size="small" sx={{ ml: "auto" }} onClick={() => void router.push("/communities/create")} />}
     </Box>
     {isError ? <Box>データの取得に失敗しました。</Box> : <>
       <CommonAccordion title="検索条件" defaultExpanded={false} sx={{ width: "100%" }}>{searchElements}</CommonAccordion>
