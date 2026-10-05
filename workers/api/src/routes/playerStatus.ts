@@ -4,10 +4,10 @@ import {
   createPlayerStatus,
   findAllPlayerStatuses,
   findPlayerStatusById,
-  findPlayerStatusByUserIdAndReviewUserId,
+  findPlayerStatusByUserId,
   findPlayerStatusesByUserId,
   findPlayerStatusExportRows,
-  updatePlayerStatusByUserIdAndReviewUserId,
+  updatePlayerStatusByUserId,
 } from "../repositories/playerStatusRepository";
 import type { PlayerStatusCreateInput, PlayerStatusUpdateInput } from "../types/playerStatus";
 
@@ -59,7 +59,6 @@ const parsePlayerStatusInput = (body: unknown): PlayerStatusCreateInput | null =
   }
 
   const userId = parseRequiredNumber(body.userId);
-  const reviewUserId = parseRequiredNumber(body.reviewUserId);
   const shooting = parseNullableNumber(body.shooting);
   const dribbling = parseNullableNumber(body.dribbling);
   const passing = parseNullableNumber(body.passing);
@@ -69,7 +68,6 @@ const parsePlayerStatusInput = (body: unknown): PlayerStatusCreateInput | null =
 
   if (
     userId === undefined ||
-    reviewUserId === undefined ||
     shooting === undefined ||
     dribbling === undefined ||
     passing === undefined ||
@@ -82,7 +80,7 @@ const parsePlayerStatusInput = (body: unknown): PlayerStatusCreateInput | null =
 
   return {
     userId,
-    reviewUserId,
+    reviewUserId: userId,
     shooting,
     dribbling,
     passing,
@@ -186,8 +184,7 @@ playerStatusRoutes.get("/player-status/user/:user_id", async (c) => {
     );
   }
 
-  const reviewUserId = getCurrentAuthUserId(c);
-  if (reviewUserId === null) {
+  if (getCurrentAuthUserId(c) === null) {
     return c.json(
       {
         error: {
@@ -199,7 +196,7 @@ playerStatusRoutes.get("/player-status/user/:user_id", async (c) => {
     );
   }
 
-  const item = await findPlayerStatusByUserIdAndReviewUserId(getDb(c.env), userId, reviewUserId);
+  const item = await findPlayerStatusByUserId(getDb(c.env), userId);
   if (!item) {
     return c.json(
       {
@@ -278,8 +275,7 @@ playerStatusRoutes.put("/player-status/user/:user_id", async (c) => {
     );
   }
 
-  const reviewUserId = getCurrentAuthUserId(c);
-  if (reviewUserId === null) {
+  if (getCurrentAuthUserId(c) === null) {
     return c.json(
       {
         error: {
@@ -305,7 +301,7 @@ playerStatusRoutes.put("/player-status/user/:user_id", async (c) => {
     );
   }
 
-  const updated = await updatePlayerStatusByUserIdAndReviewUserId(getDb(c.env), userId, reviewUserId, input);
+  const updated = await updatePlayerStatusByUserId(getDb(c.env), userId, input);
   if (!updated) {
     return c.json(
       {

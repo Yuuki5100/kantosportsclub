@@ -161,16 +161,9 @@ const PlayerStatusDetailPage: React.FC = () => {
       showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
       return;
     }
-    const reviewUserId = currentUserId ? Number(currentUserId) : NaN;
-    if (!Number.isInteger(reviewUserId) || reviewUserId <= 0) {
-      showSnackbar(getMessage(MessageCodes.DATA_NOT_FOUND), "ERROR");
-      return;
-    }
-
     try {
       await apiService.put(`/api/player-status/user/${playerId}`, {
         userId: Number(playerId),
-        reviewUserId,
         shooting: Number(statusMap.shoot),
         dribbling: Number(statusMap.dribble),
         passing: Number(statusMap.pass),

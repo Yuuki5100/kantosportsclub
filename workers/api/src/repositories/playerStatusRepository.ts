@@ -405,4 +405,30 @@ export const updatePlayerStatusByUserIdAndReviewUserId = async (
   return findPlayerStatusByUserIdAndReviewUserId(db, normalizedUserId, normalizedReviewUserId);
 };
 
+export const updatePlayerStatusByUserId = async (
+  db: D1Database,
+  userId: number,
+  input: PlayerStatusUpdateInput
+): Promise<PlayerStatusItem | null> => {
+  const existing = await findPlayerStatusByUserId(db, userId);
+  if (!existing) return null;
+
+  const shooting = normalizeNullableNumber(input.shooting);
+  const dribbling = normalizeNullableNumber(input.dribbling);
+  const passing = normalizeNullableNumber(input.passing);
+  const defense = normalizeNullableNumber(input.defense);
+  const stamina = normalizeNullableNumber(input.stamina);
+  const remarks = normalizeNullableString(input.remarks);
+  if ([shooting, dribbling, passing, defense, stamina, remarks].some((value) => value === undefined)) return null;
+
+  await db.prepare(
+    `UPDATE playerStatus
+     SET shooting = ?1, dribbling = ?2, passing = ?3, defense = ?4,
+         stamina = ?5, remarks = ?6, updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?7`
+  ).bind(shooting, dribbling, passing, defense, stamina, remarks, existing.id).run();
+
+  return findPlayerStatusById(db, existing.id);
+};
+
 export { normalizeNullableNumber, normalizeNullableString };
